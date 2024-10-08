@@ -37,10 +37,10 @@ class Bot:
         if old_cancel_button_id:
             self.editMessageReplyMarkup((user, old_cancel_button_id[2]), reply_markup=None)
 
-        if new_cancel_button_id:
-            db.Temp.add({"user_id": user, "key": TEMP_KEYS.CANCEL_BUTTON_ID.value, "value": new_cancel_button_id[2]})
-        else:
-            db.Temp.delete({"user_id": user, "key": TEMP_KEYS.CANCEL_BUTTON_ID.value})
+            if new_cancel_button_id:
+                db.Temp.add({"user_id": user, "key": TEMP_KEYS.CANCEL_BUTTON_ID.value, "value": new_cancel_button_id[2]})
+            else:
+                db.Temp.delete({"user_id": user, "key": TEMP_KEYS.CANCEL_BUTTON_ID.value})
 
     def deliver_message(self, user, text, add_cancel_button=False, lang="", reply_to_msg_id=None, reply_markup=None):
         """Deliver a message to a user with optional cancel button and reply markup."""
