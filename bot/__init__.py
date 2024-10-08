@@ -21,7 +21,8 @@ class Bot:
     def get_cancel_button(lang):
         """Create cancel button with inline keyboard."""
         return InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text=f"❌ {translate(lang, 'cancel')}", callback_data=json.dumps([QUERY_ACTIONS.CANCEL]))],
+            [InlineKeyboardButton(text=f"❌ {translate(lang, 'cancel')}",
+                                  callback_data=json.dumps([QUERY_ACTIONS.CANCEL.value]))],
         ])
 
     def manage_cancel_buttons(self, user, new_cancel_button_id):
