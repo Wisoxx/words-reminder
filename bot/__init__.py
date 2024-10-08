@@ -58,18 +58,28 @@ class Bot:
         if add_cancel_button:
             self.manage_cancel_buttons(user, response.get('message_id'))
 
+    def get_user(self, update):
+        if "message" in update:
+            user = update["message"]["chat"]["id"]
+        elif "callback_query" in update:
+            user = update["callback_query"]["message"]["chat"]["id"]
+        else:
+            raise KeyError("Couldn't find user")
+
+        if user not in self.users_data:
+            self.users_data[user] = {"parameters": db.Users.get({"user_id": user}, include_column_names=True),
+                                     "update": update}
+        else:
+            self.users_data[user]["update"] = update
+
+        self.manage_cancel_buttons(user)
+        return user
+
     def handle_update(self, update):
         logger.debug('Received update: {}'.format(update))
 
         if "message" in update:
-            user = update["message"]["chat"]["id"]
-            if user not in self.users_data:
-                self.users_data[user] = {"parameters": db.Users.get({"user_id": user}, include_column_names=True),
-                                     "update": update}
-            else:
-                self.user_data[user]["update"] = update
-
-            self.manage_cancel_buttons(user)
+            user = self.get_user(update)
             
             if "text" in update["message"]:
                 text = update["message"]["text"]
@@ -78,14 +88,7 @@ class Bot:
                 self.deliver_message(user, "From the web: sorry, I didn't understand that kind of message")
 
         elif "callback_query" in update:
-            user = update["callback_query"]["message"]["chat"]["id"]
-            if user not in self.users_data:
-                self.users_data[user] = {"parameters": db.Users.get({"user_id": user}, include_column_names=True),
-                                         "update": update}
-            else:
-                self.users_data[user]["update"] = update
-
-            self.manage_cancel_buttons(user)
+            user = self.get_user(update)
 
             callback_data = update["callback_query"]["data"]
             self.deliver_message(user, callback_data)
