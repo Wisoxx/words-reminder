@@ -28,6 +28,10 @@ def telegram_webhook():
 
 @app.route(f'/{SECRET}/logs', methods=["GET"])
 def view_logs():
-    with open('logs/app.log', 'r') as log_file:
-        log_content = log_file.read()
-    return Response(log_content, mimetype='text/plain')
+    log_file_path = os.path.join(os.path.expanduser("~"), 'mysite', 'logs', 'app.log')
+    try:
+        with open(log_file_path, 'r') as log_file:
+            log_content = log_file.read()
+        return Response(log_content, mimetype='text/plain')
+    except Exception as e:
+        return Response(f"Error reading log file: {str(e)}", status=500)
