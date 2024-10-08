@@ -63,8 +63,12 @@ class Bot:
 
         if "message" in update:
             user = update["message"]["chat"]["id"]
-            self.users_data[user] = {"parameters": db.Users.get({"user_id": user}, include_column_names=True),
+            if user not in self.users_data:
+                self.users_data[user] = {"parameters": db.Users.get({"user_id": user}, include_column_names=True),
                                      "update": update}
+            else:
+                self.user_data[user]["update"] = update
+
             self.manage_cancel_buttons(user)
             
             if "text" in update["message"]:
@@ -75,8 +79,12 @@ class Bot:
 
         elif "callback_query" in update:
             user = update["callback_query"]["message"]["chat"]["id"]
-            self.users_data[user] = {"parameters": db.Users.get({"user_id": user}, include_column_names=True),
-                                     "update": update}
+            if user not in self.users_data:
+                self.users_data[user] = {"parameters": db.Users.get({"user_id": user}, include_column_names=True),
+                                         "update": update}
+            else:
+                self.user_data[user]["update"] = update
+
             self.manage_cancel_buttons(user)
 
             callback_data = update["callback_query"]["data"]
