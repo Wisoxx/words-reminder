@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, Response
 from bot import Bot, telepot
 import urllib3
 import os
@@ -24,3 +24,10 @@ def telegram_webhook():
     update = request.get_json()
     bot.handle_update(update)
     return "OK"
+
+
+@app.route(f'/{SECRET}/logs', methods=["GET"])
+def view_logs():
+    with open('logs/app.log', 'r') as log_file:
+        log_content = log_file.read()
+    return Response(log_content, mimetype='text/plain')

@@ -2,6 +2,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 import os
 
+
 def setup_logger(name):
     log_path = os.path.join(os.path.expanduser("~"), 'mysite', 'logs')
     os.makedirs(log_path, exist_ok=True)
