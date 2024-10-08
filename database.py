@@ -18,6 +18,9 @@ class Connection:
         logger.info("Disconnecting from database...")
         self.connection.close()
 
+    def __getattr__(self, name):
+        return getattr(self.connection, name)
+
 
 class Database:
     table_name = ""
@@ -29,7 +32,7 @@ class Database:
     @classmethod
     def execute_query(cls, query: str, params: list or tuple = (), retrying: bool = False):
         """Executes a given SQLite query with optional parameters. Returns number of affected rows or fetched data"""
-        connection = cls.connection.connection
+        connection = cls.connection
         cursor = connection.cursor()
 
         attempt = 0
@@ -219,7 +222,7 @@ class Users(Database):
     user_id INTEGER PRIMARY KEY,
     username TEXT NOT NULL,
     language TEXT NOT NULL,
-    timezone INTEGER NOT NULL,
+    timezone INTEGER,
     current_vocabulary_id INTEGER,
     hide_meaning BOOLEAN NOT NULL DEFAULT 1,
     FOREIGN KEY (current_vocabulary_id) REFERENCES vocabularies(vocabulary_id) ON DELETE SET NULL
@@ -243,7 +246,7 @@ class Vocabularies(Database):
 
 class Words(Database):
     table_name = "words"
-    columns = ["word_id", "user_id", "vocabulary_id", "word", "meaning"]
+    columns = ["word_id", "user_id", "vocabulary_id", "word", "meaning", "timestamp"]
     create_table_query = '''
     CREATE TABLE IF NOT EXISTS words (
     word_id INTEGER PRIMARY KEY,
@@ -284,7 +287,7 @@ class Temp(Database):
         user_id INTEGER,
         key TEXT,
         value TEXT,
-        PRIMARY KEY (user_id, key)
+        PRIMARY KEY (user_id, key),
         FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
     );
     """

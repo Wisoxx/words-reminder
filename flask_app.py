@@ -1,5 +1,5 @@
 from flask import Flask, request
-import telepot
+from bot import Bot, telepot
 import urllib3
 import os
 
@@ -13,7 +13,7 @@ TOKEN = os.getenv("TELEGRAM_TOKEN")
 SECRET = os.getenv("SECRET")
 SITE = os.getenv("SITE_URL")
 
-bot = telepot.Bot(TOKEN)
+bot = Bot(TOKEN)
 bot.setWebhook(SITE + SECRET, max_connections=1)
 
 app = Flask(__name__)
@@ -22,11 +22,5 @@ app = Flask(__name__)
 @app.route('/{}'.format(SECRET), methods=["POST"])
 def telegram_webhook():
     update = request.get_json()
-    if "message" in update:
-        chat_id = update["message"]["chat"]["id"]
-        if "text" in update["message"]:
-            text = update["message"]["text"]
-            bot.sendMessage(chat_id, "From the web: you said '{}'".format(text))
-        else:
-            bot.sendMessage(chat_id, "From the web: sorry, I didn't understand that kind of message")
+    bot.handle_update(update)
     return "OK"
