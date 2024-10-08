@@ -2,7 +2,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 import os
 
-log_path = '/mysite/logs'
+log_path = os.path.join(os.path.expanduser("~"), 'mysite', 'logs')
 os.makedirs(log_path, exist_ok=True)
 
 handler = RotatingFileHandler(os.path.join(log_path, 'app.log'), maxBytes=10000000, backupCount=3)
