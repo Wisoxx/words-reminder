@@ -1,11 +1,11 @@
 import sqlite3
 import time
-from logger import logging
+from logger import setup_logger
 
 MAX_RETRIES = 3
 INITIAL_DELAY = 0.5
 
-logger = logging.getLogger(__name__)
+logger = setup_logger(__name__)
 
 
 class Connection:

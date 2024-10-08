@@ -3,9 +3,10 @@ from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 from translations import translate
 from ._query_actions import QUERY_ACTIONS
 import json
-from logger import logging
+from logger import setup_logger
 
-logger = logging.getLogger(__name__)
+
+logger = setup_logger(__name__)
 
 
 class Bot:
