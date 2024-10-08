@@ -37,10 +37,10 @@ class Bot:
         if old_cancel_button_id:
             self.editMessageReplyMarkup((user, old_cancel_button_id[2]), reply_markup=None)
 
-            if new_cancel_button_id:
-                db.Temp.add({"user_id": user, "key": TEMP_KEYS.CANCEL_BUTTON_ID.value, "value": new_cancel_button_id[2]})
-            else:
-                db.Temp.delete({"user_id": user, "key": TEMP_KEYS.CANCEL_BUTTON_ID.value})
+        if new_cancel_button_id:
+            db.Temp.add({"user_id": user, "key": TEMP_KEYS.CANCEL_BUTTON_ID.value, "value": new_cancel_button_id})
+        else:
+            db.Temp.delete({"user_id": user, "key": TEMP_KEYS.CANCEL_BUTTON_ID.value})
 
     def deliver_message(self, user, text, add_cancel_button=False, lang="", reply_to_msg_id=None, reply_markup=None):
         """Deliver a message to a user with optional cancel button and reply markup."""
@@ -78,9 +78,9 @@ class Bot:
     def handle_update(self, update):
         logger.debug('Received update: {}'.format(update))
 
+        user = self.get_user(update)
+
         if "message" in update:
-            user = self.get_user(update)
-            
             if "text" in update["message"]:
                 text = update["message"]["text"]
                 self.deliver_message(user, "From the web: you said '{}'".format(text))
@@ -88,7 +88,5 @@ class Bot:
                 self.deliver_message(user, "From the web: sorry, I didn't understand that kind of message")
 
         elif "callback_query" in update:
-            user = self.get_user(update)
-
             callback_data = update["callback_query"]["data"]
             self.deliver_message(user, callback_data)
