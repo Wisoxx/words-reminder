@@ -83,7 +83,7 @@ class Bot:
                 self.users_data[user] = {"parameters": db.Users.get({"user_id": user}, include_column_names=True),
                                          "update": update}
             else:
-                self.user_data[user]["update"] = update
+                self.users_data[user]["update"] = update
 
             self.manage_cancel_buttons(user)
 
