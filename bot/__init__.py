@@ -1,7 +1,8 @@
 import telepot
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
+import database as db
 from translations import translate
-from ._query_actions import QUERY_ACTIONS
+from ._enums import QUERY_ACTIONS, TEMP_KEYS, USER_STATES
 import json
 from logger import setup_logger
 
@@ -11,8 +12,12 @@ logger = setup_logger(__name__)
 
 class Bot:
     def __init__(self, token):
+        logger.info('Initializing bot...')
         self.bot = telepot.Bot(token)
-        self.update = None
+        self.users_data = {}
+
+    def __del__(self):
+        logger.info('Deleting bot...')
 
     def __getattr__(self, name):
         return getattr(self.bot, name)
@@ -25,9 +30,17 @@ class Bot:
                                   callback_data=json.dumps([QUERY_ACTIONS.CANCEL.value]))],
         ])
 
-    def manage_cancel_buttons(self, user, new_cancel_button_id):
+    def manage_cancel_buttons(self, user, new_cancel_button_id=None):
         """Manage the removal of old cancel buttons when a new one is sent."""
-        pass
+        old_cancel_button_id = db.Temp.get({'user_id': user, "key": TEMP_KEYS.CANCEL_BUTTON_ID.value})
+
+        if old_cancel_button_id:
+            self.editMessageReplyMarkup((user, old_cancel_button_id[2]), reply_markup=None)
+
+        if new_cancel_button_id:
+            db.Temp.add({"user_id": user, "key": TEMP_KEYS.CANCEL_BUTTON_ID.value, "value": new_cancel_button_id[2]})
+        else:
+            db.Temp.delete({"user_id": user, "key": TEMP_KEYS.CANCEL_BUTTON_ID.value})
 
     def deliver_message(self, user, text, add_cancel_button=False, lang="", reply_to_msg_id=None, reply_markup=None):
         """Deliver a message to a user with optional cancel button and reply markup."""
@@ -47,17 +60,24 @@ class Bot:
 
     def handle_update(self, update):
         logger.debug('Received update: {}'.format(update))
-        self.update = update
 
         if "message" in update:
-            chat_id = update["message"]["chat"]["id"]
+            user = update["message"]["chat"]["id"]
+            self.users_data[user] = {"parameters": db.Users.get({"user_id": user}, include_column_names=True),
+                                     "update": update}
+            self.manage_cancel_buttons(user)
+            
             if "text" in update["message"]:
                 text = update["message"]["text"]
-                self.deliver_message(chat_id, "From the web: you said '{}'".format(text))
+                self.deliver_message(user, "From the web: you said '{}'".format(text))
             else:
-                self.deliver_message(chat_id, "From the web: sorry, I didn't understand that kind of message")
+                self.deliver_message(user, "From the web: sorry, I didn't understand that kind of message")
 
         elif "callback_query" in update:
-            chat_id = update["callback_query"]["message"]["chat"]["id"]
+            user = update["callback_query"]["message"]["chat"]["id"]
+            self.users_data[user] = {"parameters": db.Users.get({"user_id": user}, include_column_names=True),
+                                     "update": update}
+            self.manage_cancel_buttons(user)
+
             callback_data = update["callback_query"]["data"]
-            self.deliver_message(chat_id, callback_data)
+            self.deliver_message(user, callback_data)

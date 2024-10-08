@@ -24,3 +24,26 @@ class QUERY_ACTIONS(Enum):
     DELETE_VOCABULARY = auto()
     CHANGE_LANGUAGE = auto()
     TOGGLE_HIDE_MEANING = auto()
+
+
+class TEMP_KEYS(Enum):
+    STATE = auto()
+    VOCABULARY = auto()
+    TIME = auto()
+    CANCEL_BUTTON_ID = auto()
+    CALL_MENU = auto()
+
+
+class USER_STATES(Enum):
+    NO_STATE = None
+    DELETEWORD_WORD = auto()
+    ADDVOCABULARY_VOCABULARY = auto()
+    CHANGEVOCABULARY_VOCABULARY = auto()
+    DELETEVOCABULARY_VOCABULARY = auto()
+    DELETEVOCABULARY_CONFIRMATION = auto()
+    ADDREMINDER_VOCABULARY = auto()
+    ADDREMINDER_TIME = auto()
+    ADDREMINDER_WORDSNUMBER = auto()
+    DELETEREMINDER_VOCABULARY = auto()
+    DELETEREMINDER_TIME = auto()
+    WORDLIST_VOCABULARY = auto()

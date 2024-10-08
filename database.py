@@ -132,7 +132,7 @@ class Database:
 
     @classmethod
     def get(cls, conditions: dict = None, limit: int = None, offset: int = None,
-            order_by: str = None, sort_direction: str = 'ASC') -> list:
+            order_by: str = None, sort_direction: str = 'ASC', include_column_names=False) -> list or dict:
         """
         Fetch records from the database with optional conditions, limit, offset, and ordering.
 
@@ -141,6 +141,7 @@ class Database:
         :param offset: The number of records to skip (optional)
         :param order_by: The column to order by (optional)
         :param sort_direction: 'ASC' or 'DESC' to define sorting direction (default: 'ASC')
+        :param include_column_names: Whether to return column names with values (default: False)
         :return: List of fetched records
         """
 
@@ -172,7 +173,12 @@ class Database:
             query += " OFFSET ?"
             params.append(offset)
 
-        return cls.execute_query(query, params)
+        rows = cls.execute_query(query, params)
+
+        if include_column_names:
+            return [{cls.columns[i]: row[i] for i in range(len(row))} for row in rows]
+
+        return rows
 
     @classmethod
     def count_where(cls, conditions: dict):
