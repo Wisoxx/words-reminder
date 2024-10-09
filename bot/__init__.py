@@ -32,7 +32,8 @@ class Bot:
 
     def manage_cancel_buttons(self, user, new_cancel_button_id=None):
         """Manage the removal of old cancel buttons when a new one is sent."""
-        old_cancel_button_id = db.Temp.get({'user_id': user, "key": TEMP_KEYS.CANCEL_BUTTON_ID.value})
+        old_cancel_button_id = db.Temp.get({'user_id': user, "key": TEMP_KEYS.CANCEL_BUTTON_ID.value},
+                                           include_column_names=True)[0]["value"]
 
         if old_cancel_button_id:
             self.editMessageReplyMarkup((user, old_cancel_button_id[2]), reply_markup=None)
