@@ -1,4 +1,5 @@
 import sqlite3
+import os
 import time
 from logger import setup_logger
 
@@ -10,8 +11,9 @@ logger = setup_logger(__name__)
 
 class Connection:
     def __init__(self, database_name, timeout):
-        logger.info("Connecting to database...")
-        self.connection = sqlite3.connect(database_name, timeout=timeout)
+        db_path = os.path.expanduser(f"~/mysite/{database_name}")
+        logger.info(f"Connecting to database at {db_path}...")
+        self.connection = sqlite3.connect(db_path, timeout=timeout)
         self.connection.execute('PRAGMA foreign_keys=ON')
 
     def __del__(self):
