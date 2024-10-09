@@ -11,6 +11,8 @@ logger = setup_logger(__name__)
 
 
 class Bot:
+    from ._menu import menu
+
     def __init__(self, token):
         logger.info('Initializing bot...')
         self.bot = telepot.Bot(token)
@@ -59,6 +61,14 @@ class Bot:
         if add_cancel_button:
             self.manage_cancel_buttons(user, response.get('message_id'))
 
+    def get_user_parameters(self, user):
+        if user in self.users_data:
+            return self.users_data[user]["parameters"]
+
+        parameters = db.Users.get({"user_id": user}, include_column_names=True)
+        self.users_data[user] = parameters
+        return parameters
+
     def get_user(self, update):
         if "message" in update:
             user = update["message"]["chat"]["id"]
@@ -68,8 +78,7 @@ class Bot:
             raise KeyError("Couldn't find user")
 
         if user not in self.users_data:
-            self.users_data[user] = {"parameters": db.Users.get({"user_id": user}, include_column_names=True),
-                                     "update": update}
+            self.users_data[user] = {"parameters": self.get_user_parameters(user), "update": update}
         else:
             self.users_data[user]["update"] = update
 
@@ -88,6 +97,8 @@ class Bot:
                     text = update["message"]["text"]
                     if text == "/test":
                         self.deliver_message(user, "Test Message", add_cancel_button=True, lang="en")
+                    elif text == "/menu":
+                        self.menu()
                     else:
                         self.deliver_message(user, "From the web: you said '{}'".format(text))
                 else:
