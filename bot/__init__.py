@@ -61,10 +61,15 @@ class Bot:
         if add_cancel_button:
             self.manage_cancel_buttons(user, response.get('message_id'))
 
-    def broadcast(self, text, reply_markup=None):
+    def broadcast(self, text: str, reply_markup=None):
         users = db.Users.execute_query("SELECT user_id FROM users;")
         for user in users:
             self.deliver_message(user[0], text, reply_markup=reply_markup)
+
+    def broadcast_multilang(self, text: dict, reply_markup=None):
+        users = db.Users.execute_query("SELECT user_id, language FROM users;")
+        for user, lang in users:
+            self.deliver_message(user, text[lang], reply_markup=reply_markup)
 
     def get_user_parameters(self, user):
         if user in self.users_data:

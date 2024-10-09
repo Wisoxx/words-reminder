@@ -34,6 +34,7 @@ class Database:
     @classmethod
     def execute_query(cls, query: str, params: list or tuple = (), retrying: bool = False):
         """Executes a given SQLite query with optional parameters. Returns number of affected rows or fetched data"""
+        logger.debug(f"Executing query: {query, params}")
         connection = cls.connection
         cursor = connection.cursor()
 
@@ -48,11 +49,11 @@ class Database:
 
                 if not query.strip().upper().startswith("SELECT"):
                     connection.commit()
-                    logger.debug(f"Query executed successfully: {query, params}")
+                    logger.debug(f"Query executed successfully")
                     return cursor.rowcount
                 else:
                     results = cursor.fetchall()  # Return results for SELECT statements
-                    logger.debug(f"SELECT query executed successfully: {query, params}")
+                    logger.debug(f"Query executed successfully. Results: {results}")
                     return results
 
             # handle errors
@@ -78,21 +79,20 @@ class Database:
                     return cls.execute_query(query, params, retrying=True)
 
                 else:
-                    logger.exception(f"OperationalError: {error_message} for query: {query, params}")
+                    logger.exception(f"OperationalError: {error_message}")
 
             except sqlite3.IntegrityError as e:
-                logger.warning(
-                    f"IntegrityError: {str(e)} for query: {query, params}. This may be due to a duplicate entry.")
+                logger.warning(f"IntegrityError: {str(e)}")
                 return -1  # Handle duplicate entries and other integrity issues
 
             except sqlite3.DatabaseError as e:
-                logger.critical(f"DatabaseError: {str(e)} for query: {query, params}", exc_info=True)
+                logger.critical(f"DatabaseError: {str(e)}", exc_info=True)
                 return -1  # Handle other database errors
 
             finally:
                 cursor.close()
 
-        logger.error(f"Max retries exceeded for query: {query, params}")
+        logger.error(f"Max retries exceeded")
         return -1  # Return -1 if all retries fail
 
     @classmethod
