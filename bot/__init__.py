@@ -64,7 +64,7 @@ class Bot:
     def broadcast(self, text, reply_markup=None):
         users = db.Users.execute_query("SELECT user_id FROM users;")
         for user in users:
-            self.deliver_message(user, text, reply_markup=reply_markup)
+            self.deliver_message(user[0], text, reply_markup=reply_markup)
 
     def get_user_parameters(self, user):
         if user in self.users_data:
