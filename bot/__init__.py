@@ -98,7 +98,7 @@ class Bot:
                     if text == "/test":
                         self.deliver_message(user, "Test Message", add_cancel_button=True, lang="en")
                     elif text == "/menu":
-                        self.menu()
+                        self.menu(user)
                     else:
                         self.deliver_message(user, "From the web: you said '{}'".format(text))
                 else:
