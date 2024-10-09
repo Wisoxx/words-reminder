@@ -79,20 +79,28 @@ class Bot:
         return user
 
     def handle_update(self, update):
-        logger.debug('Received update: {}'.format(update))
+        user = None
+        try:
+            logger.debug('Received update: {}'.format(update))
 
-        user = self.get_user(update)
+            user = self.get_user(update)
 
-        if "message" in update:
-            if "text" in update["message"]:
-                text = update["message"]["text"]
-                if text == "/test":
-                    self.deliver_message(user, "Test Message", add_cancel_button=True, lang="en")
+            if "message" in update:
+                if "text" in update["message"]:
+                    text = update["message"]["text"]
+                    if text == "/test":
+                        self.deliver_message(user, "Test Message", add_cancel_button=True, lang="en")
+                    else:
+                        self.deliver_message(user, "From the web: you said '{}'".format(text))
                 else:
-                    self.deliver_message(user, "From the web: you said '{}'".format(text))
-            else:
-                self.deliver_message(user, "From the web: sorry, I didn't understand that kind of message")
+                    self.deliver_message(user, "From the web: sorry, I didn't understand that kind of message")
 
-        elif "callback_query" in update:
-            callback_data = update["callback_query"]["data"]
-            self.deliver_message(user, callback_data)
+            elif "callback_query" in update:
+                callback_data = update["callback_query"]["data"]
+                self.deliver_message(user, callback_data)
+
+        except Exception as e:
+            logger.critical(f"Couldn't process update: {e}", exc_info=True)
+
+            if user:
+                self.deliver_message(user, "Something went wrong")
