@@ -11,10 +11,10 @@ def menu(self, user):
 
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [
-            InlineKeyboardButton(text='      📃      ', callback_data=json.dumps([QUERY_ACTIONS['MENU_WORDS']])),
-            InlineKeyboardButton(text='      ⏰      ', callback_data=json.dumps([QUERY_ACTIONS['MENU_REMINDERS']])),
-            InlineKeyboardButton(text='      📙      ', callback_data=json.dumps([QUERY_ACTIONS['MENU_VOCABULARIES']])),
-            InlineKeyboardButton(text='      ⚙️      ', callback_data=json.dumps([QUERY_ACTIONS['MENU_SETTINGS']]))
+            InlineKeyboardButton(text='      📃      ', callback_data=json.dumps([QUERY_ACTIONS.MENU_WORDS.value])),
+            InlineKeyboardButton(text='      ⏰      ', callback_data=json.dumps([QUERY_ACTIONS.MENU_REMINDERS.value])),
+            InlineKeyboardButton(text='      📙      ', callback_data=json.dumps([QUERY_ACTIONS.MENU_VOCABULARIES.value])),
+            InlineKeyboardButton(text='      ⚙️      ', callback_data=json.dumps([QUERY_ACTIONS.MENU_SETTINGS.value])),
         ]
     ])
 
