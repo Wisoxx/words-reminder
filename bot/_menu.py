@@ -1,6 +1,6 @@
 import telepot
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
-from _enums import QUERY_ACTIONS, TEMP_KEYS, USER_STATES
+from ._enums import QUERY_ACTIONS, TEMP_KEYS, USER_STATES
 from translations import translate
 import json
 
