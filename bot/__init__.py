@@ -38,8 +38,6 @@ class Bot:
         if old_cancel_button_id:
             self.editMessageReplyMarkup((user, old_cancel_button_id[0]["value"]), reply_markup=None)
 
-        logger.debug(f"USERS: {db.Users.get()}")
-        logger.debug(f"TEMP: {db.Temp.get()}")
         if new_cancel_button_id:
             db.Temp.add({"user_id": user, "key": TEMP_KEYS.CANCEL_BUTTON_ID.value, "value": new_cancel_button_id})
         elif old_cancel_button_id:
