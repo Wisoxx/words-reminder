@@ -1,9 +1,9 @@
+import json
+import database as db
 import telepot
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
-import database as db
 from translations import translate
 from ._enums import QUERY_ACTIONS, TEMP_KEYS, USER_STATES
-import json
 from logger import setup_logger
 
 
@@ -60,6 +60,11 @@ class Bot:
 
         if add_cancel_button:
             self.manage_cancel_buttons(user, response.get('message_id'))
+
+    def broadcast(self, text, reply_markup=None):
+        users = db.Users.execute_query("SELECT user_id FROM users;")
+        for user in users:
+            self.deliver_message(user, text, reply_markup=reply_markup)
 
     def get_user_parameters(self, user):
         if user in self.users_data:

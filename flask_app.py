@@ -2,6 +2,11 @@ from flask import Flask, request, Response
 from bot import Bot, telepot
 import urllib3
 import os
+from dotenv import load_dotenv
+
+
+project_folder = os.path.expanduser('~/mysite')
+load_dotenv(os.path.join(project_folder, '.env'))
 
 proxy_url = "http://proxy.server:3128"
 telepot.api._pools = {
