@@ -38,7 +38,7 @@ class Bot:
                                            include_column_names=True)
 
         if old_cancel_button_id:
-            self.editMessageReplyMarkup((user, old_cancel_button_id[0]["value"]), reply_markup=None)
+            self.editMessageReplyMarkup((user, old_cancel_button_id["value"]), reply_markup=None)
 
         if new_cancel_button_id:
             db.Temp.add({"user_id": user, "key": TEMP_KEYS.CANCEL_BUTTON_ID.value, "value": new_cancel_button_id})

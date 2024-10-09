@@ -134,7 +134,7 @@ class Database:
 
     @classmethod
     def get(cls, conditions: dict = None, limit: int = None, offset: int = None,
-            order_by: str = None, sort_direction: str = 'ASC', include_column_names=False) -> list or dict:
+            order_by: str = None, sort_direction: str = 'ASC', include_column_names=False) -> list or dict or tuple:
         """
         Fetch records from the database with optional conditions, limit, offset, and ordering.
 
@@ -178,7 +178,10 @@ class Database:
         rows = cls.execute_query(query, params)
 
         if include_column_names:
-            return [{cls.columns[i]: row[i] for i in range(len(row))} for row in rows]
+            rows = [{cls.columns[i]: row[i] for i in range(len(row))} for row in rows]
+
+        if len(rows) == 1:  # return as tuple instead of list of tuples
+            return rows[0]
 
         return rows
 
