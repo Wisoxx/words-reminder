@@ -1,4 +1,4 @@
-def handle_message(self, user, lang, update):
+def handle_message(self, user, update):
     if "text" in update["message"]:
         text = update["message"]["text"]
         match text:
@@ -15,10 +15,10 @@ def handle_message(self, user, lang, update):
         self.deliver_message(user, "From the web: sorry, I didn't understand that kind of message")
 
 
-def handle_callback_query(self, user, lang, update):
+def handle_callback_query(self, user,  update):
     callback_data = update["callback_query"]["data"]
     self.deliver_message(user, callback_data)
 
 
-def handle_chat_member_status(self, user, lang, update):
+def handle_chat_member_status(self, user,  update):
     raise Exception("Blocked or unblocked")

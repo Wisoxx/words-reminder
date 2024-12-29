@@ -98,13 +98,10 @@ class Bot:
     def get_user(self, update):
         if "message" in update:
             user = update["message"]["chat"]["id"]
-            lang = update["message"]["from"]["language_code"]
         elif "inline_query" in update:
             user = update["inline_query"]["from"]["id"]
-            lang = update["inline_query"]["from"]["language_code"]
         elif "my_chat_member" in update:
             user = update["my_chat_member"]["from"]["id"]
-            lang = update["my_chat_member"]["from"]["language_code"]
         else:
             raise KeyError("Couldn't find user")
 
@@ -112,31 +109,31 @@ class Bot:
             self.get_user_parameters(user)
 
         self.manage_cancel_buttons(user)
-        return user, lang
+        return user
 
     def handle_update(self, update):
         user = None
-        lang = None
         try:
             logger.debug('Received update: {}'.format(json.dumps(update, indent=4)))  # pretty print logs
 
             user, lang = self.get_user(update)
 
             if "message" in update:
-                self.handle_message(user, lang, update)
+                self.handle_message(user, update)
 
             elif "callback_query" in update:
-                self.handle_callback_query(user, lang, update)
+                self.handle_callback_query(user, update)
 
             elif "my_chat_member" in update:
-                self.handle_chat_member_status(user, lang, update)
+                self.handle_chat_member_status(user, update)
 
         except Exception as e:
             logger.critical(f"Couldn't process update: {e}", exc_info=True)
             logger.critical(f"Update that caused error: {json.dumps(update, indent=4)}")
 
-            if user and lang:
+            if user:
                 try:
+                    lang = self.get_user_parameters(user)['language']
                     self.deliver_message(user, translate(lang, "error"))
                 except Exception as e_:
                     logger.critical(f"Couldn't notify user {user} about error: {e_}")
