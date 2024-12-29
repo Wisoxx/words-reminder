@@ -98,8 +98,8 @@ class Bot:
     def get_user(self, update):
         if "message" in update:
             user = update["message"]["chat"]["id"]
-        elif "inline_query" in update:
-            user = update["inline_query"]["from"]["id"]
+        elif "callback_query" in update:
+            user = update["callback_query"]["from"]["id"]
         elif "my_chat_member" in update:
             user = update["my_chat_member"]["from"]["id"]
         else:
