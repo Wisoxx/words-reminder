@@ -11,7 +11,9 @@ logger = setup_logger(__name__)
 
 
 class Bot:
+    from ._handlers import handle_message, handle_callback_query
     from ._menu import menu
+    # from ._utils import TODO
 
     def __init__(self, token):
         logger.info('Initializing bot...')
@@ -32,13 +34,14 @@ class Bot:
                                   callback_data=json.dumps([QUERY_ACTIONS.CANCEL.value]))],
         ])
 
-    def manage_cancel_buttons(self, user, new_cancel_button_id=None):
+    def manage_cancel_buttons(self, user, new_cancel_button_id=None, delete_old=True):
         """Manage the removal of old cancel buttons when a new one is sent."""
-        old_cancel_button_id = db.Temp.get({'user_id': user, "key": TEMP_KEYS.CANCEL_BUTTON_ID.value},
-                                           include_column_names=True)
-
-        if old_cancel_button_id:
-            self.editMessageReplyMarkup((user, old_cancel_button_id["value"]), reply_markup=None)
+        old_cancel_button_id = None
+        if delete_old:
+            old_cancel_button_id = db.Temp.get({'user_id': user, "key": TEMP_KEYS.CANCEL_BUTTON_ID.value},
+                                               include_column_names=True)
+            if old_cancel_button_id:
+                self.editMessageReplyMarkup((user, old_cancel_button_id["value"]), reply_markup=None)
 
         if new_cancel_button_id:
             db.Temp.add({"user_id": user, "key": TEMP_KEYS.CANCEL_BUTTON_ID.value, "value": new_cancel_button_id})
@@ -59,7 +62,7 @@ class Bot:
         logger.debug("Sent message: {}".format(response))
 
         if add_cancel_button:
-            self.manage_cancel_buttons(user, response.get('message_id'))
+            self.manage_cancel_buttons(user, response.get('message_id'), delete_old=False)  # old deleted in get_user
 
     def broadcast(self, text: str, reply_markup=None):
         users = db.Users.execute_query("SELECT user_id FROM users;")
@@ -88,9 +91,7 @@ class Bot:
             raise KeyError("Couldn't find user")
 
         if user not in self.users_data:
-            self.users_data[user] = {"parameters": self.get_user_parameters(user), "update": update}
-        else:
-            self.users_data[user]["update"] = update
+            self.get_user_parameters(user)
 
         self.manage_cancel_buttons(user)
         return user
@@ -103,20 +104,10 @@ class Bot:
             user = self.get_user(update)
 
             if "message" in update:
-                if "text" in update["message"]:
-                    text = update["message"]["text"]
-                    if text == "/test":
-                        self.deliver_message(user, "Test Message", add_cancel_button=True, lang="en")
-                    elif text == "/menu":
-                        self.menu(user)
-                    else:
-                        self.deliver_message(user, "From the web: you said '{}'".format(text))
-                else:
-                    self.deliver_message(user, "From the web: sorry, I didn't understand that kind of message")
+                self.handle_message(user, update)
 
             elif "callback_query" in update:
-                callback_data = update["callback_query"]["data"]
-                self.deliver_message(user, callback_data)
+                self.handle_callback_query(user, update)
 
         except Exception as e:
             logger.critical(f"Couldn't process update: {e}", exc_info=True)
