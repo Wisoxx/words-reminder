@@ -116,7 +116,7 @@ class Bot:
         try:
             logger.debug('Received update: {}'.format(json.dumps(update, indent=4)))  # pretty print logs
 
-            user, lang = self.get_user(update)
+            user = self.get_user(update)
 
             if "message" in update:
                 self.handle_message(user, update)
