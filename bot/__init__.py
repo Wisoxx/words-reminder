@@ -89,7 +89,7 @@ class Bot:
 
     def get_user_parameters(self, user):
         if user in self.users_data:
-            return self.users_data[user]["parameters"]
+            return self.users_data[user]
 
         parameters = db.Users.get({"user_id": user}, include_column_names=True)
         self.users_data[user] = parameters
