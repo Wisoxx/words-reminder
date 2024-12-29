@@ -1,6 +1,7 @@
 import sqlite3
 import os
 import time
+
 from logger import setup_logger
 
 MAX_RETRIES = 3
@@ -24,33 +25,73 @@ class Connection:
         return getattr(self.connection, name)
 
 
+class CursorError:
+    def __init__(self):
+        self.rowcount = -1
+        self.lastrowid = 0
+        self.arraysize = 0
+        self.description = None
+        self.connection = None
+
+    def execute(self, sql, parameters=()):
+        pass
+
+    def executemany(self, sql, parameters):
+        pass
+
+    def fetchone(self):
+        return None
+
+    def fetchmany(self, size=None):
+        return []
+
+    def fetchall(self):
+        return []
+
+    def close(self):
+        pass
+
+    def setinputsizes(self, sizes):
+        pass
+
+    def setoutputsize(self, size, column=None):
+        pass
+
+
 class Database:
     table_name = ""
     create_table_query = ""
-    columns = []
+    columns = ()
 
     connection = Connection('data.db', timeout=5)
 
     @classmethod
-    def execute_query(cls, query: str, params: list or tuple = (), retrying: bool = False):
+    def execute_query(cls, query: str, params: list or tuple = (), multiple: bool = False, retrying: bool = False):
         """Executes a given SQLite query with optional parameters. Returns number of affected rows or fetched data"""
         logger.debug(f"Executing query: {query, params}")
         connection = cls.connection
         cursor = connection.cursor()
 
+        retry = False
         attempt = 0
         while attempt < MAX_RETRIES:
             # execute query
             try:
                 if params:
-                    cursor.execute(query, tuple(params))
+                    if multiple:
+                        logger.debug("Executing multiple")
+                        cursor.executemany(query, params)
+                    else:
+                        logger.debug("Executing single")
+                        cursor.execute(query, tuple(params))
                 else:
+                    logger.debug("Executing with no parameters")
                     cursor.execute(query)
 
                 if not query.strip().upper().startswith("SELECT"):
                     connection.commit()
                     logger.debug(f"Query executed successfully")
-                    return cursor.rowcount
+                    return cursor
                 else:
                     results = cursor.fetchall()  # Return results for SELECT statements
                     logger.debug(f"Query executed successfully. Results: {results}")
@@ -64,6 +105,7 @@ class Database:
                     logger.warning(f"Database is locked, retrying... Attempt {attempt + 1}/{MAX_RETRIES}")
                     time.sleep(INITIAL_DELAY * (2 ** attempt))
                     attempt += 1
+                    retry = True
                     continue
 
                 elif "no such table" in error_message and not retrying:
@@ -73,27 +115,29 @@ class Database:
                         logger.info("Table created successfully. Retrying the original query...")
                     except sqlite3.Error as create_e:
                         logger.critical(f"Failed to create table: {create_e}", exc_info=True)
-                        return -1
+                        return CursorError()
 
                     # Retry the original query after creating the table
-                    return cls.execute_query(query, params, retrying=True)
+                    return cls.execute_query(query, params, multiple, retrying=True)
 
                 else:
                     logger.exception(f"OperationalError: {error_message}")
 
             except sqlite3.IntegrityError as e:
                 logger.warning(f"IntegrityError: {str(e)}")
-                return -1  # Handle duplicate entries and other integrity issues
+                return CursorError()  # Handle duplicate entries and other integrity issues
 
             except sqlite3.DatabaseError as e:
                 logger.critical(f"DatabaseError: {str(e)}", exc_info=True)
-                return -1  # Handle other database errors
+                return CursorError()  # Handle other database errors
 
             finally:
-                cursor.close()
+                if not retry:
+                    cursor.close()
+                retry = False
 
         logger.error(f"Max retries exceeded")
-        return -1  # Return -1 if all retries fail
+        return CursorError()
 
     @classmethod
     def validate_columns(cls, conditions: dict or list or tuple) -> None:
@@ -108,7 +152,7 @@ class Database:
         cls.execute_query(cls.create_table_query)
 
     @classmethod
-    def add(cls, data: dict, replace: bool = False) -> bool:
+    def add(cls, data: dict, replace: bool = False) -> tuple[bool, int]:
         """
         Inserts a new record into the table. Column names and values are passed as a
         dictionary. Optionally, use "INSERT OR REPLACE" to handle unique constraint
@@ -130,11 +174,47 @@ class Database:
         else:
             query = f"INSERT INTO {cls.table_name} ({columns}) VALUES ({placeholders})"
 
-        return cls.execute_query(query, data.values()) > 0
+        cursor = cls.execute_query(query, data.values())
+
+        return cursor.rowcount > 0, cursor.lastrowid
+
+    @classmethod
+    def add_bulk(cls, data: dict or list[dict], replace: bool = False) -> tuple[bool, int]:
+        """
+        Inserts a new record into the table. Column names and values are passed as a
+        dictionary. Optionally, use "INSERT OR REPLACE" to handle unique constraint
+        conflicts.
+
+        :param data: dict of data to be inserted
+        :param replace: bool whether to replace existing records
+        :return: bool indicating success or failure
+        """
+        if not data:
+            raise ValueError("No data provided for insertion.")
+
+        if isinstance(data, dict):
+            data = [data]  # Convert single dict to list for consistency
+
+        values = []
+        for row in data:
+            cls.validate_columns(row)
+            values.append(tuple(row.values()))
+
+        columns = ', '.join(data[0].keys())  # assuming all rows have the same structure
+        placeholders = ', '.join('?' * len(data[0]))
+
+        if replace:
+            query = f"INSERT OR REPLACE INTO {cls.table_name} ({columns}) VALUES ({placeholders})"
+        else:
+            query = f"INSERT INTO {cls.table_name} ({columns}) VALUES ({placeholders})"
+
+        cursor = cls.execute_query(query, values, multiple=True)
+
+        return cursor.rowcount > 0
 
     @classmethod
     def get(cls, conditions: dict = None, limit: int = None, offset: int = None,
-            order_by: str = None, sort_direction: str = 'ASC', include_column_names=False) -> list or dict or tuple:
+            order_by: str = None, sort_direction: str = 'ASC', include_column_names=False, custom_select=None) -> list or dict or tuple:
         """
         Fetch records from the database with optional conditions, limit, offset, and ordering.
 
@@ -144,10 +224,11 @@ class Database:
         :param order_by: The column to order by (optional)
         :param sort_direction: 'ASC' or 'DESC' to define sorting direction (default: 'ASC')
         :param include_column_names: Whether to return column names with values (default: False)
+        :param custom_select: A custom SELECT query to override the default (optional)
         :return: List of fetched records
         """
 
-        query = f"SELECT * FROM {cls.table_name}"
+        query = custom_select if custom_select else f"SELECT * FROM {cls.table_name}"
         params = []
 
         # Add WHERE conditions if provided
@@ -167,11 +248,11 @@ class Database:
             query += f" ORDER BY {order_by} {sort_direction.upper()}"
 
         # Add LIMIT and OFFSET if provided
-        if limit is not None:
+        if limit:
             query += " LIMIT ?"
             params.append(limit)
 
-        if offset is not None:
+        if offset:
             query += " OFFSET ?"
             params.append(offset)
 
@@ -179,6 +260,9 @@ class Database:
 
         if include_column_names:
             rows = [{cls.columns[i]: row[i] for i in range(len(row))} for row in rows]
+
+            if not rows:
+                return {}
 
         if len(rows) == 1:  # return as tuple instead of list of tuples
             return rows[0]
@@ -211,7 +295,8 @@ class Database:
         set_clause = ', '.join(f"{key} = ?" for key in new_values)
         where_clause = ' AND '.join(f"{key} = ?" for key in conditions)
         query = f"UPDATE {cls.table_name} SET {set_clause} WHERE {where_clause}"
-        return cls.execute_query(query, (*new_values.values(), *conditions.values())) > 0
+        cursor = cls.execute_query(query, (*new_values.values(), *conditions.values()))
+        return cursor.rowcount > 0
 
     @classmethod
     def delete(cls, conditions: dict):
@@ -222,7 +307,8 @@ class Database:
 
         where_clause = ' AND '.join(f"{key} = ?" for key in conditions)
         query = f"DELETE FROM {cls.table_name} WHERE {where_clause}"
-        return cls.execute_query(query, tuple(conditions.values())) > 0
+        cursor = cls.execute_query(query, tuple(conditions.values()))
+        return cursor.rowcount > 0
 
 
 class Users(Database):
