@@ -1,18 +1,38 @@
-from flask import Flask, request, Response
+from flask import Flask, request
 from bot import Bot, telepot
 import urllib3
+from urllib3.util.retry import Retry
+from logger import setup_logger, process_logs
 import os
 from dotenv import load_dotenv
+
+
+class LoggingRetry(Retry):  # overriding class to have logs when connection errors occur
+    def __init__(self, *args, **kwargs):
+        self.retry_count = 0
+        super().__init__(*args, **kwargs)
+
+    def increment(self, *args, **kwargs):
+        self.retry_count += 1
+        logger = setup_logger(__name__)
+        logger.warning(f"Retrying request {self.retry_count}")
+        return super().increment(*args, **kwargs)
 
 
 project_folder = os.path.expanduser('~/mysite')
 load_dotenv(os.path.join(project_folder, '.env'))
 
 proxy_url = "http://proxy.server:3128"
+retry_strategy = Retry(
+    total=5,
+    backoff_factor=0.5,
+    status_forcelist=[429, 500, 502, 503, 504],
+    allowed_methods=["HEAD", "GET", "OPTIONS", "POST"]
+)
 telepot.api._pools = {
-    'default': urllib3.ProxyManager(proxy_url=proxy_url, num_pools=3, maxsize=10, retries=False, timeout=30),
+    'default': urllib3.ProxyManager(proxy_url=proxy_url, num_pools=3, maxsize=10, retries=retry_strategy, timeout=30),
 }
-telepot.api._onetime_pool_spec = (urllib3.ProxyManager, dict(proxy_url=proxy_url, num_pools=1, maxsize=1, retries=False, timeout=30))
+telepot.api._onetime_pool_spec = (urllib3.ProxyManager, dict(proxy_url=proxy_url, num_pools=1, maxsize=1, retries=retry_strategy, timeout=30))
 
 TOKEN = os.getenv("TELEGRAM_TOKEN")
 SECRET = os.getenv("SECRET")
@@ -33,10 +53,4 @@ def telegram_webhook():
 
 @app.route(f'/{SECRET}/logs', methods=["GET"])
 def view_logs():
-    log_file_path = os.path.join(os.path.expanduser("~"), 'mysite', 'logs', 'app.log')
-    try:
-        with open(log_file_path, 'r') as log_file:
-            log_content = log_file.read()
-        return Response(log_content, mimetype='text/plain')
-    except Exception as e:
-        return Response(f"Error reading log file: {str(e)}", status=500)
+    return process_logs()
