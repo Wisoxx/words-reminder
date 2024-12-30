@@ -343,7 +343,8 @@ class Vocabularies(Database):
             );
             """
         cls.execute_query(create_table_query)
-        create_trigger_query = """
+
+        trigger_delete_vocabulary = """
         CREATE TRIGGER update_current_vocabulary_after_delete
         AFTER DELETE ON vocabularies
         FOR EACH ROW
@@ -359,7 +360,19 @@ class Vocabularies(Database):
             WHERE current_vocabulary_id = OLD.vocabulary_id;
         END;
         """
-        cls.execute_query(create_trigger_query)
+        cls.execute_query(trigger_delete_vocabulary)
+
+        trigger_insert_vocabulary = """
+        CREATE TRIGGER set_current_vocabulary_after_insert
+        AFTER INSERT ON vocabularies
+        FOR EACH ROW
+        BEGIN
+            UPDATE users
+            SET current_vocabulary_id = NEW.vocabulary_id
+            WHERE user_id = NEW.user_id;
+        END;
+        """
+        cls.execute_query(trigger_insert_vocabulary)
 
 
 class Words(Database):

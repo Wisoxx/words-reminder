@@ -3,14 +3,14 @@ from ._settings import get_user_parameters
 from ._enums import TaskStatus
 
 
-def create_vocabulary(user, vocabulary_name):
-    if db.Vocabularies.add({"vocabulary_name": vocabulary_name, "user_id": user})[0]:
+def set_current_vocabulary(user, vocabulary_id):
+    if db.Users.set({"user_id": user}, {"current_vocabulary_id": vocabulary_id}):
         return TaskStatus.SUCCESS
     return TaskStatus.FAILURE
 
 
-def set_current_vocabulary(user, vocabulary_id):
-    if db.Users.set({"user_id": user}, {"current_vocabulary_id": vocabulary_id}):
+def create_vocabulary(user, vocabulary_name):
+    if db.Vocabularies.add({"vocabulary_name": vocabulary_name, "user_id": user})[0]:
         return TaskStatus.SUCCESS
     return TaskStatus.FAILURE
 
