@@ -319,7 +319,7 @@ class Users(Database):
     user_id INTEGER PRIMARY KEY,
     username TEXT NOT NULL,
     language TEXT,
-    timezone INTEGER,
+    timezone INTEGER DEFAULT 0,
     current_vocabulary_id INTEGER,
     hide_meaning BOOLEAN NOT NULL DEFAULT 1,
     FOREIGN KEY (current_vocabulary_id) REFERENCES vocabularies(vocabulary_id) ON DELETE SET NULL
