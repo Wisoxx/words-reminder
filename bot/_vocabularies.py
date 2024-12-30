@@ -13,6 +13,7 @@ def set_current_vocabulary(user, vocabulary_id):
 
 
 def create_vocabulary(user, vocabulary_name):
+    # Note: db sets new vocabulary as current
     if db.Vocabularies.add({"vocabulary_name": vocabulary_name, "user_id": user})[0]:
         return TaskStatus.SUCCESS
     return TaskStatus.FAILURE
@@ -27,6 +28,7 @@ def delete_vocabulary(user, vocabulary_id=None, vocabulary_name=None):
     :param vocabulary_name: The name of the vocabulary to delete (required if vocabulary_id is not given)
     :return: bool indicating success
     """
+    # Note: when deleting current vocabulary, db will try to change vocabulary to another one
     if vocabulary_id:
         conditions = {"vocabulary_id": vocabulary_id}
     elif vocabulary_name:
@@ -53,7 +55,8 @@ def get_vocabulary_list(user):
     """
     vocabularies = db.Vocabularies.get({"user_id": user})
 
-    if isinstance(vocabularies, tuple):  # db.Database.get returns not nested row if it's single
+    # db.Database.get returns not nested row if it's single i.e. row instead of (row)
+    if isinstance(vocabularies, tuple):
         vocabularies = [vocabularies]
 
     if vocabularies:

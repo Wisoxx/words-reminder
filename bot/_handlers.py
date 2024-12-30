@@ -1,4 +1,7 @@
+import json
 import database as db
+from ._enums import TaskStatus, QUERY_ACTIONS, TEMP_KEYS, USER_STATES
+from ._vocabularies import *
 from logger import setup_logger
 
 
@@ -37,8 +40,15 @@ def handle_message(self, user, update):
 
 
 def handle_callback_query(self, user,  update):
-    callback_data = update["callback_query"]["data"]
-    self.deliver_message(user, callback_data)
+    callback_data = json.loads(update["callback_query"]["data"])
+    msg_id = update["callback_query"]["message"]["message_id"]
+
+    match callback_data:
+        case QUERY_ACTIONS.MENU_VOCABULARIES.value:
+            text, reply_markup = construct_vocabulary_list(user).values()
+            self.editMessageText(msg_id, text, parse_mode="HTML", reply_markup=reply_markup)
+        case _:
+            self.deliver_message(user, callback_data)
 
 
 def handle_chat_member_status(self, user,  update):
