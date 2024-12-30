@@ -47,7 +47,7 @@ def handle_callback_query(self, user,  update):
     match action:
         case QUERY_ACTIONS.MENU_VOCABULARIES.value:
             text, reply_markup = construct_vocabulary_list(user).values()
-            self.editMessageText(msg_id, text, parse_mode="HTML", reply_markup=reply_markup)
+            self.editMessageText((user, msg_id), text, parse_mode="HTML", reply_markup=reply_markup)
         case _:
             self.deliver_message(user, callback_data)
 
