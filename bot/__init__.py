@@ -9,6 +9,7 @@ from logger import setup_logger
 
 
 logger = setup_logger(__name__)
+PARSE_MODE = "HTML"
 
 
 class Bot:
@@ -58,7 +59,7 @@ class Bot:
         else:
             final_reply_markup = {'remove_keyboard': True}
 
-        response = self.sendMessage(user, text, reply_to_message_id=reply_to_msg_id, reply_markup=final_reply_markup)
+        response = self.sendMessage(user, text, reply_to_message_id=reply_to_msg_id, reply_markup=final_reply_markup, parse_mode=PARSE_MODE)
 
         logger.debug("Sent message: {}".format(response))
 
