@@ -2,11 +2,12 @@ import telepot
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 from ._enums import QUERY_ACTIONS, TEMP_KEYS, USER_STATES
 from translations import translate
+from ._settings import get_user_parameters
 import json
 
 
 def menu(self, user):
-    parameters = self.get_user_parameters(user)
+    parameters = get_user_parameters(user)
     lang = parameters['language']
 
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
