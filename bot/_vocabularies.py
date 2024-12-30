@@ -1,5 +1,5 @@
 import database as db
-from _settings import get_user_parameters
+from ._settings import get_user_parameters
 from ._enums import TaskStatus
 
 

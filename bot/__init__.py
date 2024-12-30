@@ -4,7 +4,7 @@ import telepot
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 from translations import translate
 from ._enums import QUERY_ACTIONS, TEMP_KEYS, USER_STATES
-from _settings import get_user_parameters
+from ._settings import get_user_parameters
 from logger import setup_logger
 
 
