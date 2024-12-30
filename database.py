@@ -318,7 +318,7 @@ class Users(Database):
     CREATE TABLE IF NOT EXISTS users (
     user_id INTEGER PRIMARY KEY,
     username TEXT NOT NULL,
-    language TEXT NOT NULL,
+    language TEXT,
     timezone INTEGER,
     current_vocabulary_id INTEGER,
     hide_meaning BOOLEAN NOT NULL DEFAULT 1,

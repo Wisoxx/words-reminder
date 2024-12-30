@@ -8,18 +8,26 @@ logger = setup_logger(__name__)
 def handle_message(self, user, update):
     if "text" in update["message"]:
         text = update["message"]["text"]
-        match text:
-            case "/test":
-                self.deliver_message(user, "Test Message", add_cancel_button=True, lang="en")
+        # commands have bigger priority than other input
+        if text.startswith("/start") or text.startswith("/help"):
+            username = update.get("message", {}).get("from", {}).get("username", None)
+            if not username:
+                first_name = update.get("message", {}).get("from", {}).get("first_name", "")
+                last_name = update.get("message", {}).get("from", {}).get("last_name", "")
+                username = ':' + first_name.lower() + ":" + last_name.lower() + ':'
 
-            case "/menu":
-                self.menu(user)
+            if db.Users.add({"user_id": user, "username": username})[0]:
+                logger.info(f"New user added: {username}")
+            self.deliver_message(user, "start")
 
-            case "/recall":
-                pass  # TODO
+        elif text.startswith("/menu"):
+            self.menu(user)
 
-            case _:
-                self.deliver_message(user, "From the web: you said '{}'".format(text))
+        elif text.startswith("/recall"):
+            self.deliver_message(user, "recall")
+
+        else:
+            self.deliver_message(user, "From the web: you said '{}'".format(text))
 
     else:
         self.deliver_message(user, "From the web: sorry, I didn't understand that kind of message")
