@@ -26,6 +26,9 @@ def handle_message(self, user, update):
         elif text.startswith("/recall"):
             self.deliver_message(user, "recall")
 
+        elif text.startswith("/test"):
+            self.deliver_message(user, "Test Message", add_cancel_button=True, lang="en")
+
         else:
             self.deliver_message(user, "From the web: you said '{}'".format(text))
 
