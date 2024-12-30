@@ -11,7 +11,7 @@ logger = setup_logger(__name__)
 
 
 class Bot:
-    from ._handlers import handle_message, handle_callback_query
+    from ._handlers import handle_message, handle_callback_query, handle_chat_member_status
     from ._menu import menu
     # from ._utils import TODO
 
