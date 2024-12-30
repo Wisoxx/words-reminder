@@ -4,6 +4,7 @@ import telepot
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 from translations import translate
 from ._enums import QUERY_ACTIONS, TEMP_KEYS, USER_STATES
+from _settings import get_user_parameters
 from logger import setup_logger
 
 
@@ -86,15 +87,6 @@ class Bot:
             self.deliver_message(user, text[lang], reply_markup=reply_markup)
         logger.info(f"Sent to {len(users)} users")
 
-
-    def get_user_parameters(self, user):
-        if user in self.users_data:
-            return self.users_data[user]
-
-        parameters = db.Users.get({"user_id": user}, include_column_names=True)
-        self.users_data[user] = parameters
-        return parameters
-
     def get_user(self, update):
         if "message" in update:
             user = update["message"]["chat"]["id"]
@@ -104,9 +96,6 @@ class Bot:
             user = update["my_chat_member"]["from"]["id"]
         else:
             raise KeyError("Couldn't find user")
-
-        if user not in self.users_data:
-            self.get_user_parameters(user)
 
         self.manage_cancel_buttons(user)
         return user
@@ -133,7 +122,7 @@ class Bot:
 
             if user:
                 try:
-                    lang = self.get_user_parameters(user)['language']
+                    lang = get_user_parameters(user)['language']
                     self.deliver_message(user, translate(lang, "error"))
                 except Exception as e_:
                     logger.critical(f"Couldn't notify user {user} about error: {e_}")

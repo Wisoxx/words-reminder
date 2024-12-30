@@ -319,7 +319,7 @@ class Users(Database):
     user_id INTEGER PRIMARY KEY,
     username TEXT NOT NULL,
     language TEXT,
-    timezone INTEGER DEFAULT 0,
+    timezone INTEGER DEFAULT 0"us",
     current_vocabulary_id INTEGER,
     hide_meaning BOOLEAN NOT NULL DEFAULT 1,
     FOREIGN KEY (current_vocabulary_id) REFERENCES vocabularies(vocabulary_id) ON DELETE SET NULL
@@ -330,15 +330,35 @@ class Users(Database):
 class Vocabularies(Database):
     table_name = "vocabularies"
     columns = ["vocabulary_id", "user_id", "vocabulary_name"]
-    create_table_query = """
-    CREATE TABLE IF NOT EXISTS vocabularies (
-    vocabulary_id INTEGER PRIMARY KEY,
-    user_id INTEGER NOT NULL,
-    vocabulary_name TEXT NOT NULL,
-    UNIQUE(vocabulary_name, user_id),
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
-    );
-    """
+
+    @classmethod
+    def create_table(cls) -> None:
+        create_table_query = """
+            CREATE TABLE IF NOT EXISTS vocabularies (
+            vocabulary_id INTEGER PRIMARY KEY,
+            user_id INTEGER NOT NULL,
+            vocabulary_name TEXT NOT NULL,
+            UNIQUE(vocabulary_name, user_id),
+            FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+            );
+            """
+        cls.execute_query(create_table_query)
+        create_trigger_query = """
+        CREATE TRIGGER update_current_vocabulary_after_delete
+        AFTER DELETE ON vocabularies
+        FOR EACH ROW
+        BEGIN
+            -- Update current_vocabulary_id to another existing vocabulary or leave as NULL
+            UPDATE users
+            SET current_vocabulary_id = (
+                SELECT vocabulary_id
+                FROM vocabularies
+                WHERE user_id = OLD.user_id
+                LIMIT 1
+            )
+            WHERE current_vocabulary_id = OLD.vocabulary_id;
+        END;
+        """
 
 
 class Words(Database):

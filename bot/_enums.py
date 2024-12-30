@@ -47,3 +47,9 @@ class USER_STATES(Enum):
     DELETEREMINDER_VOCABULARY = auto()
     DELETEREMINDER_TIME = auto()
     WORDLIST_VOCABULARY = auto()
+
+
+class TaskStatus(Enum):
+    SUCCESS = auto()
+    FAILURE = auto()
+    NO_VOCABULARY = auto()
