@@ -94,8 +94,8 @@ def construct_vocabulary_list(user):
 
     heading = html_wrapper(
         escape_html(
-            f"""<><><><><><><><><><><><><><><><><><><>\n
-            {" " * 30}Vocabularies\n
+            f"""<><><><><><><><><><><><><><><><><><><>
+            {" " * 30}Vocabularies
             <><><><><><><><><><><><><><><><><><><>
         """),
         'b')
