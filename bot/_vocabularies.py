@@ -52,6 +52,10 @@ def get_vocabulary_list(user):
     :return: A dictionary {vocabulary_id: vocabulary_name}.
     """
     vocabularies = db.Vocabularies.get({"user_id": user})
+
+    if isinstance(vocabularies, tuple):  # db.Database.get returns not nested row if it's single
+        vocabularies = [vocabularies]
+
     if vocabularies:
         return {vocabulary[0]: vocabulary[2] for vocabulary in vocabularies}
     else:
