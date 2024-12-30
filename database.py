@@ -359,6 +359,7 @@ class Vocabularies(Database):
             WHERE current_vocabulary_id = OLD.vocabulary_id;
         END;
         """
+        cls.execute_query(create_trigger_query)
 
 
 class Words(Database):
