@@ -76,7 +76,7 @@ def vocabulary_list_to_text(values, current_vocabulary, lang):
     return text
 
 
-def construct_vocabulary_list(user):
+def construct_vocabulary_page(user):
     parameters = get_user_parameters(user)
     lang = parameters["language"]
     current_vocabulary_id = parameters["current_vocabulary_id"]

@@ -6,7 +6,7 @@ from ._settings import get_user_parameters
 import json
 
 
-def menu(self, user):
+def construct_menu_page(user):
     parameters = get_user_parameters(user)
     lang = parameters['language']
 
@@ -27,4 +27,4 @@ def menu(self, user):
         f"⚙️ {translate(lang, 'settings')}"
     )
 
-    self.deliver_message(user, text, reply_markup=keyboard)
+    return {"text": text, "reply_markup": keyboard}

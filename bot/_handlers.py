@@ -2,6 +2,7 @@ import json
 import database as db
 from ._enums import TaskStatus, QUERY_ACTIONS, TEMP_KEYS, USER_STATES
 from ._vocabularies import *
+from ._menu import *
 from logger import setup_logger
 
 
@@ -24,7 +25,8 @@ def handle_message(self, user, update):
             self.deliver_message(user, "start")
 
         elif text.startswith("/menu"):
-            self.menu(user)
+            text, reply_markup = construct_menu_page(user).values()
+            self.deliver_message(user, text, reply_markup=reply_markup)
 
         elif text.startswith("/recall"):
             self.deliver_message(user, "recall")
@@ -45,8 +47,11 @@ def handle_callback_query(self, user,  update):
     msg_id = update["callback_query"]["message"]["message_id"]
 
     match action:
+        case QUERY_ACTIONS.MENU:
+            text, reply_markup = construct_menu_page(user).values()
+            self.editMessageText((user, msg_id), text, parse_mode="HTML", reply_markup=reply_markup)
         case QUERY_ACTIONS.MENU_VOCABULARIES.value:
-            text, reply_markup = construct_vocabulary_list(user).values()
+            text, reply_markup = construct_vocabulary_page(user).values()
             self.editMessageText((user, msg_id), text, parse_mode="HTML", reply_markup=reply_markup)
         case _:
             self.deliver_message(user, callback_data)
