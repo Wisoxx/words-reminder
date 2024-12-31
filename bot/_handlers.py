@@ -47,7 +47,7 @@ def handle_callback_query(self, user,  update):
     msg_id = update["callback_query"]["message"]["message_id"]
 
     match action:
-        case QUERY_ACTIONS.MENU:
+        case QUERY_ACTIONS.MENU.value:
             text, reply_markup = construct_menu_page(user).values()
             self.editMessageText((user, msg_id), text, parse_mode="HTML", reply_markup=reply_markup)
         case QUERY_ACTIONS.MENU_VOCABULARIES.value:
