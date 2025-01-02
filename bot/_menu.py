@@ -3,6 +3,7 @@ from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 from ._enums import QUERY_ACTIONS, TEMP_KEYS, USER_STATES
 from translations import translate
 from ._settings import get_user_parameters
+from ._response_format import Response
 import json
 
 
@@ -27,4 +28,4 @@ def construct_menu_page(user):
         f"⚙️ {translate(lang, 'settings')}"
     )
 
-    return {"text": text, "reply_markup": keyboard}
+    return Response(text, keyboard)

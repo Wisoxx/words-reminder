@@ -3,6 +3,7 @@ import database as db
 from ._enums import TaskStatus, QUERY_ACTIONS, TEMP_KEYS, USER_STATES
 from ._vocabularies import *
 from ._menu import *
+from ._words import WordManager
 from logger import setup_logger
 
 
@@ -25,7 +26,7 @@ def handle_message(self, user, update):
             self.deliver_message(user, "start")
 
         elif text.startswith("/menu"):
-            text, reply_markup = construct_menu_page(user).values()
+            text, reply_markup = construct_menu_page(user)
             self.deliver_message(user, text, reply_markup=reply_markup)
 
         elif text.startswith("/recall"):
@@ -35,6 +36,8 @@ def handle_message(self, user, update):
             self.deliver_message(user, "Test Message", add_cancel_button=True, lang="en")
 
         else:
+            text, reply_markup = WordManager.add_word(user, text)
+            self.deliver_message(user, text, reply_markup=reply_markup)
             self.deliver_message(user, "From the web: you said '{}'".format(text))
 
     else:
@@ -48,7 +51,7 @@ def handle_callback_query(self, user,  update):
 
     match action:
         case QUERY_ACTIONS.MENU.value:
-            text, reply_markup = construct_menu_page(user).values()
+            text, reply_markup = construct_menu_page(user)
             self.editMessageText((user, msg_id), text, parse_mode="HTML", reply_markup=reply_markup)
         case QUERY_ACTIONS.MENU_VOCABULARIES.value:
             text, reply_markup = construct_vocabulary_page(user).values()

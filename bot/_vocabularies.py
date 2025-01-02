@@ -4,6 +4,7 @@ from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 from ._settings import get_user_parameters
 from ._enums import TaskStatus, QUERY_ACTIONS, TEMP_KEYS, USER_STATES
 from ._utils import html_wrapper, escape_html
+from ._response_format import Response
 
 
 def set_current_vocabulary(user, vocabulary_id):
@@ -118,4 +119,4 @@ def construct_vocabulary_page(user):
     else:
         text += vocabulary_list_to_text(values, current_vocabulary_name, lang)
 
-    return {"text": heading + '\n' + text, "reply_markup": keyboard}
+    return Response(heading + '\n' + text, keyboard)
