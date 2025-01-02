@@ -53,16 +53,19 @@ def get_vocabulary_list(user):
     :param user: The user ID to fetch vocabularies for.
     :return: A dictionary {vocabulary_id: vocabulary_name}.
     """
-    vocabularies = db.Vocabularies.get({"user_id": user})
-
-    # db.Database.get returns not nested row if it's single i.e. row instead of (row)
-    if isinstance(vocabularies, tuple):
-        vocabularies = [vocabularies]
+    vocabularies = db.Vocabularies.get({"user_id": user}, force_2d=True)
 
     if vocabularies:
         return {vocabulary[0]: vocabulary[2] for vocabulary in vocabularies}
     else:
         return {}
+
+
+def get_vocabulary_name(vocabulary_id):
+    name = db.Vocabularies.get({"vocabulary_id": vocabulary_id})
+    if name:
+        return name[2]
+    return None
 
 
 def vocabulary_list_to_text(values, current_vocabulary, lang):
@@ -91,7 +94,7 @@ def construct_vocabulary_page(user):
         ],
         [
             InlineKeyboardButton(text='      ↩️      ', callback_data=json.dumps([QUERY_ACTIONS.MENU.value])),
-            InlineKeyboardButton(text='      ℹ️      ', callback_data=json.dumps([QUERY_ACTIONS.SHOW_INFO.value])),
+            InlineKeyboardButton(text='      ℹ️      ', callback_data=json.dumps([QUERY_ACTIONS.SHOW_INFO.value, "info_vocabularies"])),
         ]
     ])
 
