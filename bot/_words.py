@@ -87,7 +87,11 @@ class WordManager:
         current_vocabulary_id = parameters.current_vocabulary_id
         current_vocabulary_name = get_vocabulary_name(current_vocabulary_id)
 
-        word, meaning = text.split(" - ")
+        if " - " in text:
+            word, meaning = text.split(" - ", 1)
+        else:
+            word = text
+            meaning = None
 
         match cls._add_word(user, current_vocabulary_id, word, meaning):
             case TaskStatus.DUPLICATE:
