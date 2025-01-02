@@ -53,3 +53,4 @@ class TaskStatus(Enum):
     SUCCESS = auto()
     FAILURE = auto()
     NO_VOCABULARY = auto()
+    DUPLICATE = auto()
