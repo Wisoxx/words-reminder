@@ -159,7 +159,7 @@ class WordManager:
         return Response(text, reply_markup)
 
     @classmethod
-    def construct_word_page(cls, user, page, vocabulary_id=None):
+    def construct_word_page(cls, user, vocabulary_id=None, page=0):
         parameters = get_user_parameters(user)
         lang = parameters.language
         vocabulary_id = vocabulary_id or parameters.current_vocabulary_id
