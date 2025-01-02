@@ -1,6 +1,7 @@
 import sqlite3
 import os
 import time
+from collections import namedtuple
 
 from logger import setup_logger
 
@@ -268,13 +269,14 @@ class Database:
                 return {}
 
             if not custom_select:
-                rows = [{cls.columns[i]: row[i] for i in range(len(row))} for row in rows]
+                Row = namedtuple('Row', cls.columns)
             else:
                 columns_part = custom_select.split('FROM')[0].replace('SELECT', '').strip()
                 # Split by commas and trim spaces
                 column_names = [col.strip() for col in columns_part.split(',')]
                 # Map each row's values to the corresponding column name
-                rows = [{column_names[i]: row[i] for i in range(len(row))} for row in rows]
+                Row = namedtuple('Row', column_names)
+            rows = [Row(*row) for row in rows]
 
         if len(rows) == 1 and not force_2d:  # return as tuple instead of list of tuples
             return rows[0]
