@@ -8,7 +8,7 @@ import json
 
 def construct_menu_page(user):
     parameters = get_user_parameters(user)
-    lang = parameters['language']
+    lang = parameters.language
 
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [

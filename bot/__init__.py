@@ -42,7 +42,7 @@ class Bot:
             old_cancel_button_id = db.Temp.get({'user_id': user, "key": TEMP_KEYS.CANCEL_BUTTON_ID.value},
                                                include_column_names=True)
             if old_cancel_button_id:
-                self.editMessageReplyMarkup((user, old_cancel_button_id["value"]), reply_markup=None)
+                self.editMessageReplyMarkup((user, old_cancel_button_id.value), reply_markup=None)
 
         if new_cancel_button_id:
             db.Temp.add({"user_id": user, "key": TEMP_KEYS.CANCEL_BUTTON_ID.value, "value": new_cancel_button_id})
@@ -122,7 +122,7 @@ class Bot:
 
             if user:
                 try:
-                    lang = get_user_parameters(user)['language']
+                    lang = get_user_parameters(user).language
                     self.deliver_message(user, translate(lang, "error"))
                 except Exception as e_:
                     logger.critical(f"Couldn't notify user {user} about error: {e_}")

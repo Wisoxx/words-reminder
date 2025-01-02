@@ -38,7 +38,7 @@ def delete_vocabulary(user, vocabulary_id=None, vocabulary_name=None):
 
     result = db.Vocabularies.delete(conditions)
 
-    if get_user_parameters(user)["current_vocabulary_id"] is None:
+    if get_user_parameters(user).current_vocabulary_id is None:
         return TaskStatus.NO_VOCABULARY
 
     if result:
@@ -81,8 +81,8 @@ def vocabulary_list_to_text(values, current_vocabulary, lang):
 
 def construct_vocabulary_page(user):
     parameters = get_user_parameters(user)
-    lang = parameters["language"]
-    current_vocabulary_id = parameters["current_vocabulary_id"]
+    lang = parameters.language
+    current_vocabulary_id = parameters.current_vocabulary_id
     vocabularies = get_vocabulary_list(user)
     current_vocabulary_name = vocabularies[current_vocabulary_id]
 
