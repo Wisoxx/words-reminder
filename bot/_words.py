@@ -2,10 +2,14 @@ import json
 import database as db
 from ._settings import get_user_parameters
 from ._vocabularies import get_vocabulary_name
-from ._utils import html_wrapper, escape_html, get_timestamp
+from ._utils import html_wrapper, escape_html, get_timestamp, pad
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 from ._enums import TaskStatus, QUERY_ACTIONS, TEMP_KEYS, USER_STATES
 from ._response_format import Response
+
+
+MAX_MESSAGE_LENGTH = 4096
+WORDS_PER_PAGE = 15
 
 
 class WordManager:
@@ -78,7 +82,55 @@ class WordManager:
         pass
 
     ####################################################################################################################
-    #                                                BOT ACTIONS
+    #                                                     OTHER
+    ####################################################################################################################
+
+    @staticmethod
+    def _word_list_to_pages(values, hide_meaning, max_length, words_limit):
+        """
+        Splits a list of word-definition pairs into pages based on max length and word limits.
+
+        :param values: List of tuples containing word and definition.
+        :param hide_meaning: Boolean indicating whether to hide the meaning with a spoiler format.
+        :param max_length: Maximum character length for each page.
+        :param words_limit: Maximum number of words per page.
+        :return: List of pages as strings.
+        """
+        meaning_wrapper = "tg-spoiler" if hide_meaning else ""
+        pages = []
+        current_page = ""
+        current_words_count = 0
+
+        for index, (word, definition) in enumerate(values):
+            if definition:
+                word_line = (
+                    f"{html_wrapper(escape_html(word), 'code')}  —  "
+                    f"{html_wrapper(escape_html(definition), meaning_wrapper)}\n"
+                )
+            else:
+                word_line = f"{html_wrapper(escape_html(word), 'code')}\n"
+
+            word_line += '-------------------------------------------------------------\n'
+
+            # Check if adding this word will exceed max_length or words_limit
+            if len(current_page) + len(word_line) > max_length or current_words_count + 1 > words_limit:
+                # Start a new page if limits are exceeded
+                pages.append(current_page)
+                current_page = ""
+                current_words_count = 0
+
+            # Add word_line to current_page and increment word count
+            current_page += word_line
+            current_words_count += 1
+
+            # Handle the last page case
+            if index == len(values) - 1 and current_page:
+                pages.append(current_page)
+
+        return pages
+
+    ####################################################################################################################
+    #                                                  BOT ACTIONS
     ####################################################################################################################
     @classmethod
     def add_word(cls, user, text):
@@ -106,23 +158,24 @@ class WordManager:
                 raise ValueError("Unsupported status")
         return Response(text, reply_markup)
 
-    @staticmethod
-    def construct_word_page(user, vocabulary_id, page):
+    @classmethod
+    def construct_word_page(cls, user, page, vocabulary_id=None):
         parameters = get_user_parameters(user)
         lang = parameters.language
-        current_vocabulary_name = get_vocabulary_name(vocabulary_id)
+        vocabulary_id = vocabulary_id or parameters.current_vocabulary_id
+        vocabulary_name = get_vocabulary_name(vocabulary_id)
+        hide_meaning = parameters.hide_meaning
 
-        if not current_vocabulary_name:
+        if not vocabulary_name:
             raise ValueError("Couldn't retrieve current vocabulary name")
 
         heading = html_wrapper(
             "==================================\n" +
-            escape_html(current_vocabulary_name) + "\n" +
+            escape_html(vocabulary_name) + "\n" +
             "==================================\n\n"
             , "b")
 
-        buttons = []
-
+        page_buttons = []
         menu_buttons = [
             [
                 InlineKeyboardButton(text='      📙      ',
@@ -136,5 +189,45 @@ class WordManager:
                                      callback_data=json.dumps([QUERY_ACTIONS.SHOW_INFO.value, "info_words"])),
             ]
         ]
-        keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
-        # TODO finish
+
+        words = cls._get_user_words(user, vocabulary_id, reverse=True)
+
+        if len(words) == 0:
+            text = "*🦗crickets noises🦗*"
+        else:
+            pages = cls._word_list_to_pages(words, hide_meaning, max_length=MAX_MESSAGE_LENGTH - 50,
+                                            words_limit=WORDS_PER_PAGE)
+            if len(pages) != 1:
+                if page > 1:
+                    page_buttons.append(InlineKeyboardButton(text='      ⏮️      ',
+                                                             callback_data=json.dumps([
+                                                                 QUERY_ACTIONS.CHANGE_WORDS_PAGE.value,
+                                                                 vocabulary_id,
+                                                                 0  # destination
+                                                             ])))
+                if page > 0:
+                    page_buttons.append(InlineKeyboardButton(text='      ◀️️      ',
+                                                             callback_data=json.dumps([
+                                                                 QUERY_ACTIONS.CHANGE_WORDS_PAGE.value,
+                                                                 vocabulary_id,
+                                                                 page - 1  # destination
+                                                             ])))
+                if page < len(pages) - 1:
+                    page_buttons.append(InlineKeyboardButton(text='      ▶️      ',
+                                                             callback_data=json.dumps([
+                                                                 QUERY_ACTIONS.CHANGE_WORDS_PAGE.value,
+                                                                 vocabulary_id,
+                                                                 page + 1  # destination
+                                                             ])))
+                if page < len(pages) - 2:
+                    page_buttons.append(InlineKeyboardButton(text='      ⏭      ',
+                                                             callback_data=json.dumps([
+                                                                 QUERY_ACTIONS.CHANGE_WORDS_PAGE.value,
+                                                                 vocabulary_id,
+                                                                 len(pages) - 1  # destination
+                                                             ])))
+
+            footer = f"\n{pad(' '*36, str(page + 1), True)}/{len(pages)}"
+            text = heading + pages[page] + footer
+        keyboard = InlineKeyboardMarkup(inline_keyboard=page_buttons+menu_buttons)
+        return Response(text, keyboard)

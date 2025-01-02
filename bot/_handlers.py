@@ -4,6 +4,7 @@ from ._enums import TaskStatus, QUERY_ACTIONS, TEMP_KEYS, USER_STATES
 from ._vocabularies import *
 from ._menu import *
 from ._words import WordManager
+from collections import namedtuple
 from logger import setup_logger
 
 
@@ -36,12 +37,15 @@ def handle_message(self, user, update):
             self.deliver_message(user, "Test Message", add_cancel_button=True, lang="en")
 
         else:
-            text, reply_markup = WordManager.add_word(user, text)
-            self.deliver_message(user, text, reply_markup=reply_markup)
-            self.deliver_message(user, "From the web: you said '{}'".format(text))
+            self.process_user_action(user, text)
 
     else:
         self.deliver_message(user, "From the web: sorry, I didn't understand that kind of message")
+
+
+def process_user_action(self, user, text):
+    text, reply_markup = WordManager.add_word(user, text)
+    self.deliver_message(user, text, reply_markup=reply_markup)
 
 
 def handle_callback_query(self, user,  update):
@@ -55,6 +59,11 @@ def handle_callback_query(self, user,  update):
             self.editMessageText((user, msg_id), text, parse_mode="HTML", reply_markup=reply_markup)
         case QUERY_ACTIONS.MENU_VOCABULARIES.value:
             text, reply_markup = construct_vocabulary_page(user).values()
+            self.editMessageText((user, msg_id), text, parse_mode="HTML", reply_markup=reply_markup)
+        case QUERY_ACTIONS.MENU_WORDS.value | QUERY_ACTIONS.CHANGE_WORDS_PAGE.value:
+            PageData = namedtuple('PageData', ['vocabulary_id', 'page'])
+            data = PageData(*callback_data[1:])
+            text, reply_markup = WordManager.construct_word_page(user, data.vocabulary_id, data.page)
             self.editMessageText((user, msg_id), text, parse_mode="HTML", reply_markup=reply_markup)
         case _:
             self.deliver_message(user, callback_data)
