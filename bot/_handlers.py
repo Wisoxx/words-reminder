@@ -61,7 +61,7 @@ def handle_callback_query(self, user,  update):
             text, reply_markup = construct_vocabulary_page(user).values()
             self.editMessageText((user, msg_id), text, parse_mode="HTML", reply_markup=reply_markup)
         case QUERY_ACTIONS.MENU_WORDS.value | QUERY_ACTIONS.CHANGE_WORDS_PAGE.value:
-            PageData = namedtuple('PageData', ['vocabulary_id', 'page'], defaults=[0])
+            PageData = namedtuple('PageData', ['vocabulary_id', 'page'], defaults=[None, 0])
             data = PageData(*callback_data[1:])
             text, reply_markup = WordManager.construct_word_page(user, data.vocabulary_id, data.page)
             self.editMessageText((user, msg_id), text, parse_mode="HTML", reply_markup=reply_markup)
