@@ -229,5 +229,5 @@ class WordManager:
 
             footer = f"\n{pad(' '*36, str(page + 1), True)}/{len(pages)}"
             text = heading + pages[page] + footer
-        keyboard = InlineKeyboardMarkup(inline_keyboard=page_buttons+menu_buttons)
+        keyboard = InlineKeyboardMarkup(inline_keyboard=[page_buttons]+menu_buttons)
         return Response(text, keyboard)
