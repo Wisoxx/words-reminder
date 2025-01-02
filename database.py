@@ -216,7 +216,8 @@ class Database:
 
     @classmethod
     def get(cls, conditions: dict = None, limit: int = None, offset: int = None,
-            order_by: str = None, sort_direction: str = 'ASC', include_column_names=False, custom_select=None) -> list or dict or tuple:
+            order_by: str = None, sort_direction: str = 'ASC', include_column_names=False, custom_select=None,
+            force_2d=False) -> list or dict or tuple:
         """
         Fetch records from the database with optional conditions, limit, offset, and ordering.
 
@@ -227,6 +228,8 @@ class Database:
         :param sort_direction: 'ASC' or 'DESC' to define sorting direction (default: 'ASC')
         :param include_column_names: Whether to return column names with values (default: False)
         :param custom_select: A custom SELECT query to override the default (SELECT * FROM cls.table_name) (optional)
+        :param force_2d: When false, a singular row will be returned as tuple instead of a tuple inside a list (default:
+         False)
         :return: List of fetched records
         """
 
@@ -273,7 +276,7 @@ class Database:
                 # Map each row's values to the corresponding column name
                 rows = [{column_names[i]: row[i] for i in range(len(row))} for row in rows]
 
-        if len(rows) == 1:  # return as tuple instead of list of tuples
+        if len(rows) == 1 and not force_2d:  # return as tuple instead of list of tuples
             return rows[0]
 
         return rows
