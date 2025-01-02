@@ -26,12 +26,13 @@ class Connection:
 
 
 class CursorError:
-    def __init__(self):
+    def __init__(self, error=None):
         self.rowcount = -1
         self.lastrowid = 0
         self.arraysize = 0
         self.description = None
         self.connection = None
+        self.error = str(error)
 
     def execute(self, sql, parameters=()):
         pass
@@ -115,21 +116,22 @@ class Database:
                         logger.info("Table created successfully. Retrying the original query...")
                     except sqlite3.Error as create_e:
                         logger.critical(f"Failed to create table: {create_e}", exc_info=True)
-                        return CursorError()
+                        raise create_e
 
                     # Retry the original query after creating the table
                     return cls.execute_query(query, params, multiple, retrying=True)
 
                 else:
                     logger.exception(f"OperationalError: {error_message}")
+                    raise e
 
             except sqlite3.IntegrityError as e:
                 logger.warning(f"IntegrityError: {str(e)}")
-                return CursorError()  # Handle duplicate entries and other integrity issues
+                return CursorError("IntegrityError")  # Handle duplicate entries and other integrity issues
 
             except sqlite3.DatabaseError as e:
                 logger.critical(f"DatabaseError: {str(e)}", exc_info=True)
-                return CursorError()  # Handle other database errors
+                raise e
 
             finally:
                 if not retry:
@@ -137,7 +139,7 @@ class Database:
                 retry = False
 
         logger.error(f"Max retries exceeded")
-        return CursorError()
+        return CursorError("OperationalError")
 
     @classmethod
     def validate_columns(cls, conditions: dict or list or tuple) -> None:
@@ -224,7 +226,7 @@ class Database:
         :param order_by: The column to order by (optional)
         :param sort_direction: 'ASC' or 'DESC' to define sorting direction (default: 'ASC')
         :param include_column_names: Whether to return column names with values (default: False)
-        :param custom_select: A custom SELECT query to override the default (optional)
+        :param custom_select: A custom SELECT query to override the default (SELECT * FROM cls.table_name) (optional)
         :return: List of fetched records
         """
 
@@ -259,10 +261,17 @@ class Database:
         rows = cls.execute_query(query, params)
 
         if include_column_names:
-            rows = [{cls.columns[i]: row[i] for i in range(len(row))} for row in rows]
-
             if not rows:
                 return {}
+
+            if not custom_select:
+                rows = [{cls.columns[i]: row[i] for i in range(len(row))} for row in rows]
+            else:
+                columns_part = custom_select.split('FROM')[0].replace('SELECT', '').strip()
+                # Split by commas and trim spaces
+                column_names = [col.strip() for col in columns_part.split(',')]
+                # Map each row's values to the corresponding column name
+                rows = [{column_names[i]: row[i] for i in range(len(row))} for row in rows]
 
         if len(rows) == 1:  # return as tuple instead of list of tuples
             return rows[0]
