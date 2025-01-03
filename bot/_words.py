@@ -52,7 +52,7 @@ class WordManager:
         if status:
             logger.info(f'User {user} deleted word word_id={word_id}, vocabulary_id={vocabulary_id}, word="{word}"')
             return TaskStatus.SUCCESS
-        return TaskStatus.DUPLICATE
+        return TaskStatus.FAILURE
 
     @staticmethod
     def _get_word_info(word_id):
@@ -212,20 +212,24 @@ class WordManager:
         word = text
         meaning = cls._get_word_meaning(user=user, vocabulary_id=vocabulary_id, word=word)
 
-        if cls._delete_word(user=user, vocabulary_id=vocabulary_id, word=word):
-            text = f'Successfully deleted "{escape_html(word)}" from "{escape_html(vocabulary_name)}"'
-            reply_markup = InlineKeyboardMarkup(inline_keyboard=[
-                [
-                    InlineKeyboardButton(text=f'      ↪️ {translate(lang, "add_back")}      ',
-                                         callback_data=json.dumps([QUERY_ACTIONS.DELETE_SPECIFIC_WORD.value,
-                                                                   vocabulary_id,
-                                                                   word,
-                                                                   meaning])),
-                ]
-            ])
-        else:
-            text = f'"{escape_html(word)}" was not found in "{escape_html(vocabulary_name)}"'
-            reply_markup = None
+        match cls._delete_word(user=user, vocabulary_id=vocabulary_id, word=word):
+            case TaskStatus.SUCCESS:
+                text = f'Successfully deleted "{escape_html(word)}" from "{escape_html(vocabulary_name)}"'
+                reply_markup = InlineKeyboardMarkup(inline_keyboard=[
+                    [
+                        InlineKeyboardButton(text=f'      ↪️ {translate(lang, "add_back")}      ',
+                                             callback_data=json.dumps([QUERY_ACTIONS.ADD_SPECIFIC_WORD.value,
+                                                                       vocabulary_id,
+                                                                       word,
+                                                                       meaning])),
+                    ]
+                ])
+            case TaskStatus.FAILURE:
+                text = f'"{escape_html(word)}" was not found in "{escape_html(vocabulary_name)}"'
+                reply_markup = None
+
+            case _:
+                raise ValueError("Unsupported status")
         reset_user_state(user)
         return Response(text, reply_markup)
 
