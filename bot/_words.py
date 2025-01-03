@@ -1,11 +1,12 @@
 import json
 import database as db
-from ._settings import get_user_parameters
+from ._settings import get_user_parameters, set_user_state, reset_user_state
 from ._vocabularies import get_vocabulary_name
 from ._utils import html_wrapper, escape_html, get_timestamp, pad
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 from ._enums import TaskStatus, QUERY_ACTIONS, TEMP_KEYS, USER_STATES
 from ._response_format import Response
+from translations import translate
 
 
 MAX_MESSAGE_LENGTH = 4096
@@ -19,11 +20,9 @@ class WordManager:
     @staticmethod
     def _add_word(user, vocabulary_id, word, meaning=None, timestamp=None):
         timestamp = timestamp or get_timestamp()
-        status = db.Words.add({"user_id": user, "vocabulary_id": vocabulary_id, "word": word, "meaning": meaning,
-                               "timestamp": timestamp})[0]
-        if status:
-            return TaskStatus.SUCCESS
-        return TaskStatus.DUPLICATE
+        word_id = db.Words.add({"user_id": user, "vocabulary_id": vocabulary_id, "word": word, "meaning": meaning,
+                               "timestamp": timestamp})[1]
+        return word_id
 
     @staticmethod
     def _delete_word(word_id=None, user=None, vocabulary_id=None, word=None):
@@ -43,7 +42,14 @@ class WordManager:
         else:
             raise ValueError("You must provide either word_id, or user_id, vocabulary_id, and word.")
 
-        return db.Words.delete(conditions)
+        status = db.Words.delete(conditions)
+        if status:
+            return TaskStatus.SUCCESS
+        return TaskStatus.DUPLICATE
+
+    @staticmethod
+    def _get_word_info(word_id):
+        return db.Words.get({"word_id": word_id}, include_column_names=True)
 
     @staticmethod
     def _get_word_meaning(word_id=None, user=None, vocabulary_id=None, word=None):
@@ -134,6 +140,13 @@ class WordManager:
     ####################################################################################################################
     @classmethod
     def add_word(cls, user, text):
+        """
+        Adds a new word to the current vocabulary. Is activated by a text message without specific user state.
+        :param user: user_id to whose vocabulary is being added
+        :param text: user input in form "{word} - {meaning}". If " - " is absent, then the whole text is treated as one
+        word
+        :return: Response(text, reply_markup) - named tuple containing text and reply_markup to be sent to user
+        """
         parameters = get_user_parameters(user)
         lang = parameters.language
         current_vocabulary_id = parameters.current_vocabulary_id
@@ -145,17 +158,65 @@ class WordManager:
             word = text
             meaning = None
 
-        match cls._add_word(user, current_vocabulary_id, word, meaning):
-            case TaskStatus.DUPLICATE:
-                text = f"You already have {escape_html(word)} in {escape_html(current_vocabulary_name)}"
-                reply_markup = None
+        word_id = cls._add_word(user, current_vocabulary_id, word, meaning)
+        if word_id == 0:
+            text = f'You already have "{escape_html(word)}" in "{escape_html(current_vocabulary_name)}"'
+            reply_markup = None
+        else:
+            text = f'Successfully added "{escape_html(word)}" to "{escape_html(current_vocabulary_name)}"'
+            reply_markup = InlineKeyboardMarkup(inline_keyboard=[
+                [
+                    InlineKeyboardButton(text=f'      🗑 ${translate(lang, "delete")}      ',
+                                         callback_data=json.dumps([QUERY_ACTIONS.DELETE_SPECIFIC_WORD.value, word_id])),
+                ]
+            ])
 
-            case TaskStatus.SUCCESS:
-                text = f"Successfully added {escape_html(word)} to {escape_html(current_vocabulary_name)}"
-                reply_markup = None  # TODO add cancel button
+        return Response(text, reply_markup)
 
-            case _:
-                raise ValueError("Unsupported status")
+    @classmethod
+    def delete_word_start(cls, user):
+        """
+        Enables required state to delete next user's text input. Is activated by callback query.
+        :param user:
+        :return: text to be sent to user and language of cancel button. Should be sent with cancel button
+        """
+        parameters = get_user_parameters(user)
+        lang = parameters.language
+
+        text = "Send me the word you want to delete"
+        set_user_state(user, USER_STATES.DELETEWORD_WORD.value)
+        return text, lang
+
+    @classmethod
+    def delete_word_finalize(cls, user, text):
+        """
+        Deletes text input from current user's vocabulary. Is activated by a text message while a specific user state.
+        :param user: user_id from whose vocabulary is being deleted
+        :param text: word to be deleted from current vocabulary
+        :return: Response(text, reply_markup) - named tuple containing text and reply_markup to be sent to user
+        """
+        parameters = get_user_parameters(user)
+        lang = parameters.language
+        vocabulary_id = parameters.current_vocabulary_id
+        vocabulary_name = get_vocabulary_name(vocabulary_id)
+        word = text
+        meaning = cls._get_word_meaning(user=user, vocabulary_id=vocabulary_id, word=word)
+
+        if cls._delete_word(user=user, vocabulary_id=vocabulary_id, word=word):
+            text = f'Successfully deleted "{escape_html(word)}" from "{escape_html(vocabulary_name)}"'
+            reply_markup = InlineKeyboardMarkup(inline_keyboard=[
+                [
+                    InlineKeyboardButton(text=f'      ↪️ ${translate(lang, "add_back")}      ',
+                                         callback_data=json.dumps([QUERY_ACTIONS.DELETE_SPECIFIC_WORD.value,
+                                                                   vocabulary_id,
+                                                                   word,
+                                                                   meaning])),
+                ]
+            ])
+        else:
+            text = f'"{escape_html(word)}" was not found in "{escape_html(vocabulary_name)}"'
+            reply_markup = None
+        reset_user_state(user)
         return Response(text, reply_markup)
 
     @classmethod

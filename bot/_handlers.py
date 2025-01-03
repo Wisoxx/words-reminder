@@ -4,6 +4,7 @@ from ._enums import TaskStatus, QUERY_ACTIONS, TEMP_KEYS, USER_STATES
 from ._vocabularies import *
 from ._menu import *
 from ._words import WordManager
+from ._settings import get_user_state, reset_user_state
 from collections import namedtuple
 from logger import setup_logger
 
@@ -44,8 +45,14 @@ def handle_message(self, user, update):
 
 
 def process_user_action(self, user, text):
-    text, reply_markup = WordManager.add_word(user, text)
-    self.deliver_message(user, text, reply_markup=reply_markup)
+    match get_user_state(user):
+        case USER_STATES.NO_STATE:
+            text, reply_markup = WordManager.add_word(user, text)
+            self.deliver_message(user, text, reply_markup=reply_markup)
+
+        case USER_STATES.DELETEWORD_WORD:
+            text, reply_markup = WordManager.delete_word_finalize(user, text)
+            self.deliver_message(user, text, reply_markup=reply_markup)
 
 
 def handle_callback_query(self, user,  update):
@@ -54,6 +61,9 @@ def handle_callback_query(self, user,  update):
     msg_id = update["callback_query"]["message"]["message_id"]
 
     match action:
+        case QUERY_ACTIONS.CANCEL.value:
+            reset_user_state(user)
+            self.deliver_message(user, "Successfully cancelled")
         case QUERY_ACTIONS.MENU.value:
             text, reply_markup = construct_menu_page(user)
             self.editMessageText((user, msg_id), text, parse_mode="HTML", reply_markup=reply_markup)
@@ -65,6 +75,11 @@ def handle_callback_query(self, user,  update):
             data = PageData(*callback_data[1:])
             text, reply_markup = WordManager.construct_word_page(user, data.vocabulary_id, data.page)
             self.editMessageText((user, msg_id), text, parse_mode="HTML", reply_markup=reply_markup)
+        case QUERY_ACTIONS.DELETE_WORD.value:
+            # when message stays the same, callback_query needs to be answered, because it will keep showing as loading
+            self.answerCallbackQuery(update["callback_query"]["id"])
+            text, lang = WordManager.delete_word_start(user)
+            self.deliver_message(user, text, add_cancel_button=True, lang=lang)
         case _:
             self.deliver_message(user, callback_data)
 
