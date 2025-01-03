@@ -174,7 +174,7 @@ class WordManager:
             text = f'Successfully added "{escape_html(word)}" to "{escape_html(current_vocabulary_name)}"'
             reply_markup = InlineKeyboardMarkup(inline_keyboard=[
                 [
-                    InlineKeyboardButton(text=f'      🗑 ${translate(lang, "delete")}      ',
+                    InlineKeyboardButton(text=f'      🗑 {translate(lang, "delete")}      ',
                                          callback_data=json.dumps([QUERY_ACTIONS.DELETE_SPECIFIC_WORD.value, word_id])),
                 ]
             ])
@@ -216,7 +216,7 @@ class WordManager:
             text = f'Successfully deleted "{escape_html(word)}" from "{escape_html(vocabulary_name)}"'
             reply_markup = InlineKeyboardMarkup(inline_keyboard=[
                 [
-                    InlineKeyboardButton(text=f'      ↪️ ${translate(lang, "add_back")}      ',
+                    InlineKeyboardButton(text=f'      ↪️ {translate(lang, "add_back")}      ',
                                          callback_data=json.dumps([QUERY_ACTIONS.DELETE_SPECIFIC_WORD.value,
                                                                    vocabulary_id,
                                                                    word,
