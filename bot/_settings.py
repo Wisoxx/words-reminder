@@ -40,7 +40,7 @@ def pop_temp(user, key):
 def get_user_state(user):
     state = get_temp(user, TEMP_KEYS.STATE.value)
     logger.debug(f"User state: {state}")
-    return state
+    return int(state)
 
 
 def set_user_state(user, state):

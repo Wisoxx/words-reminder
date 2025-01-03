@@ -54,6 +54,9 @@ def process_user_action(self, user, text):
             text, reply_markup = WordManager.delete_word_finalize(user, text)
             self.deliver_message(user, text, reply_markup=reply_markup)
 
+        case _:
+            raise ValueError(f"Unknown user state: {user}")
+
 
 def handle_callback_query(self, user,  update):
     callback_data = json.loads(update["callback_query"]["data"])
