@@ -218,7 +218,7 @@ class Database:
     @classmethod
     def get(cls, conditions: dict = None, limit: int = None, offset: int = None,
             order_by: str = None, sort_direction: str = 'ASC', include_column_names=False, custom_select=None,
-            force_2d=False) -> list or dict or tuple:
+            force_2d=False) -> list or tuple or namedtuple or None:
         """
         Fetch records from the database with optional conditions, limit, offset, and ordering.
 
@@ -266,7 +266,7 @@ class Database:
 
         if include_column_names:
             if not rows:
-                return {}
+                return None
 
             if not custom_select:
                 Row = namedtuple('Row', cls.columns)
