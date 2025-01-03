@@ -18,6 +18,7 @@ def translate(lang: str, key: str, values: dict = None):
             'info_vocabularies': 'info_vocabularies',
             'info_settings': 'info_settings',
             'test': "Hi {name}",
+            'error': "Something went wrong",
         },
         'ua': {
             'flag': '🇺🇦',
