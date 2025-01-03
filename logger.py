@@ -25,6 +25,8 @@ def setup_logger(name):
         logger.addHandler(file_handler)
         logger.addHandler(console_handler)
 
+        logger.propagate = False
+
     return logger
 
 
