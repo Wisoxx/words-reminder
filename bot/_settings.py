@@ -1,5 +1,9 @@
 import database as db
 from ._enums import TaskStatus, QUERY_ACTIONS, TEMP_KEYS, USER_STATES
+from logger import setup_logger
+
+
+logger = setup_logger(__name__)
 
 
 def get_user_parameters(user):
@@ -8,6 +12,7 @@ def get_user_parameters(user):
 
 def set_temp(user, key, value):
     if db.Temp.add({"user_id": user, "key": key, "value": value}):
+        logger.debug(f"Temp set for user {user} key={key} value={value}")
         return TaskStatus.SUCCESS
     return TaskStatus.FAILURE
 
@@ -21,6 +26,7 @@ def get_temp(user, key):
 
 def remove_temp(user, key):
     if db.Temp.delete({"user_id": user, "key": key}):
+        logger.debug(f"Temp removed for user {user} key={key}")
         return TaskStatus.SUCCESS
     return TaskStatus.FAILURE
 
@@ -32,12 +38,20 @@ def pop_temp(user, key):
 
 
 def get_user_state(user):
-    return get_temp(user, TEMP_KEYS.STATE.value)
+    state = get_temp(user, TEMP_KEYS.STATE.value)
+    logger.debug(f"User state: {state}")
+    return state
 
 
 def set_user_state(user, state):
-    return set_temp(user, TEMP_KEYS.STATE.value, state)
+    status = set_temp(user, TEMP_KEYS.STATE.value, state)
+    if status:
+        logger.debug(f"User state was set to: {state}")
+    return status
 
 
 def reset_user_state(user):
-    return remove_temp(user, TEMP_KEYS.STATE.value)
+    status = remove_temp(user, TEMP_KEYS.STATE.value)
+    if status:
+        logger.debug(f"User state was reset")
+    return status

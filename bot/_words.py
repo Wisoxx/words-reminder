@@ -7,6 +7,10 @@ from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 from ._enums import TaskStatus, QUERY_ACTIONS, TEMP_KEYS, USER_STATES
 from ._response_format import Response
 from translations import translate
+from logger import setup_logger
+
+
+logger = setup_logger(__name__)
 
 
 MAX_MESSAGE_LENGTH = 4096
@@ -22,6 +26,8 @@ class WordManager:
         timestamp = timestamp or get_timestamp()
         word_id = db.Words.add({"user_id": user, "vocabulary_id": vocabulary_id, "word": word, "meaning": meaning,
                                "timestamp": timestamp})[1]
+        if word_id > 0:
+            logger.info(f'User {user} added word #{word_id} to vocabulary #{vocabulary_id}')
         return word_id
 
     @staticmethod
@@ -44,6 +50,7 @@ class WordManager:
 
         status = db.Words.delete(conditions)
         if status:
+            logger.info(f'User {user} deleted word word_id={word_id}, vocabulary_id={vocabulary_id}, word="{word}"')
             return TaskStatus.SUCCESS
         return TaskStatus.DUPLICATE
 
@@ -147,6 +154,7 @@ class WordManager:
         word
         :return: Response(text, reply_markup) - named tuple containing text and reply_markup to be sent to user
         """
+        logger.debug(f"Adding user {user} word '{text}'")
         parameters = get_user_parameters(user)
         lang = parameters.language
         current_vocabulary_id = parameters.current_vocabulary_id
@@ -180,6 +188,7 @@ class WordManager:
         :param user:
         :return: text to be sent to user and language of cancel button. Should be sent with cancel button
         """
+        logger.debug(f"User {user} initiated word deletion")
         parameters = get_user_parameters(user)
         lang = parameters.language
 
@@ -195,6 +204,7 @@ class WordManager:
         :param text: word to be deleted from current vocabulary
         :return: Response(text, reply_markup) - named tuple containing text and reply_markup to be sent to user
         """
+        logger.debug(f"User {user} provided a word for deletion")
         parameters = get_user_parameters(user)
         lang = parameters.language
         vocabulary_id = parameters.current_vocabulary_id
@@ -226,6 +236,7 @@ class WordManager:
         vocabulary_id = vocabulary_id or parameters.current_vocabulary_id
         vocabulary_name = get_vocabulary_name(vocabulary_id)
         hide_meaning = parameters.hide_meaning
+        logger.debug(f"User {user} opened word page '{page}' of a vocabulary '{vocabulary_id}'")
 
         if not vocabulary_name:
             raise ValueError("Couldn't retrieve current vocabulary name")

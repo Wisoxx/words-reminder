@@ -5,9 +5,14 @@ from translations import translate
 from ._settings import get_user_parameters
 from ._response_format import Response
 import json
+from logger import setup_logger
+
+
+logger = setup_logger(__name__)
 
 
 def construct_menu_page(user):
+    logger.debug(f'Constructing menu page for user: {user}')
     parameters = get_user_parameters(user)
     lang = parameters.language
 

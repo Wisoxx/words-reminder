@@ -46,11 +46,11 @@ def handle_message(self, user, update):
 
 def process_user_action(self, user, text):
     match get_user_state(user):
-        case USER_STATES.NO_STATE:
+        case USER_STATES.NO_STATE.value:
             text, reply_markup = WordManager.add_word(user, text)
             self.deliver_message(user, text, reply_markup=reply_markup)
 
-        case USER_STATES.DELETEWORD_WORD:
+        case USER_STATES.DELETEWORD_WORD.value:
             text, reply_markup = WordManager.delete_word_finalize(user, text)
             self.deliver_message(user, text, reply_markup=reply_markup)
 
