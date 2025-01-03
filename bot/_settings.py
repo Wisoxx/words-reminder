@@ -40,7 +40,7 @@ def pop_temp(user, key):
 def get_user_state(user):
     state = get_temp(user, TEMP_KEYS.STATE.value)
     logger.debug(f"User state: {state}")
-    return int(state)
+    return int(state) if state is not None else None
 
 
 def set_user_state(user, state):
