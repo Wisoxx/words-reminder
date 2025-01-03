@@ -54,18 +54,18 @@ def get_vocabulary_list(user):
     :param user: The user ID to fetch vocabularies for.
     :return: A dictionary {vocabulary_id: vocabulary_name}.
     """
-    vocabularies = db.Vocabularies.get({"user_id": user}, force_2d=True)
+    vocabularies = db.Vocabularies.get({"user_id": user}, force_2d=True, include_column_names=True)
 
     if vocabularies:
-        return {vocabulary[0]: vocabulary[2] for vocabulary in vocabularies}
+        return {vocabulary.vocabulary_id: vocabulary.vocabulary_name for vocabulary in vocabularies}
     else:
         return {}
 
 
 def get_vocabulary_name(vocabulary_id):
-    name = db.Vocabularies.get({"vocabulary_id": vocabulary_id})
+    name = db.Vocabularies.get({"vocabulary_id": vocabulary_id}, include_column_names=True)
     if name:
-        return name[2]
+        return name.vocabulary_name
     return None
 
 
