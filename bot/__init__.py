@@ -103,7 +103,8 @@ class Bot:
     def handle_update(self, update):
         user = None
         try:
-            logger.debug('Received update: {}'.format(json.dumps(update, indent=4)))  # pretty print logs
+            # pretty print logs
+            logger.debug('Received update: {}'.format(json.dumps(update, indent=4, ensure_ascii=False)))
 
             user = self.get_user(update)
 
@@ -118,7 +119,7 @@ class Bot:
 
         except Exception as e:
             logger.critical(f"Couldn't process update: {e}", exc_info=True)
-            logger.critical(f"Update that caused error: {json.dumps(update, indent=4)}")
+            logger.critical(f"Update that caused error: {json.dumps(update, indent=4, ensure_ascii=False)}")
 
             if user:
                 try:

@@ -221,7 +221,7 @@ class WordManager:
                                              callback_data=json.dumps([QUERY_ACTIONS.ADD_SPECIFIC_WORD.value,
                                                                        vocabulary_id,
                                                                        word,
-                                                                       meaning])),
+                                                                       meaning], ensure_ascii=False)),
                     ]
                 ])
             case TaskStatus.FAILURE:
