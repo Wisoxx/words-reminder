@@ -4,6 +4,7 @@ from ._enums import QUERY_ACTIONS, USER_STATES
 from ._vocabularies import VocabularyManager
 from ._words import WordManager
 from ._settings import get_user_state, reset_user_state
+from ._commands import *
 from collections import namedtuple
 from router import get_route
 from logger import setup_logger
