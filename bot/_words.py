@@ -234,6 +234,7 @@ def delete_word_finalize(user, text):
     return Response(text, reply_markup)
 
 
+@route(trigger="callback_query", query_action=QUERY_ACTIONS.CHANGE_WORDS_PAGE.value, action="edit")
 @route(trigger="callback_query", query_action=QUERY_ACTIONS.MENU_WORDS.value, action="edit")
 def construct_word_page(user, update, vocabulary_id=None, page=0):
     callback_data = json.loads(update["callback_query"]["data"])
