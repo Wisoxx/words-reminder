@@ -9,7 +9,6 @@ from ._response_format import Response
 from translations import translate
 from logger import setup_logger
 
-
 logger = setup_logger(__name__)
 
 
@@ -87,7 +86,7 @@ class VocabularyManager:
     @staticmethod
     def _get_vocabulary_id(user, vocabulary_name):
         entry = db.Vocabularies.get({"user_id": user, "vocabulary_name": vocabulary_name},
-                                   include_column_names=True)
+                                    include_column_names=True)
         if entry:
             return entry.vocabulary_id
         return None
@@ -170,6 +169,7 @@ class VocabularyManager:
         """
         Saves vocabulary_name and asks to confirm deletion. Is activated by a text message while a specific user state.
         :param user: user_id of user who wants to delete a vocabulary
+        :param text: user inputted vocabulary_name
         :return: text to be sent to user and language of cancel button. Should be sent with cancel button
         """
         logger.debug(f"User {user} provided a word for deletion")
@@ -186,7 +186,7 @@ class VocabularyManager:
             reply_markup = InlineKeyboardMarkup(inline_keyboard=[
                 [
                     InlineKeyboardButton(text=f'      ✅      ',
-                                         callback_data=json.dumps([QUERY_ACTIONS.CONFIRM.value,], ensure_ascii=False)),
+                                         callback_data=json.dumps([QUERY_ACTIONS.CONFIRM.value, ], ensure_ascii=False)),
                     InlineKeyboardButton(text=f'      ❌      ',
                                          callback_data=json.dumps([QUERY_ACTIONS.DECLINE.value, ], ensure_ascii=False)),
                 ]
@@ -216,7 +216,8 @@ class VocabularyManager:
                 text = f'Successfully deleted vocabulary "{escape_html(vocabulary_name)}"'
                 reply_markup = None
             case TaskStatus.FAILURE:
-                raise FileNotFoundError(f'Failed to delete vocabulary #{vocabulary_id} "{escape_html(vocabulary_name)}"')
+                raise FileNotFoundError(
+                    f'Failed to delete vocabulary #{vocabulary_id} "{escape_html(vocabulary_name)}"')
 
             case _:
                 raise ValueError("Unsupported status")
@@ -224,8 +225,19 @@ class VocabularyManager:
         return Response(text, reply_markup)
 
     @classmethod
-    def delete_word_declined(cls, user, text):
-        pass
+    def delete_vocabulary_declined(cls, user):
+        """
+        Cancels vocabulary deletion. Is activated by a callback query
+        :param user: user_id from whose vocabulary was being deleted
+        :return: Response(text, reply_markup) - named tuple containing text and reply_markup to be sent to user
+        """
+        logger.debug(f"User {user} cancelled vocabulary deletion")
+        parameters = get_user_parameters(user)
+        lang = parameters.language
+        text = "Successfully cancelled vocabulary deletion"
+        reply_markup = None
+        reset_user_state(user)
+        return Response(text, reply_markup)
 
     @classmethod
     def construct_vocabulary_page(cls, user):
@@ -237,13 +249,17 @@ class VocabularyManager:
 
         keyboard = InlineKeyboardMarkup(inline_keyboard=[
             [
-                InlineKeyboardButton(text='      ━      ', callback_data=json.dumps([QUERY_ACTIONS.DELETE_VOCABULARY.value])),
-                InlineKeyboardButton(text='      📙     ', callback_data=json.dumps([QUERY_ACTIONS.CHANGE_VOCABULARY.value, QUERY_ACTIONS.MENU_VOCABULARIES.value])),
-                InlineKeyboardButton(text='      ✚      ', callback_data=json.dumps([QUERY_ACTIONS.CREATE_VOCABULARY.value])),
+                InlineKeyboardButton(text='      ━      ',
+                                     callback_data=json.dumps([QUERY_ACTIONS.DELETE_VOCABULARY.value])),
+                InlineKeyboardButton(text='      📙     ', callback_data=json.dumps(
+                    [QUERY_ACTIONS.CHANGE_VOCABULARY.value, QUERY_ACTIONS.MENU_VOCABULARIES.value])),
+                InlineKeyboardButton(text='      ✚      ',
+                                     callback_data=json.dumps([QUERY_ACTIONS.CREATE_VOCABULARY.value])),
             ],
             [
                 InlineKeyboardButton(text='      ↩️      ', callback_data=json.dumps([QUERY_ACTIONS.MENU.value])),
-                InlineKeyboardButton(text='      ℹ️      ', callback_data=json.dumps([QUERY_ACTIONS.SHOW_INFO.value, "info_vocabularies"])),
+                InlineKeyboardButton(text='      ℹ️      ',
+                                     callback_data=json.dumps([QUERY_ACTIONS.SHOW_INFO.value, "info_vocabularies"])),
             ]
         ])
 

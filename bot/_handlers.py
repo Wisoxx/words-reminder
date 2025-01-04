@@ -99,8 +99,11 @@ def handle_callback_query(self, user,  update):
             self.answerCallbackQuery(update["callback_query"]["id"])
             text, lang = VocabularyManager.delete_vocabulary_start(user)
             self.deliver_message(user, text, add_cancel_button=True, lang=lang)
-        case QUERY_ACTIONS.CONFIRM.value:
+        case QUERY_ACTIONS.DELETE_VOCABULARY_CONFIRM.value:
             text, reply_markup = VocabularyManager.delete_vocabulary_confirmed(user)
+            self.editMessageText((user, msg_id), text, parse_mode="HTML", reply_markup=reply_markup)
+        case QUERY_ACTIONS.DELETE_VOCABULARY_DECLINE.value:
+            text, reply_markup = VocabularyManager.delete_vocabulary_declined(user)
             self.editMessageText((user, msg_id), text, parse_mode="HTML", reply_markup=reply_markup)
         case _:
             self.deliver_message(user, callback_data)
