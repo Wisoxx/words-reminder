@@ -22,10 +22,10 @@ class QUERY_ACTIONS(Enum):
     DELETE_REMINDER = auto()
     CREATE_VOCABULARY = auto()
     DELETE_VOCABULARY = auto()
+    DELETE_VOCABULARY_CONFIRM = auto()
+    DELETE_VOCABULARY_DECLINE = auto()
     CHANGE_LANGUAGE = auto()
     TOGGLE_HIDE_MEANING = auto()
-    CONFIRM = auto()
-    DECLINE = auto()
 
 
 class TEMP_KEYS(Enum):
