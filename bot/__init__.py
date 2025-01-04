@@ -4,7 +4,8 @@ import telepot
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 from translations import translate
 from ._enums import QUERY_ACTIONS, TEMP_KEYS, USER_STATES
-from ._settings import get_user_parameters
+from ._settings import get_user_parameters, set_user_state, get_user_state, reset_user_state
+from router import get_route
 from logger import setup_logger
 
 
@@ -108,14 +109,54 @@ class Bot:
 
             user = self.get_user(update)
 
+            trigger = None
+            command = None
+            state = None
+            query_action = None
             if "message" in update:
-                self.handle_message(user, update)
+                if "text" in update["message"]:
+                    text = update["message"]["text"]
+                    trigger = "text"
+
+                    if text.startswith("/"):
+                        command = text.split()[0]
+                    else:
+                        state = get_user_state(user)
+                else:
+                    self.deliver_message(user, "From the web: sorry, I didn't understand that kind of message")
+                    return
 
             elif "callback_query" in update:
-                self.handle_callback_query(user, update)
+                trigger = "callback_query"
+                query_action = json.loads(update["callback_query"]["data"])[0]
+                msg_id = update["callback_query"]["message"]["message_id"]
 
             elif "my_chat_member" in update:
                 self.handle_chat_member_status(user, update)
+                return
+
+            function, action, cancel_button = get_route(trigger, state, query_action, command)
+            match action:
+                case "send":
+                    if cancel_button:
+                        text, lang = function(user, update)
+                        self.deliver_message(user, text, add_cancel_button=True, lang=lang)
+                    else:
+                        text, reply_markup = function(user, update)
+                        self.deliver_message(user, text, reply_markup=reply_markup)
+
+                case "edit":
+                    if trigger == "callback_query":
+                        text, reply_markup = function(user, update)
+                        self.editMessageText((user, msg_id), text, parse_mode="HTML", reply_markup=reply_markup)
+                    else:
+                        raise ValueError("Action is set to edit, but not triggered by callback query, so no msg_id")
+
+                case "popup":
+                    raise NotImplemented
+
+                case _:
+                    raise ValueError(f"Unknown action {action}")
 
         except Exception as e:
             logger.critical(f"Couldn't process update: {e}", exc_info=True)
