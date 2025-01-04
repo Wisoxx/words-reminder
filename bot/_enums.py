@@ -20,7 +20,7 @@ class QUERY_ACTIONS(Enum):
     DELETE_WORD = auto()
     ADD_REMINDER = auto()
     DELETE_REMINDER = auto()
-    ADD_VOCABULARY = auto()
+    CREATE_VOCABULARY = auto()
     DELETE_VOCABULARY = auto()
     CHANGE_LANGUAGE = auto()
     TOGGLE_HIDE_MEANING = auto()
