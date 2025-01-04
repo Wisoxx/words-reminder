@@ -30,14 +30,14 @@ def handle_message(self, user, update):
         match action:
             case "send":
                 if cancel_button:
-                    text, lang = function.call(user, update)
+                    text, lang = function(user, update)
                     self.deliver_message(user, text, add_cancel_button=True, lang=lang)
                 else:
-                    text, reply_markup = function.call(user, update)
+                    text, reply_markup = function(user, update)
                     self.deliver_message(user, text, reply_markup=reply_markup)
 
             case "edit":
-                text, reply_markup = function.call(user, update)
+                text, reply_markup = function(user, update)
                 self.editMessageText((user, msg_id), text, parse_mode="HTML", reply_markup=reply_markup)
 
             case "popup":
