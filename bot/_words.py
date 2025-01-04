@@ -269,7 +269,7 @@ class WordManager:
         words = cls._get_user_words(user, vocabulary_id, reverse=True)
 
         if len(words) == 0:
-            text = "*🦗crickets noises🦗*"
+            text = heading + "*🦗crickets noises🦗*"
         else:
             pages = cls._word_list_to_pages(words, hide_meaning, max_length=MAX_MESSAGE_LENGTH - 50,
                                             words_limit=WORDS_PER_PAGE)
