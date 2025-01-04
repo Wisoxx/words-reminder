@@ -184,8 +184,8 @@ class WordManager:
     @classmethod
     def delete_word_start(cls, user):
         """
-        Enables required state to delete next user's text input. Is activated by callback query.
-        :param user:
+        Enables required state to delete word which is next user's text input. Is activated by callback query.
+        :param user: user_id of user who wants to delete a word
         :return: text to be sent to user and language of cancel button. Should be sent with cancel button
         """
         logger.debug(f"User {user} initiated word deletion")
@@ -193,7 +193,7 @@ class WordManager:
         lang = parameters.language
 
         text = "Send me the word you want to delete"
-        set_user_state(user, USER_STATES.DELETEWORD_WORD.value)
+        set_user_state(user, USER_STATES.DELETE_WORD.value)
         return text, lang
 
     @classmethod
@@ -240,7 +240,7 @@ class WordManager:
         vocabulary_id = vocabulary_id or parameters.current_vocabulary_id
         vocabulary_name = VocabularyManager._get_vocabulary_name(vocabulary_id)
         hide_meaning = parameters.hide_meaning
-        logger.debug(f"User {user} opened word page '{page}' of a vocabulary '{vocabulary_id}'")
+        logger.debug(f"User {user} opened word page #{page} of a vocabulary #{vocabulary_id}")
 
         if not vocabulary_name:
             raise ValueError("Couldn't retrieve current vocabulary name")
