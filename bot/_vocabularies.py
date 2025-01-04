@@ -141,11 +141,12 @@ class VocabularyManager:
 
         vocabulary_id = cls._create_vocabulary(user, vocabulary_name)
         if vocabulary_id == 0:
-            text = f'You already have vocabulary named "{escape_html(vocabulary_name)}"'
+            text = f'You already have vocabulary named "{escape_html(vocabulary_name)}". Try something else'
             reply_markup = None
         else:
             text = f'Successfully create vocabulary "{escape_html(vocabulary_name)}"'
             reply_markup = None
+            reset_user_state(user)
 
         return Response(text, reply_markup)
 
