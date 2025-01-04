@@ -400,7 +400,7 @@ class Words(Database):
     word TEXT NOT NULL,
     meaning TEXT,
     timestamp INTEGER NOT NULL,
-    UNIQUE(word, user_id),
+    UNIQUE(word, vocabulary_id, user_id),
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
     FOREIGN KEY (vocabulary_id) REFERENCES vocabularies(vocabulary_id) ON DELETE CASCADE
     );
