@@ -1,17 +1,34 @@
-import telepot
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
-from ._enums import QUERY_ACTIONS, TEMP_KEYS, USER_STATES
+import database as db
 from translations import translate
 from ._settings import get_user_parameters
 from ._response_format import Response
 import json
+from ._enums import QUERY_ACTIONS, TEMP_KEYS, USER_STATES
+from router import route
 from logger import setup_logger
-
 
 logger = setup_logger(__name__)
 
 
-def construct_menu_page(user):
+@route(trigger="text", command="/start", action="send")
+def start(user, update):
+    username = update.get("message", {}).get("from", {}).get("username", None)
+    if not username:
+        first_name = update.get("message", {}).get("from", {}).get("first_name", "")
+        last_name = update.get("message", {}).get("from", {}).get("last_name", "")
+        username = ':' + first_name.lower() + ":" + last_name.lower() + ':'
+
+    if db.Users.add({"user_id": user, "username": username})[0]:
+        logger.info(f"New user added: {username}")
+    text = "start"
+    reply_markup = None
+    return text, reply_markup
+
+
+@route(trigger="text", command="/menu", action="send")
+@route(trigger="callback_query", query_action=QUERY_ACTIONS.MENU.value, action="edit")
+def menu(user, update):
     logger.debug(f'Constructing menu page for user: {user}')
     parameters = get_user_parameters(user)
     lang = parameters.language
@@ -34,3 +51,9 @@ def construct_menu_page(user):
     )
 
     return Response(text, keyboard)
+
+
+def recall(user, update):
+    text = "recall"
+    reply_markup = None
+    return text, reply_markup

@@ -2,10 +2,10 @@ import json
 import database as db
 from ._enums import TaskStatus, QUERY_ACTIONS, TEMP_KEYS, USER_STATES
 from ._vocabularies import VocabularyManager
-from ._menu import *
 from ._words import WordManager
 from ._settings import get_user_state, reset_user_state
 from collections import namedtuple
+from router import route, get_route
 from logger import setup_logger
 
 
@@ -15,30 +15,36 @@ logger = setup_logger(__name__)
 def handle_message(self, user, update):
     if "text" in update["message"]:
         text = update["message"]["text"]
-        # commands have bigger priority than other input
-        if text.startswith("/start") or text.startswith("/help"):
-            username = update.get("message", {}).get("from", {}).get("username", None)
-            if not username:
-                first_name = update.get("message", {}).get("from", {}).get("first_name", "")
-                last_name = update.get("message", {}).get("from", {}).get("last_name", "")
-                username = ':' + first_name.lower() + ":" + last_name.lower() + ':'
+        trigger = "text"
+        command = None
+        state = None
+        query_action = None
 
-            if db.Users.add({"user_id": user, "username": username})[0]:
-                logger.info(f"New user added: {username}")
-            self.deliver_message(user, "start")
-
-        elif text.startswith("/menu"):
-            text, reply_markup = construct_menu_page(user)
-            self.deliver_message(user, text, reply_markup=reply_markup)
-
-        elif text.startswith("/recall"):
-            self.deliver_message(user, "recall")
-
-        elif text.startswith("/test"):
-            self.deliver_message(user, "Test Message", add_cancel_button=True, lang="en")
-
+        if text.startswith("/"):
+            command = text.split()[0]
         else:
-            self.process_user_action(user, text)
+            state = get_user_state(user)
+
+        function, action, cancel_button = get_route(trigger, state, query_action, command)
+        match action:
+            case "send":
+                if cancel_button:
+                    text, lang = function.call(user, update)
+                    self.deliver_message(user, text, add_cancel_button=True, lang=lang)
+                else:
+                    text, reply_markup = function.call(user, update)
+                    self.deliver_message(user, text, reply_markup=reply_markup)
+
+            case "edit":
+                text, reply_markup = function.call(user, update)
+                self.editMessageText((user, msg_id), text, parse_mode="HTML", reply_markup=reply_markup)
+
+            case "popup":
+                function.call(user, update)
+
+            case _:
+                raise ValueError(f"Unknown action {action}")
+        # self.process_user_action(user, text)
 
     else:
         self.deliver_message(user, "From the web: sorry, I didn't understand that kind of message")
@@ -75,9 +81,9 @@ def handle_callback_query(self, user,  update):
         case QUERY_ACTIONS.CANCEL.value:
             reset_user_state(user)
             self.deliver_message(user, "Successfully cancelled")
-        case QUERY_ACTIONS.MENU.value:
-            text, reply_markup = construct_menu_page(user)
-            self.editMessageText((user, msg_id), text, parse_mode="HTML", reply_markup=reply_markup)
+        # case QUERY_ACTIONS.MENU.value:
+        #     text, reply_markup = construct_menu_page(user)
+        #     self.editMessageText((user, msg_id), text, parse_mode="HTML", reply_markup=reply_markup)
         case QUERY_ACTIONS.MENU_VOCABULARIES.value:
             text, reply_markup = VocabularyManager.construct_vocabulary_page(user)
             self.editMessageText((user, msg_id), text, parse_mode="HTML", reply_markup=reply_markup)
