@@ -235,10 +235,16 @@ def delete_word_finalize(user, text):
 
 
 @route(trigger="callback_query", query_action=QUERY_ACTIONS.MENU_WORDS.value, action="edit")
-def construct_word_page(user, vocabulary_id=None, page=0):
+def construct_word_page(user, update, vocabulary_id=None, page=0):
+    callback_data = json.loads(update["callback_query"]["data"])
     parameters = get_user_parameters(user)
+    if len(callback_data) > 1:
+        vocabulary_id = callback_data[1]
+        page = callback_data[2]
+    else:
+        vocabulary_id = vocabulary_id or parameters.current_vocabulary_id
     lang = parameters.language
-    vocabulary_id = vocabulary_id or parameters.current_vocabulary_id
+
     vocabulary_name = VocabularyManager._get_vocabulary_name(vocabulary_id)
     hide_meaning = parameters.hide_meaning
     logger.debug(f"User {user} opened word page #{page} of a vocabulary #{vocabulary_id}")

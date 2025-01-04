@@ -52,21 +52,21 @@ def handle_message(self, user, update):
 
 def process_user_action(self, user, text):
     match get_user_state(user):
-        case USER_STATES.NO_STATE.value:
-            text, reply_markup = WordManager.add_word(user, text)
-            self.deliver_message(user, text, reply_markup=reply_markup)
-
-        case USER_STATES.DELETE_WORD.value:
-            text, reply_markup = WordManager.delete_word_finalize(user, text)
-            self.deliver_message(user, text, reply_markup=reply_markup)
-
-        case USER_STATES.CREATE_VOCABULARY.value:
-            text, reply_markup = VocabularyManager.create_vocabulary_finalize(user, text)
-            self.deliver_message(user, text, reply_markup=reply_markup)
-
-        case USER_STATES.DELETE_VOCABULARY_INPUT.value:
-            text, reply_markup = VocabularyManager.delete_vocabulary_input(user, text)
-            self.deliver_message(user, text, reply_markup=reply_markup)
+        # case USER_STATES.NO_STATE.value:
+        #     text, reply_markup = WordManager.add_word(user, text)
+        #     self.deliver_message(user, text, reply_markup=reply_markup)
+        #
+        # case USER_STATES.DELETE_WORD.value:
+        #     text, reply_markup = WordManager.delete_word_finalize(user, text)
+        #     self.deliver_message(user, text, reply_markup=reply_markup)
+        #
+        # case USER_STATES.CREATE_VOCABULARY.value:
+        #     text, reply_markup = VocabularyManager.create_vocabulary_finalize(user, text)
+        #     self.deliver_message(user, text, reply_markup=reply_markup)
+        #
+        # case USER_STATES.DELETE_VOCABULARY_INPUT.value:
+        #     text, reply_markup = VocabularyManager.delete_vocabulary_input(user, text)
+        #     self.deliver_message(user, text, reply_markup=reply_markup)
 
         case _:
             raise ValueError(f"Unknown user state: {user}")
