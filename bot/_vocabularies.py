@@ -3,120 +3,133 @@ import database as db
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 from ._settings import get_user_parameters
 from ._enums import TaskStatus, QUERY_ACTIONS, TEMP_KEYS, USER_STATES
-from ._utils import html_wrapper, escape_html
+from .utils import html_wrapper, escape_html
 from ._response_format import Response
 
 
-def set_current_vocabulary(user, vocabulary_id):
-    if db.Users.set({"user_id": user}, {"current_vocabulary_id": vocabulary_id}):
-        return TaskStatus.SUCCESS
-    return TaskStatus.FAILURE
+class VocabularyManager:
+    ####################################################################################################################
+    #                                                DATABASE INTERACTIONS
+    ####################################################################################################################
+    @staticmethod
+    def _set_current_vocabulary(user, vocabulary_id):
+        if db.Users.set({"user_id": user}, {"current_vocabulary_id": vocabulary_id}):
+            return TaskStatus.SUCCESS
+        return TaskStatus.FAILURE
 
+    @staticmethod
+    def _create_vocabulary(user, vocabulary_name):
+        # Note: db sets new vocabulary as current
+        if db.Vocabularies.add({"vocabulary_name": vocabulary_name, "user_id": user})[0]:
+            return TaskStatus.SUCCESS
+        return TaskStatus.FAILURE
 
-def create_vocabulary(user, vocabulary_name):
-    # Note: db sets new vocabulary as current
-    if db.Vocabularies.add({"vocabulary_name": vocabulary_name, "user_id": user})[0]:
-        return TaskStatus.SUCCESS
-    return TaskStatus.FAILURE
+    @staticmethod
+    def _delete_vocabulary(user, vocabulary_id=None, vocabulary_name=None):
+        """
+        Deletes a vocabulary based on the given conditions. vocabulary_id or user and vocabulary_name are required.
 
+        :param vocabulary_id: Unique identifier of the vocabulary (optional)
+        :param user: The ID of the user
+        :param vocabulary_name: The name of the vocabulary to delete (required if vocabulary_id is not given)
+        :return: bool indicating success
+        """
+        # Note: when deleting current vocabulary, db will try to change vocabulary to another one
+        if vocabulary_id:
+            conditions = {"vocabulary_id": vocabulary_id}
+        elif vocabulary_name:
+            conditions = {"user_id": user, "vocabulary_name": vocabulary_name}
+        else:
+            raise ValueError("You must provide either vocabulary_id, or user_id and vocabulary_name.")
 
-def delete_vocabulary(user, vocabulary_id=None, vocabulary_name=None):
-    """
-    Deletes a vocabulary based on the given conditions. vocabulary_id or user and vocabulary_name are required.
+        result = db.Vocabularies.delete(conditions)
 
-    :param vocabulary_id: Unique identifier of the vocabulary (optional)
-    :param user: The ID of the user
-    :param vocabulary_name: The name of the vocabulary to delete (required if vocabulary_id is not given)
-    :return: bool indicating success
-    """
-    # Note: when deleting current vocabulary, db will try to change vocabulary to another one
-    if vocabulary_id:
-        conditions = {"vocabulary_id": vocabulary_id}
-    elif vocabulary_name:
-        conditions = {"user_id": user, "vocabulary_name": vocabulary_name}
-    else:
-        raise ValueError("You must provide either vocabulary_id, or user_id and vocabulary_name.")
+        if get_user_parameters(user).current_vocabulary_id is None:
+            return TaskStatus.NO_VOCABULARY
 
-    result = db.Vocabularies.delete(conditions)
+        if result:
+            return TaskStatus.SUCCESS
+        return TaskStatus.FAILURE
 
-    if get_user_parameters(user).current_vocabulary_id is None:
-        return TaskStatus.NO_VOCABULARY
+    @staticmethod
+    def _get_vocabulary_list(user):
+        """
+        Fetches vocabularies for a user and returns a dictionary mapping vocabulary_id to vocabulary_name.
 
-    if result:
-        return TaskStatus.SUCCESS
-    return TaskStatus.FAILURE
+        :param user: The user ID to fetch vocabularies for.
+        :return: A dictionary {vocabulary_id: vocabulary_name}.
+        """
+        vocabularies = db.Vocabularies.get({"user_id": user}, force_2d=True, include_column_names=True)
 
+        if vocabularies:
+            return {vocabulary.vocabulary_id: vocabulary.vocabulary_name for vocabulary in vocabularies}
+        else:
+            return {}
 
-def get_vocabulary_list(user):
-    """
-    Fetches vocabularies for a user and returns a dictionary mapping vocabulary_id to vocabulary_name.
+    @staticmethod
+    def _get_vocabulary_name(vocabulary_id):
+        name = db.Vocabularies.get({"vocabulary_id": vocabulary_id}, include_column_names=True)
+        if name:
+            return name.vocabulary_name
+        return None
 
-    :param user: The user ID to fetch vocabularies for.
-    :return: A dictionary {vocabulary_id: vocabulary_name}.
-    """
-    vocabularies = db.Vocabularies.get({"user_id": user}, force_2d=True, include_column_names=True)
+    ####################################################################################################################
+    #                                                     OTHER
+    ####################################################################################################################
 
-    if vocabularies:
-        return {vocabulary.vocabulary_id: vocabulary.vocabulary_name for vocabulary in vocabularies}
-    else:
-        return {}
+    @staticmethod
+    def _vocabulary_list_to_text(values, current_vocabulary, lang):
+        text = ""
+        for vocabulary, words_number in values:
+            vocabulary = escape_html(vocabulary)
 
+            if vocabulary == current_vocabulary:
+                vocabulary = html_wrapper(vocabulary, "u")  # Underline the current vocabulary
+            text += f'"{vocabulary}"  —  {words_number} words\n'
+        return text
 
-def get_vocabulary_name(vocabulary_id):
-    name = db.Vocabularies.get({"vocabulary_id": vocabulary_id}, include_column_names=True)
-    if name:
-        return name.vocabulary_name
-    return None
+    ####################################################################################################################
+    #                                                  BOT ACTIONS
+    ####################################################################################################################
 
+    @classmethod
+    def construct_vocabulary_page(cls, user):
+        parameters = get_user_parameters(user)
+        lang = parameters.language
+        current_vocabulary_id = parameters.current_vocabulary_id
+        vocabularies = cls._get_vocabulary_list(user)
+        current_vocabulary_name = vocabularies[current_vocabulary_id]
 
-def vocabulary_list_to_text(values, current_vocabulary, lang):
-    text = ""
-    for vocabulary, words_number in values:
-        vocabulary = escape_html(vocabulary)
+        keyboard = InlineKeyboardMarkup(inline_keyboard=[
+            [
+                InlineKeyboardButton(text='      ━      ', callback_data=json.dumps([QUERY_ACTIONS.DELETE_VOCABULARY.value])),
+                InlineKeyboardButton(text='      📙     ', callback_data=json.dumps([QUERY_ACTIONS.CHANGE_VOCABULARY.value, QUERY_ACTIONS.MENU_VOCABULARIES.value])),
+                InlineKeyboardButton(text='      ✚      ', callback_data=json.dumps([QUERY_ACTIONS.ADD_VOCABULARY.value])),
+            ],
+            [
+                InlineKeyboardButton(text='      ↩️      ', callback_data=json.dumps([QUERY_ACTIONS.MENU.value])),
+                InlineKeyboardButton(text='      ℹ️      ', callback_data=json.dumps([QUERY_ACTIONS.SHOW_INFO.value, "info_vocabularies"])),
+            ]
+        ])
 
-        if vocabulary == current_vocabulary:
-            vocabulary = html_wrapper(vocabulary, "u")  # Underline the current vocabulary
-        text += f'"{vocabulary}"  —  {words_number} words\n'
-    return text
+        heading = html_wrapper(
+            escape_html(
+                "<><><><><><><><><><><><><><><><><><><>\n" +
+                f"{' ' * 30}Vocabularies\n" +
+                "<><><><><><><><><><><><><><><><><><><>"
+            ),
+            'b')
+        text = ""
 
+        values = []
+        for vocabulary_id in vocabularies:
+            word_count = db.Words.count_where({"vocabulary_id": vocabulary_id})
+            vocabulary_name = vocabularies[vocabulary_id]
+            values.append((vocabulary_name, word_count))
 
-def construct_vocabulary_page(user):
-    parameters = get_user_parameters(user)
-    lang = parameters.language
-    current_vocabulary_id = parameters.current_vocabulary_id
-    vocabularies = get_vocabulary_list(user)
-    current_vocabulary_name = vocabularies[current_vocabulary_id]
+        if not values:
+            text += "You have no vocabularies."
+        else:
+            text += cls._vocabulary_list_to_text(values, current_vocabulary_name, lang)
 
-    keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [
-            InlineKeyboardButton(text='      ━      ', callback_data=json.dumps([QUERY_ACTIONS.DELETE_VOCABULARY.value])),
-            InlineKeyboardButton(text='      📙     ', callback_data=json.dumps([QUERY_ACTIONS.CHANGE_VOCABULARY.value, QUERY_ACTIONS.MENU_VOCABULARIES.value])),
-            InlineKeyboardButton(text='      ✚      ', callback_data=json.dumps([QUERY_ACTIONS.ADD_VOCABULARY.value])),
-        ],
-        [
-            InlineKeyboardButton(text='      ↩️      ', callback_data=json.dumps([QUERY_ACTIONS.MENU.value])),
-            InlineKeyboardButton(text='      ℹ️      ', callback_data=json.dumps([QUERY_ACTIONS.SHOW_INFO.value, "info_vocabularies"])),
-        ]
-    ])
-
-    heading = html_wrapper(
-        escape_html(
-            "<><><><><><><><><><><><><><><><><><><>\n" +
-            f"{' ' * 30}Vocabularies\n" +
-            "<><><><><><><><><><><><><><><><><><><>"
-        ),
-        'b')
-    text = ""
-
-    values = []
-    for vocabulary_id in vocabularies:
-        word_count = db.Words.count_where({"vocabulary_id": vocabulary_id})
-        vocabulary_name = vocabularies[vocabulary_id]
-        values.append((vocabulary_name, word_count))
-
-    if not values:
-        text += "You have no vocabularies."
-    else:
-        text += vocabulary_list_to_text(values, current_vocabulary_name, lang)
-
-    return Response(heading + '\n' + text, keyboard)
+        return Response(heading + '\n' + text, keyboard)

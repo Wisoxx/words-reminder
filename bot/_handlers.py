@@ -1,7 +1,7 @@
 import json
 import database as db
 from ._enums import TaskStatus, QUERY_ACTIONS, TEMP_KEYS, USER_STATES
-from ._vocabularies import *
+from ._vocabularies import VocabularyManager
 from ._menu import *
 from ._words import WordManager
 from ._settings import get_user_state, reset_user_state
@@ -71,7 +71,7 @@ def handle_callback_query(self, user,  update):
             text, reply_markup = construct_menu_page(user)
             self.editMessageText((user, msg_id), text, parse_mode="HTML", reply_markup=reply_markup)
         case QUERY_ACTIONS.MENU_VOCABULARIES.value:
-            text, reply_markup = construct_vocabulary_page(user)
+            text, reply_markup = VocabularyManager.construct_vocabulary_page(user)
             self.editMessageText((user, msg_id), text, parse_mode="HTML", reply_markup=reply_markup)
         case QUERY_ACTIONS.MENU_WORDS.value | QUERY_ACTIONS.CHANGE_WORDS_PAGE.value:
             PageData = namedtuple('PageData', ['vocabulary_id', 'page'], defaults=[None, 0])

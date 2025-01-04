@@ -1,8 +1,8 @@
 import json
 import database as db
 from ._settings import get_user_parameters, set_user_state, reset_user_state
-from ._vocabularies import get_vocabulary_name
-from ._utils import html_wrapper, escape_html, get_timestamp, pad
+from ._vocabularies import VocabularyManager
+from .utils import html_wrapper, escape_html, get_timestamp, pad
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 from ._enums import TaskStatus, QUERY_ACTIONS, TEMP_KEYS, USER_STATES
 from ._response_format import Response
@@ -158,7 +158,7 @@ class WordManager:
         parameters = get_user_parameters(user)
         lang = parameters.language
         current_vocabulary_id = parameters.current_vocabulary_id
-        current_vocabulary_name = get_vocabulary_name(current_vocabulary_id)
+        current_vocabulary_name = VocabularyManager._get_vocabulary_name(current_vocabulary_id)
 
         if " - " in text:
             word, meaning = text.split(" - ", 1)
@@ -208,7 +208,7 @@ class WordManager:
         parameters = get_user_parameters(user)
         lang = parameters.language
         vocabulary_id = parameters.current_vocabulary_id
-        vocabulary_name = get_vocabulary_name(vocabulary_id)
+        vocabulary_name = VocabularyManager._get_vocabulary_name(vocabulary_id)
         word = text
         meaning = cls._get_word_meaning(user=user, vocabulary_id=vocabulary_id, word=word)
 
@@ -238,7 +238,7 @@ class WordManager:
         parameters = get_user_parameters(user)
         lang = parameters.language
         vocabulary_id = vocabulary_id or parameters.current_vocabulary_id
-        vocabulary_name = get_vocabulary_name(vocabulary_id)
+        vocabulary_name = VocabularyManager._get_vocabulary_name(vocabulary_id)
         hide_meaning = parameters.hide_meaning
         logger.debug(f"User {user} opened word page '{page}' of a vocabulary '{vocabulary_id}'")
 
