@@ -13,6 +13,7 @@ routes = {}
 def route(trigger, action, state=None, query_action=None, command=None, cancel_button=False):
     def decorator(func):
         if trigger in TRIGGERS and action in ACTIONS:  # assuming only correct states are passed
+            logger.info(f"Adding route {func.__name__}")
             FuncInfo = namedtuple('FuncInfo', ['call', 'required_action', 'cancel_button'])
             key = trigger, state, query_action, command
             routes[key] = FuncInfo(func, action, cancel_button)
