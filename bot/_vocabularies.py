@@ -238,7 +238,7 @@ class VocabularyManager:
             [
                 InlineKeyboardButton(text='      ━      ', callback_data=json.dumps([QUERY_ACTIONS.DELETE_VOCABULARY.value])),
                 InlineKeyboardButton(text='      📙     ', callback_data=json.dumps([QUERY_ACTIONS.CHANGE_VOCABULARY.value, QUERY_ACTIONS.MENU_VOCABULARIES.value])),
-                InlineKeyboardButton(text='      ✚      ', callback_data=json.dumps([QUERY_ACTIONS.ADD_VOCABULARY.value])),
+                InlineKeyboardButton(text='      ✚      ', callback_data=json.dumps([QUERY_ACTIONS.CREATE_VOCABULARY.value])),
             ],
             [
                 InlineKeyboardButton(text='      ↩️      ', callback_data=json.dumps([QUERY_ACTIONS.MENU.value])),
