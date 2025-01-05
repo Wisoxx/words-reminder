@@ -1,11 +1,11 @@
 import json
 import database as db
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
-from ._settings import get_user_parameters, set_user_state, reset_user_state
+from ._settings import get_user, get_user_parameters, set_user_state, reset_user_state
 from .temp_manager import *
 from ._enums import TaskStatus, QUERY_ACTIONS, TEMP_KEYS, USER_STATES
 from .utils import html_wrapper, escape_html
-from ._response_format import Response
+from router import route
 from translations import translate
 from logger import setup_logger
 
@@ -109,12 +109,14 @@ def _vocabulary_list_to_text(values, current_vocabulary, lang):
 ####################################################################################################################
 
 
-def create_vocabulary_start(user):
+@route(trigger="callback_query", query_action=QUERY_ACTIONS.CREATE_VOCABULARY.value, action="send", cancel_button=True)
+def create_vocabulary_start(update):
     """
-    Enables required state to create vocabulary from next user's text input. Is activated by callback query.
-    :param user:
+    Enables required state to create vocabulary from next user's text input
+    :param update: update from user who wants to create a vocabulary
     :return: text to be sent to user and language of cancel button. Should be sent with cancel button
     """
+    user = get_user(update)
     logger.debug(f"User {user} initiated vocabulary creation")
     parameters = get_user_parameters(user)
     lang = parameters.language
@@ -124,13 +126,15 @@ def create_vocabulary_start(user):
     return text, lang
 
 
-def create_vocabulary_finalize(user, text):
+@route(trigger="text", state=USER_STATES.CREATE_VOCABULARY.value)
+def create_vocabulary_finalize(update):
     """
     Creates a new vocabulary belonging to user. Is activated by a text message while a specific user state.
-    :param user: user_id to whom vocabulary will belong to
-    :param text: user inputted vocabulary_name
-    :return: Response(text, reply_markup) - named tuple containing text and reply_markup to be sent to user
+    :param update: update from user to whom vocabulary will belong to
+    :return: text, reply_markup to be sent to user
     """
+    user = get_user(update)
+    text = update["message"]["text"]
     logger.debug(f"User {user} is trying to create vocabulary '{text}'")
     parameters = get_user_parameters(user)
     lang = parameters.language
@@ -145,7 +149,7 @@ def create_vocabulary_finalize(user, text):
         reply_markup = None
         reset_user_state(user)
 
-    return Response(text, reply_markup)
+    return text, reply_markup
 
 
 def delete_vocabulary_start(user):
@@ -196,14 +200,14 @@ def delete_vocabulary_input(user, text):
         text = f'You don\'t have a vocabulary named "{escape_html(vocabulary_name)}"'
         reply_markup = None
         reset_user_state(user)
-    return Response(text, reply_markup)
+    return text, reply_markup
 
 
 def delete_vocabulary_confirmed(user):
     """
     Deletes text input from current user's vocabulary. Is activated by callback query
     :param user: user_id from whose vocabulary is being deleted
-    :return: Response(text, reply_markup) - named tuple containing text and reply_markup to be sent to user
+    :return: text, reply_markup to be sent to user
     """
     logger.debug(f"User {user} confirmed vocabulary deletion")
     parameters = get_user_parameters(user)
@@ -222,14 +226,14 @@ def delete_vocabulary_confirmed(user):
         case _:
             raise ValueError("Unsupported status")
     reset_user_state(user)
-    return Response(text, reply_markup)
+    return text, reply_markup
 
 
 def delete_vocabulary_declined(user):
     """
     Cancels vocabulary deletion. Is activated by a callback query
     :param user: user_id from whose vocabulary was being deleted
-    :return: Response(text, reply_markup) - named tuple containing text and reply_markup to be sent to user
+    :return: text, reply_markup to be sent to user
     """
     logger.debug(f"User {user} cancelled vocabulary deletion")
     parameters = get_user_parameters(user)
@@ -237,10 +241,12 @@ def delete_vocabulary_declined(user):
     text = "Successfully cancelled vocabulary deletion"
     reply_markup = None
     reset_user_state(user)
-    return Response(text, reply_markup)
+    return text, reply_markup
 
 
-def construct_vocabulary_page(user):
+@route(trigger="callback_query", query_action=QUERY_ACTIONS.MENU_VOCABULARIES.value, action="edit")
+def construct_vocabulary_page(update):
+    user = get_user(update)
     parameters = get_user_parameters(user)
     lang = parameters.language
     current_vocabulary_id = parameters.current_vocabulary_id
@@ -283,4 +289,4 @@ def construct_vocabulary_page(user):
     else:
         text += _vocabulary_list_to_text(values, current_vocabulary_name, lang)
 
-    return Response(heading + '\n' + text, keyboard)
+    return heading + '\n' + text, keyboard
