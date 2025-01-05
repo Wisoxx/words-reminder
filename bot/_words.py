@@ -5,7 +5,6 @@ from ._vocabularies import _get_vocabulary_name
 from .utils import html_wrapper, escape_html, get_timestamp, pad
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 from ._enums import TaskStatus, QUERY_ACTIONS, TEMP_KEYS, USER_STATES
-from ._response_format import Response
 from translations import translate
 from router import route
 from logger import setup_logger
@@ -152,7 +151,7 @@ def add_word(update):
     Adds a new word to the current vocabulary
     :param update: update containing user input in form "{word} - {meaning}". If " - " is absent, then the whole text
     is treated as one word
-    :return: Response(text, reply_markup) - named tuple containing text and reply_markup to be sent to user
+    :return: text, reply_markup to be sent to user
     """
     user = get_user(update)
     text = update["message"]["text"]
@@ -181,7 +180,7 @@ def add_word(update):
             ]
         ])
 
-    return Response(text, reply_markup)
+    return text, reply_markup
 
 
 @route(trigger="callback_query", query_action=QUERY_ACTIONS.DELETE_WORD.value, action="send", cancel_button=True)
@@ -206,7 +205,7 @@ def delete_word_finalize(update):
     """
     Deletes text input from current user's vocabulary. Is activated by a text message while a specific user state.
     :param update: update from user whose vocabulary is being deleted
-    :return: Response(text, reply_markup) - named tuple containing text and reply_markup to be sent to user
+    :return: text, reply_markup to be sent to user
     """
     user = get_user(update)
     text = update["message"]["text"]
