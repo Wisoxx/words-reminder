@@ -7,6 +7,19 @@ from logger import setup_logger
 logger = setup_logger(__name__)
 
 
+def get_user(update):
+    if "message" in update:
+        user = update["message"]["chat"]["id"]
+    elif "callback_query" in update:
+        user = update["callback_query"]["from"]["id"]
+    elif "my_chat_member" in update:
+        user = update["my_chat_member"]["from"]["id"]
+    else:
+        raise KeyError("Couldn't find user")
+
+    return user
+
+
 def get_user_parameters(user):
     return db.Users.get({"user_id": user}, include_column_names=True)
 

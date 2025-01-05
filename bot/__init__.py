@@ -4,7 +4,7 @@ import telepot
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 from translations import translate
 from ._enums import QUERY_ACTIONS, TEMP_KEYS, USER_STATES
-from ._settings import get_user_parameters, set_user_state, get_user_state, reset_user_state
+from ._settings import get_user, get_user_parameters, set_user_state, get_user_state, reset_user_state
 import bot._words
 import bot._vocabularies
 from router import get_route
@@ -90,26 +90,14 @@ class Bot:
             self.deliver_message(user, text[lang], reply_markup=reply_markup)
         logger.info(f"Sent to {len(users)} users")
 
-    def get_user(self, update):
-        if "message" in update:
-            user = update["message"]["chat"]["id"]
-        elif "callback_query" in update:
-            user = update["callback_query"]["from"]["id"]
-        elif "my_chat_member" in update:
-            user = update["my_chat_member"]["from"]["id"]
-        else:
-            raise KeyError("Couldn't find user")
-
-        self.manage_cancel_buttons(user)
-        return user
-
     def handle_update(self, update):
         user = None
         try:
             # pretty print logs
             logger.debug('Received update: {}'.format(json.dumps(update, indent=4, ensure_ascii=False)))
 
-            user = self.get_user(update)
+            user = get_user(update)
+            self.manage_cancel_buttons(user)
 
             trigger = None
             command = None
