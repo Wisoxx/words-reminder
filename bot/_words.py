@@ -147,14 +147,15 @@ def _word_list_to_pages(values, hide_meaning, max_length, words_limit):
 
 
 @route(trigger="text", state=USER_STATES.NO_STATE.value, action="send")
-def add_word(user, text):
+def add_word(user, update):
     """
     Adds a new word to the current vocabulary. Is activated by a text message without specific user state.
     :param user: user_id to whose vocabulary is being added
-    :param text: user input in form "{word} - {meaning}". If " - " is absent, then the whole text is treated as one
-    word
+    :param update: update containing user input in form "{word} - {meaning}". If " - " is absent, then the whole text
+    is treated as one word
     :return: Response(text, reply_markup) - named tuple containing text and reply_markup to be sent to user
     """
+    text = update["message"]["text"]
     logger.debug(f"Adding user {user} word '{text}'")
     parameters = get_user_parameters(user)
     lang = parameters.language
