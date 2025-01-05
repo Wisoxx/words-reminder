@@ -9,9 +9,7 @@ from translations import translate
 from router import route
 from logger import setup_logger
 
-
 logger = setup_logger(__name__)
-
 
 MAX_MESSAGE_LENGTH = 4096
 WORDS_PER_PAGE = 15
@@ -23,7 +21,7 @@ WORDS_PER_PAGE = 15
 def _add_word(user, vocabulary_id, word, meaning=None, timestamp=None):
     timestamp = timestamp or get_timestamp()
     word_id = db.Words.add({"user_id": user, "vocabulary_id": vocabulary_id, "word": word, "meaning": meaning,
-                           "timestamp": timestamp})[1]
+                            "timestamp": timestamp})[1]
     if word_id > 0:
         logger.info(f'User {user} added word #{word_id} to vocabulary #{vocabulary_id}')
     return word_id
@@ -92,6 +90,7 @@ def _get_user_words(user, vocabulary_id, include_timestamp=False, reverse=False)
 def _get_old_words(user, vocabulary_id, limit):
     pass
 
+
 ####################################################################################################################
 #                                                     OTHER
 ####################################################################################################################
@@ -139,6 +138,7 @@ def _word_list_to_pages(values, hide_meaning, max_length, words_limit):
             pages.append(current_page)
 
     return pages
+
 
 ####################################################################################################################
 #                                                  BOT ACTIONS
@@ -285,8 +285,9 @@ def construct_word_page(update, vocabulary_id=None, page=0):
     if len(words) == 0:
         text = heading + "*🦗crickets noises🦗*"
     else:
+        logger.debug(f"Words = {words}")
         pages = _word_list_to_pages(words, hide_meaning, max_length=MAX_MESSAGE_LENGTH - 50,
-                                        words_limit=WORDS_PER_PAGE)
+                                    words_limit=WORDS_PER_PAGE)
         if len(pages) != 1:
             if page > 1:
                 page_buttons.append(InlineKeyboardButton(text='      ⏮️      ',
@@ -317,7 +318,7 @@ def construct_word_page(update, vocabulary_id=None, page=0):
                                                              len(pages) - 1  # destination
                                                          ])))
 
-        footer = f"\n{pad(' '*36, str(page + 1), True)}/{len(pages)}"
+        footer = f"\n{pad(' ' * 36, str(page + 1), True)}/{len(pages)}"
         text = heading + pages[page] + footer
-    keyboard = InlineKeyboardMarkup(inline_keyboard=[page_buttons]+menu_buttons)
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[page_buttons] + menu_buttons)
     return text, keyboard
