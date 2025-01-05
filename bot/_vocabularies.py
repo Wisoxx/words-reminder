@@ -207,7 +207,7 @@ def delete_vocabulary_input(update):
     return text, reply_markup
 
 
-@route(trigger="callback_query", query_action=QUERY_ACTIONS.DELETE_VOCABULARY_CONFIRM.value, action="send")
+@route(trigger="callback_query", query_action=QUERY_ACTIONS.DELETE_VOCABULARY_CONFIRM.value, action="edit")
 def delete_vocabulary_confirmed(update):
     """
     Deletes text input from current user's vocabulary. Is activated by callback query
@@ -235,7 +235,7 @@ def delete_vocabulary_confirmed(update):
     return text, reply_markup
 
 
-@route(trigger="callback_query", query_action=QUERY_ACTIONS.DELETE_VOCABULARY_DECLINE.value, action="send")
+@route(trigger="callback_query", query_action=QUERY_ACTIONS.DELETE_VOCABULARY_DECLINE.value, action="edit")
 def delete_vocabulary_declined(update):
     """
     Cancels vocabulary deletion. Is activated by a callback query
