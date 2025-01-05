@@ -16,7 +16,7 @@ PARSE_MODE = "HTML"
 
 
 class Bot:
-    from ._handlers import handle_message, handle_callback_query, handle_chat_member_status, process_user_action
+    from ._handlers import handle_callback_query, handle_chat_member_status, process_user_action
     # from ._utils import TODO
 
     def __init__(self, token):
