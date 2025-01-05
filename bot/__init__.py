@@ -98,6 +98,7 @@ class Bot:
 
             user = get_user(update)
             self.manage_cancel_buttons(user)
+            callback_query_id = None
 
             trigger = None
             command = None
@@ -120,7 +121,7 @@ class Bot:
                 trigger = "callback_query"
                 query_action = json.loads(update["callback_query"]["data"])[0]
                 msg_id = update["callback_query"]["message"]["message_id"]
-                self.answerCallbackQuery(update["callback_query"]["id"])
+                callback_query_id = update["callback_query"]["id"]
 
             elif "my_chat_member" in update:
                 self.handle_chat_member_status(update)
@@ -129,6 +130,9 @@ class Bot:
             function, action, cancel_button = get_route(trigger, state, query_action, command)
             match action:
                 case "send":
+                    if callback_query_id:
+                        self.answerCallbackQuery(callback_query_id)
+
                     if cancel_button:
                         text, lang = function(update)
                         self.deliver_message(user, text, add_cancel_button=True, lang=lang)
@@ -136,7 +140,7 @@ class Bot:
                         text, reply_markup = function(update)
                         self.deliver_message(user, text, reply_markup=reply_markup)
 
-                case "edit":
+                case "edit":  # editing message doesn't require answering callback_query
                     if trigger == "callback_query":
                         text, reply_markup = function(update)
                         self.editMessageText((user, msg_id), text, parse_mode="HTML", reply_markup=reply_markup)
