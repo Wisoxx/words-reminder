@@ -122,22 +122,22 @@ class Bot:
                 msg_id = update["callback_query"]["message"]["message_id"]
 
             elif "my_chat_member" in update:
-                self.handle_chat_member_status(user, update)
+                self.handle_chat_member_status(update)
                 return
 
             function, action, cancel_button = get_route(trigger, state, query_action, command)
             match action:
                 case "send":
                     if cancel_button:
-                        text, lang = function(user, update)
+                        text, lang = function(update)
                         self.deliver_message(user, text, add_cancel_button=True, lang=lang)
                     else:
-                        text, reply_markup = function(user, update)
+                        text, reply_markup = function(update)
                         self.deliver_message(user, text, reply_markup=reply_markup)
 
                 case "edit":
                     if trigger == "callback_query":
-                        text, reply_markup = function(user, update)
+                        text, reply_markup = function(update)
                         self.editMessageText((user, msg_id), text, parse_mode="HTML", reply_markup=reply_markup)
                     else:
                         raise ValueError("Action is set to edit, but not triggered by callback query, so no msg_id")

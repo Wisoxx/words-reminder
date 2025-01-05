@@ -12,50 +12,8 @@ from logger import setup_logger
 logger = setup_logger(__name__)
 
 
-def handle_message(self, user, update):
-    if "text" in update["message"]:
-        text = update["message"]["text"]
-        # trigger = "text"
-        # command = None
-        # state = None
-        # query_action = None
-        #
-        # if text.startswith("/"):
-        #     command = text.split()[0]
-        # else:
-        #     state = get_user_state(user)
-        #
-        # function, action, cancel_button = get_route(trigger, state, query_action, command)
-        # match action:
-        #     case "send":
-        #         if cancel_button:
-        #             text, lang = function(user, update)
-        #             self.deliver_message(user, text, add_cancel_button=True, lang=lang)
-        #         else:
-        #             text, reply_markup = function(user, update)
-        #             self.deliver_message(user, text, reply_markup=reply_markup)
-        #
-        #     case "edit":
-        #         text, reply_markup = function(user, update)
-        #         self.editMessageText((user, msg_id), text, parse_mode="HTML", reply_markup=reply_markup)
-        #
-        #     case "popup":
-        #         function.call(user, update)
-        #
-        #     case _:
-        #         raise ValueError(f"Unknown action {action}")
-        # # self.process_user_action(user, text)
-
-    else:
-        self.deliver_message(user, "From the web: sorry, I didn't understand that kind of message")
-
-
 def process_user_action(self, user, text):
     match get_user_state(user):
-        # case USER_STATES.NO_STATE.value:
-        #     text, reply_markup = WordManager.add_word(user, text)
-        #     self.deliver_message(user, text, reply_markup=reply_markup)
-        #
         # case USER_STATES.DELETE_WORD.value:
         #     text, reply_markup = WordManager.delete_word_finalize(user, text)
         #     self.deliver_message(user, text, reply_markup=reply_markup)

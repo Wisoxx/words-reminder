@@ -1,6 +1,6 @@
 import json
 import database as db
-from ._settings import get_user_parameters, set_user_state, reset_user_state
+from ._settings import get_user, get_user_parameters, set_user_state, reset_user_state
 from ._vocabularies import _get_vocabulary_name
 from .utils import html_wrapper, escape_html, get_timestamp, pad
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
@@ -147,14 +147,14 @@ def _word_list_to_pages(values, hide_meaning, max_length, words_limit):
 
 
 @route(trigger="text", state=USER_STATES.NO_STATE.value, action="send")
-def add_word(user, update):
+def add_word(update):
     """
     Adds a new word to the current vocabulary. Is activated by a text message without specific user state.
-    :param user: user_id to whose vocabulary is being added
     :param update: update containing user input in form "{word} - {meaning}". If " - " is absent, then the whole text
     is treated as one word
     :return: Response(text, reply_markup) - named tuple containing text and reply_markup to be sent to user
     """
+    user = get_user(update)
     text = update["message"]["text"]
     logger.debug(f"Adding user {user} word '{text}'")
     parameters = get_user_parameters(user)
@@ -238,7 +238,8 @@ def delete_word_finalize(user, text):
 
 @route(trigger="callback_query", query_action=QUERY_ACTIONS.CHANGE_WORDS_PAGE.value, action="edit")
 @route(trigger="callback_query", query_action=QUERY_ACTIONS.MENU_WORDS.value, action="edit")
-def construct_word_page(user, update, vocabulary_id=None, page=0):
+def construct_word_page(update, vocabulary_id=None, page=0):
+    user = get_user(update)
     callback_data = json.loads(update["callback_query"]["data"])
     parameters = get_user_parameters(user)
     if len(callback_data) > 1:

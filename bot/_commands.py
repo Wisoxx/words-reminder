@@ -1,7 +1,7 @@
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 import database as db
 from translations import translate
-from ._settings import get_user_parameters
+from ._settings import get_user, get_user_parameters
 from ._response_format import Response
 import json
 from ._enums import QUERY_ACTIONS
@@ -12,7 +12,8 @@ logger = setup_logger(__name__)
 
 
 @route(trigger="text", command="/start", action="send")
-def start(user, update):
+def start(update):
+    user = get_user(update)
     username = update.get("message", {}).get("from", {}).get("username", None)
     if not username:
         first_name = update.get("message", {}).get("from", {}).get("first_name", "")
@@ -28,7 +29,8 @@ def start(user, update):
 
 @route(trigger="text", command="/menu", action="send")
 @route(trigger="callback_query", query_action=QUERY_ACTIONS.MENU.value, action="edit")
-def menu(user, update):
+def menu(update):
+    user = get_user(update)
     logger.debug(f'Constructing menu page for user: {user}')
     parameters = get_user_parameters(user)
     lang = parameters.language
@@ -53,7 +55,9 @@ def menu(user, update):
     return Response(text, keyboard)
 
 
-def recall(user, update):
+@route(trigger="text", command="/recall", action="send")
+def recall(update):
+    user = get_user(update)
     text = "recall"
     reply_markup = None
     return text, reply_markup
