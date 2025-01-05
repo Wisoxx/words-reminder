@@ -84,7 +84,7 @@ def _get_user_words(user, vocabulary_id, include_timestamp=False, reverse=False)
     select = "SELECT word, meaning, timestamp FROM words" if include_timestamp else "SELECT word, meaning FROM words"
     order = "DESC" if reverse else "ASC"
     return db.Words.get({"user_id": user, "vocabulary_id": vocabulary_id}, custom_select=select,
-                        order_by="word_id", sort_direction=order)
+                        order_by="word_id", sort_direction=order, force_2d=True)
 
 
 def _get_old_words(user, vocabulary_id, limit):
@@ -285,7 +285,6 @@ def construct_word_page(update, vocabulary_id=None, page=0):
     if len(words) == 0:
         text = heading + "*🦗crickets noises🦗*"
     else:
-        logger.debug(f"Words = {words}")
         pages = _word_list_to_pages(words, hide_meaning, max_length=MAX_MESSAGE_LENGTH - 50,
                                     words_limit=WORDS_PER_PAGE)
         if len(pages) != 1:
