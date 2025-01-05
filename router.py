@@ -33,6 +33,5 @@ def get_route(trigger, state=None, query_action=None, command=None):
     :return: named tuple with callable function, required action and whether to add cancel button.
     FuncInfo(func, action, cancel_button)
     """
-    logger.debug("routes=", routes)
     key = trigger, state, query_action, command
     return routes[key]
