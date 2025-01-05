@@ -120,6 +120,7 @@ class Bot:
                 trigger = "callback_query"
                 query_action = json.loads(update["callback_query"]["data"])[0]
                 msg_id = update["callback_query"]["message"]["message_id"]
+                self.answerCallbackQuery(update["callback_query"]["id"])
 
             elif "my_chat_member" in update:
                 self.handle_chat_member_status(update)
