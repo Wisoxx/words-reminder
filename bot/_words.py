@@ -1,7 +1,7 @@
 import json
 import database as db
 from ._settings import get_user_parameters, set_user_state, reset_user_state
-from ._vocabularies import VocabularyManager
+from ._vocabularies import _get_vocabulary_name
 from .utils import html_wrapper, escape_html, get_timestamp, pad
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 from ._enums import TaskStatus, QUERY_ACTIONS, TEMP_KEYS, USER_STATES
@@ -158,7 +158,7 @@ def add_word(user, text):
     parameters = get_user_parameters(user)
     lang = parameters.language
     current_vocabulary_id = parameters.current_vocabulary_id
-    current_vocabulary_name = VocabularyManager._get_vocabulary_name(current_vocabulary_id)
+    current_vocabulary_name = _get_vocabulary_name(current_vocabulary_id)
 
     if " - " in text:
         word, meaning = text.split(" - ", 1)
@@ -208,7 +208,7 @@ def delete_word_finalize(user, text):
     parameters = get_user_parameters(user)
     lang = parameters.language
     vocabulary_id = parameters.current_vocabulary_id
-    vocabulary_name = VocabularyManager._get_vocabulary_name(vocabulary_id)
+    vocabulary_name = _get_vocabulary_name(vocabulary_id)
     word = text
     meaning = _get_word_meaning(user=user, vocabulary_id=vocabulary_id, word=word)
 
@@ -246,7 +246,7 @@ def construct_word_page(user, update, vocabulary_id=None, page=0):
         vocabulary_id = vocabulary_id or parameters.current_vocabulary_id
     lang = parameters.language
 
-    vocabulary_name = VocabularyManager._get_vocabulary_name(vocabulary_id)
+    vocabulary_name = _get_vocabulary_name(vocabulary_id)
     hide_meaning = parameters.hide_meaning
     logger.debug(f"User {user} opened word page #{page} of a vocabulary #{vocabulary_id}")
 
