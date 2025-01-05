@@ -146,6 +146,7 @@ def _word_list_to_pages(values, hide_meaning, max_length, words_limit):
 ####################################################################################################################
 
 
+@route(trigger="text", state=USER_STATES.NO_STATE, action="send")
 def add_word(user, text):
     """
     Adds a new word to the current vocabulary. Is activated by a text message without specific user state.
