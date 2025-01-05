@@ -126,7 +126,7 @@ def create_vocabulary_start(update):
     return text, lang
 
 
-@route(trigger="text", state=USER_STATES.CREATE_VOCABULARY.value)
+@route(trigger="text", state=USER_STATES.CREATE_VOCABULARY.value, action="send")
 def create_vocabulary_finalize(update):
     """
     Creates a new vocabulary belonging to user. Is activated by a text message while a specific user state.
