@@ -129,7 +129,7 @@ def create_vocabulary_start(update):
 @route(trigger="text", state=USER_STATES.CREATE_VOCABULARY.value, action="send")
 def create_vocabulary_finalize(update):
     """
-    Creates a new vocabulary belonging to user. Is activated by a text message while a specific user state.
+    Creates a new vocabulary belonging to user
     :param update: update from user to whom vocabulary will belong to
     :return: text, reply_markup to be sent to user
     """
@@ -152,12 +152,14 @@ def create_vocabulary_finalize(update):
     return text, reply_markup
 
 
-def delete_vocabulary_start(user):
+@route(trigger="callback_query", query_action=QUERY_ACTIONS.DELETE_VOCABULARY.value, action="send", cancel_button=True)
+def delete_vocabulary_start(update):
     """
-    Enables required state to delete vocabulary which name is next user's text input. Is activated by callback query
-    :param user: user_id of user who wants to delete a vocabulary
+    Enables required state to delete vocabulary which name is next user's text input
+    :param update: update from user who wants to delete a vocabulary
     :return: text to be sent to user and language of cancel button. Should be sent with cancel button
     """
+    user = get_user(update)
     logger.debug(f"User {user} initiated word deletion")
     parameters = get_user_parameters(user)
     lang = parameters.language
@@ -167,13 +169,15 @@ def delete_vocabulary_start(user):
     return text, lang
 
 
-def delete_vocabulary_input(user, text):
+@route(trigger="text", state=USER_STATES.DELETE_VOCABULARY_INPUT.value, action="send")
+def delete_vocabulary_input(update):
     """
-    Saves vocabulary_name and asks to confirm deletion. Is activated by a text message while a specific user state.
-    :param user: user_id of user who wants to delete a vocabulary
-    :param text: user inputted vocabulary_name
-    :return: text to be sent to user and language of cancel button. Should be sent with cancel button
+    Saves vocabulary_name and asks to confirm deletion
+    :param update: update from user who wants to delete a vocabulary
+    :return: text, reply_markup to be sent to user
     """
+    user = get_user(update)
+    text = update["message"]["text"]
     logger.debug(f"User {user} provided a word for deletion")
     parameters = get_user_parameters(user)
     lang = parameters.language
@@ -203,12 +207,14 @@ def delete_vocabulary_input(user, text):
     return text, reply_markup
 
 
-def delete_vocabulary_confirmed(user):
+@route(trigger="callback_query", query_action=QUERY_ACTIONS.DELETE_VOCABULARY_CONFIRM.value, action="send")
+def delete_vocabulary_confirmed(update):
     """
     Deletes text input from current user's vocabulary. Is activated by callback query
-    :param user: user_id from whose vocabulary is being deleted
+    :param update: update from user whose vocabulary is being deleted
     :return: text, reply_markup to be sent to user
     """
+    user = get_user(update)
     logger.debug(f"User {user} confirmed vocabulary deletion")
     parameters = get_user_parameters(user)
     lang = parameters.language
@@ -229,12 +235,14 @@ def delete_vocabulary_confirmed(user):
     return text, reply_markup
 
 
-def delete_vocabulary_declined(user):
+@route(trigger="callback_query", query_action=QUERY_ACTIONS.DELETE_VOCABULARY_DECLINE.value, action="send")
+def delete_vocabulary_declined(update):
     """
     Cancels vocabulary deletion. Is activated by a callback query
-    :param user: user_id from whose vocabulary was being deleted
+    :param update: update from user whose vocabulary was being deleted
     :return: text, reply_markup to be sent to user
     """
+    user = get_user(update)
     logger.debug(f"User {user} cancelled vocabulary deletion")
     parameters = get_user_parameters(user)
     lang = parameters.language

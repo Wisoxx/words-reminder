@@ -1,12 +1,13 @@
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 import database as db
 from translations import translate
-from ._settings import get_user, get_user_parameters
+from ._settings import get_user, get_user_parameters, reset_user_state
 from ._response_format import Response
 import json
 from ._enums import QUERY_ACTIONS
 from router import route
 from logger import setup_logger
+
 
 logger = setup_logger(__name__)
 
@@ -61,3 +62,26 @@ def recall(update):
     text = "recall"
     reply_markup = None
     return text, reply_markup
+
+
+@route(trigger="callback_query", query_action=QUERY_ACTIONS.CANCEL.value, action="send")
+def cancel(update):
+    user = get_user(update)
+    reset_user_state(user)
+    text = "Successfully cancelled"
+    reply_markup = None
+    return text, reply_markup
+
+
+@route(trigger="chat_member", action=None)
+def handle_chat_member_status(update):
+    user = get_user(update)
+    old_status = update["my_chat_member"]["old_chat_member"]["status"]
+    new_status = update["my_chat_member"]["new_chat_member"]["status"]
+
+    if old_status == "member" and new_status == "kicked":
+        logger.info(f"User {user} has blocked the bot")
+        db.Users.delete({"user_id": user})  # all data is linked to user_id and will be deleted too
+        logger.info(f"All records of {user} have been deleted")
+    elif old_status == "kicked" and new_status == "member":
+        logger.info(f"User {user} has unblocked the bot")

@@ -16,9 +16,6 @@ PARSE_MODE = "HTML"
 
 
 class Bot:
-    from ._handlers import handle_callback_query, handle_chat_member_status, process_user_action
-    # from ._utils import TODO
-
     def __init__(self, token):
         logger.info('Initializing bot...')
         self.bot = telepot.Bot(token)
@@ -124,8 +121,7 @@ class Bot:
                 callback_query_id = update["callback_query"]["id"]
 
             elif "my_chat_member" in update:
-                self.handle_chat_member_status(update)
-                return
+                trigger = "chat_member"
 
             function, action, cancel_button = get_route(trigger, state, query_action, command)
             match action:
@@ -149,6 +145,9 @@ class Bot:
 
                 case "popup":
                     raise NotImplemented
+
+                case None:
+                    function(update)
 
                 case _:
                     raise ValueError(f"Unknown action {action}")
