@@ -248,6 +248,7 @@ def delete_vocabulary_declined(update):
     lang = parameters.language
     text = "Successfully cancelled vocabulary deletion"
     reply_markup = None
+    remove_temp(user, TEMP_KEYS.VOCABULARY.value)
     reset_user_state(user)
     return text, reply_markup
 
