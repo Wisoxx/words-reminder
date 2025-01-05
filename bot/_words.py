@@ -149,7 +149,7 @@ def _word_list_to_pages(values, hide_meaning, max_length, words_limit):
 @route(trigger="text", state=USER_STATES.NO_STATE.value, action="send")
 def add_word(update):
     """
-    Adds a new word to the current vocabulary. Is activated by a text message without specific user state.
+    Adds a new word to the current vocabulary
     :param update: update containing user input in form "{word} - {meaning}". If " - " is absent, then the whole text
     is treated as one word
     :return: Response(text, reply_markup) - named tuple containing text and reply_markup to be sent to user
@@ -184,12 +184,14 @@ def add_word(update):
     return Response(text, reply_markup)
 
 
-def delete_word_start(user):
+@route(trigger="callback_query", query_action=QUERY_ACTIONS.DELETE_WORD.value, action="send", cancel_button=True)
+def delete_word_start(update):
     """
-    Enables required state to delete word which is next user's text input. Is activated by callback query.
-    :param user: user_id of user who wants to delete a word
+    Enables required state to delete word which is next user's text input.
+    :param update: update from user who wants to delete a word
     :return: text to be sent to user and language of cancel button. Should be sent with cancel button
     """
+    user = get_user(update)
     logger.debug(f"User {user} initiated word deletion")
     parameters = get_user_parameters(user)
     lang = parameters.language
@@ -199,13 +201,15 @@ def delete_word_start(user):
     return text, lang
 
 
-def delete_word_finalize(user, text):
+@route(trigger="text", state=USER_STATES.DELETE_WORD.value, action="send")
+def delete_word_finalize(update):
     """
     Deletes text input from current user's vocabulary. Is activated by a text message while a specific user state.
-    :param user: user_id from whose vocabulary is being deleted
-    :param text: word to be deleted from current vocabulary
+    :param update: update from user whose vocabulary is being deleted
     :return: Response(text, reply_markup) - named tuple containing text and reply_markup to be sent to user
     """
+    user = get_user(update)
+    text = update["message"]["text"]
     logger.debug(f"User {user} provided a word for deletion")
     parameters = get_user_parameters(user)
     lang = parameters.language
@@ -233,7 +237,7 @@ def delete_word_finalize(user, text):
         case _:
             raise ValueError("Unsupported status")
     reset_user_state(user)
-    return Response(text, reply_markup)
+    return text, reply_markup
 
 
 @route(trigger="callback_query", query_action=QUERY_ACTIONS.CHANGE_WORDS_PAGE.value, action="edit")
@@ -317,4 +321,4 @@ def construct_word_page(update, vocabulary_id=None, page=0):
         footer = f"\n{pad(' '*36, str(page + 1), True)}/{len(pages)}"
         text = heading + pages[page] + footer
     keyboard = InlineKeyboardMarkup(inline_keyboard=[page_buttons]+menu_buttons)
-    return Response(text, keyboard)
+    return text, keyboard
