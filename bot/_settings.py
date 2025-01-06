@@ -57,11 +57,14 @@ def reset_user_state(user):
 
 
 def _toggle_hide_meaning(user):
-    db.Users.execute_query("""
+    status = db.Users.execute_query("""
     UPDATE users
     SET hide_meaning = NOT hide_meaning
     WHERE user_id = ?;
     """, (user, )).rowcount > 0
+    if status:
+        logger.debug(f"User {user} toggled hide_meaning")
+    return status
 
 
 ####################################################################################################################
