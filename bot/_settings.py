@@ -95,4 +95,4 @@ def settings(update):
                                  callback_data=json.dumps([QUERY_ACTIONS.SHOW_INFO.value, "info_settings"])),
         ]
     ])
-    return heading + text, reply_markup
+    return heading + '\n' + text, reply_markup
