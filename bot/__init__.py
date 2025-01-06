@@ -144,6 +144,13 @@ class Bot:
                     else:
                         raise ValueError("Action is set to edit, but not triggered by callback query, so no msg_id")
 
+                case "edit_markup":  # editing message reply markup doesn't require answering callback_query
+                    if trigger == "callback_query":
+                        reply_markup = function(update)
+                        self.editMessageReplyMarkup((user, msg_id), reply_markup=reply_markup)
+                    else:
+                        raise ValueError("Action is set to edit, but not triggered by callback query, so no msg_id")
+
                 case "popup":
                     raise NotImplemented
 
