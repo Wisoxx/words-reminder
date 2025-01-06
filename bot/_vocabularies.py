@@ -5,7 +5,7 @@ from ._settings import get_user, get_user_parameters, set_user_state, reset_user
 from .temp_manager import *
 from ._enums import TaskStatus, QUERY_ACTIONS, TEMP_KEYS, USER_STATES
 from .utils import html_wrapper, escape_html
-from router import route
+from router import route, get_route
 from translations import translate
 from logger import setup_logger
 
@@ -105,12 +105,13 @@ def _vocabulary_list_to_text(values, current_vocabulary, lang):
     return text
 
 
-def _get_inline_vocabulary_list(user, back_button_action):
+def _get_inline_vocabulary_list(user, back_button_action, return_route):
     """
     Creates an inline keyboard with a list of vocabularies for the user, including a back button.
 
     :param user: The user ID to fetch vocabularies for.
     :param back_button_action: The callback action for the back button.
+    :param return_route: The key for the route to call after changing the vocabulary.
     :return: An InlineKeyboardMarkup object with the vocabulary list and a back button.
     """
     vocabularies = _get_vocabulary_list(user)
@@ -126,7 +127,7 @@ def _get_inline_vocabulary_list(user, back_button_action):
         buttons.append([
             InlineKeyboardButton(
                 text=vocabulary_name,
-                callback_data=json.dumps([QUERY_ACTIONS.VOCABULARY_CHOSEN.value, vocabulary_id])
+                callback_data=json.dumps([QUERY_ACTIONS.VOCABULARY_CHOSEN.value, vocabulary_id, return_route])
             )
         ])
 
@@ -137,28 +138,29 @@ def _get_inline_vocabulary_list(user, back_button_action):
 ####################################################################################################################
 
 
-@route(trigger="callback_query", query_action=QUERY_ACTIONS.CHANGE_VOCABULARY.value, action="edit")
+@route(trigger="callback_query", query_action=QUERY_ACTIONS.CHANGE_VOCABULARY.value, action="edit_markup")
 def change_vocabulary_start(update):
     user = get_user(update)
+    callback_data = json.loads(update["callback_query"]["data"])
+    return_route, back_button_action = callback_data[1:]
     logger.debug(f"User {user} initiated vocabulary change")
     parameters = get_user_parameters(user)
     lang = parameters.language
-    text, _ = construct_vocabulary_page(update)
-    reply_markup = _get_inline_vocabulary_list(user, QUERY_ACTIONS.MENU_VOCABULARIES.value)
-    return text, reply_markup
+    reply_markup = _get_inline_vocabulary_list(user, back_button_action, return_route)
+    return reply_markup
 
 
 @route(trigger="callback_query", query_action=QUERY_ACTIONS.VOCABULARY_CHOSEN.value, action="edit")
-def vocabulary_chosen(update):
+def change_vocabulary_finish(update):
     user = get_user(update)
     callback_data = json.loads(update["callback_query"]["data"])
-    vocabulary_id = callback_data[1]
+    vocabulary_id, return_route = callback_data[1:]
     parameters = get_user_parameters(user)
     lang = parameters.language
     _set_current_vocabulary(user, vocabulary_id)
     logger.debug(f"User {user} changed vocabulary to #{vocabulary_id}")
 
-    return construct_vocabulary_page(update)
+    return get_route(*return_route)(update)
 
 
 @route(trigger="callback_query", query_action=QUERY_ACTIONS.CREATE_VOCABULARY.value, action="send", cancel_button=True)
@@ -319,7 +321,9 @@ def construct_vocabulary_page(update):
             InlineKeyboardButton(text='      ━      ',
                                  callback_data=json.dumps([QUERY_ACTIONS.DELETE_VOCABULARY.value])),
             InlineKeyboardButton(text='      📙     ', callback_data=json.dumps(
-                [QUERY_ACTIONS.CHANGE_VOCABULARY.value, QUERY_ACTIONS.MENU_VOCABULARIES.value])),
+                [QUERY_ACTIONS.CHANGE_VOCABULARY.value,
+                 ('callback_query', None, QUERY_ACTIONS.MENU_VOCABULARIES.value, None),
+                 QUERY_ACTIONS.MENU_VOCABULARIES.value])),
             InlineKeyboardButton(text='      ✚      ',
                                  callback_data=json.dumps([QUERY_ACTIONS.CREATE_VOCABULARY.value])),
         ],

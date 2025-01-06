@@ -270,6 +270,7 @@ def construct_word_page(update, vocabulary_id=None, page=0):
         [
             InlineKeyboardButton(text='      📙      ',
                                  callback_data=json.dumps([QUERY_ACTIONS.CHANGE_VOCABULARY.value,
+                                                           ('callback_query', None, QUERY_ACTIONS.MENU_WORDS.value, None),
                                                            QUERY_ACTIONS.MENU_WORDS.value])),
             InlineKeyboardButton(text='      ━     ', callback_data=json.dumps([QUERY_ACTIONS.DELETE_WORD.value])),
         ],
