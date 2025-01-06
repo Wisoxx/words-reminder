@@ -16,6 +16,7 @@ class QUERY_ACTIONS(Enum):
     MENU_SETTINGS = auto()
     SHOW_INFO = auto()
     CHANGE_VOCABULARY = auto()
+    VOCABULARY_CHOSEN = auto()
     ADD_WORD = auto()
     DELETE_WORD = auto()
     ADD_REMINDER = auto()
