@@ -127,7 +127,8 @@ def _get_inline_vocabulary_list(user, back_button_action, return_route):
         buttons.append([
             InlineKeyboardButton(
                 text=vocabulary_name,
-                callback_data=json.dumps([QUERY_ACTIONS.VOCABULARY_CHOSEN.value, vocabulary_id, return_route])
+                callback_data=json.dumps([QUERY_ACTIONS.VOCABULARY_CHOSEN.value, vocabulary_id, return_route,
+                                          back_button_action])
             )
         ])
 
@@ -154,11 +155,12 @@ def change_vocabulary_start(update):
 def change_vocabulary_finish(update):
     user = get_user(update)
     callback_data = json.loads(update["callback_query"]["data"])
-    vocabulary_id, return_route = callback_data[1:]
+    vocabulary_id, return_route, back_button_action = callback_data[1:]
     parameters = get_user_parameters(user)
     lang = parameters.language
     _set_current_vocabulary(user, vocabulary_id)
 
+    update["callback_query"]["data"] = json.dumps([back_button_action])
     return get_route(*return_route).call(update)
 
 
