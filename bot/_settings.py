@@ -51,6 +51,18 @@ def reset_user_state(user):
         logger.debug(f"User state was reset")
     return status
 
+####################################################################################################################
+#                                                DATABASE INTERACTIONS
+####################################################################################################################
+
+
+def _toggle_hide_meaning(user):
+    db.Users.execute_query("""
+    UPDATE users
+    SET hide_meaning = NOT hide_meaning
+    WHERE user_id = ?;
+    """, (user, )).rowcount > 0
+
 
 ####################################################################################################################
 #                                                     OTHER
@@ -96,3 +108,10 @@ def settings(update):
         ]
     ])
     return heading + '\n' + text, reply_markup
+
+
+@route(trigger="callback_query", query_action=QUERY_ACTIONS.TOGGLE_HIDE_MEANING.value, action="edit")
+def toggle_hide_meaning(update):
+    user = get_user(update)
+    _toggle_hide_meaning(user)
+    return settings(update)
