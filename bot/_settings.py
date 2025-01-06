@@ -1,12 +1,20 @@
 import database as db
+from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
+import json
 from ._enums import TaskStatus, QUERY_ACTIONS, TEMP_KEYS, USER_STATES
 from .temp_manager import set_temp, get_temp, remove_temp, pop_temp
+from .utils import html_wrapper, escape_html
+from translations import translate
+from router import route
 from logger import setup_logger
 
 
 logger = setup_logger(__name__)
 
 
+####################################################################################################################
+#                                                DATABASE INTERACTIONS
+####################################################################################################################
 def get_user(update):
     if "message" in update:
         user = update["message"]["chat"]["id"]
@@ -42,3 +50,49 @@ def reset_user_state(user):
     if status:
         logger.debug(f"User state was reset")
     return status
+
+
+####################################################################################################################
+#                                                     OTHER
+####################################################################################################################
+
+
+####################################################################################################################
+#                                                  BOT ACTIONS
+####################################################################################################################
+
+
+@route(trigger="callback_query", query_action=QUERY_ACTIONS.MENU_SETTINGS.value, action="edit")
+def settings(update):
+    user = get_user(update)
+    parameters = get_user_parameters(user)
+    lang = parameters.language
+    hide_meaning = parameters.hide_meaning
+    timezone = parameters.timezone
+    heading = html_wrapper(
+        escape_html(
+            "<><><><><><><><><><><><><><><><><><><>\n" +
+            f"{' ' * 30}Settings\n" +
+            "<><><><><><><><><><><><><><><><><><><>"
+        ),
+        'b')
+    text = (f"Language: {translate(lang, 'flag')}\n"
+            f"Hide meaning: {'✅' if hide_meaning else '❌'}\n"
+            f"Timezone: {timezone}")
+
+    reply_markup = InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(text=f'      🌎      ',
+                                 callback_data=json.dumps([QUERY_ACTIONS.CHANGE_LANGUAGE.value])),
+            InlineKeyboardButton(text=f'      👁      ',
+                                 callback_data=json.dumps([QUERY_ACTIONS.TOGGLE_HIDE_MEANING.value])),
+            InlineKeyboardButton(text=f'      🕓      ',
+                                 callback_data=json.dumps([QUERY_ACTIONS.CHANGE_TIMEZONE.value])),
+        ],
+        [
+            InlineKeyboardButton(text='      ↩️      ', callback_data=json.dumps([QUERY_ACTIONS.MENU.value])),
+            InlineKeyboardButton(text='      ℹ️      ',
+                                 callback_data=json.dumps([QUERY_ACTIONS.SHOW_INFO.value, "info_settings"])),
+        ]
+    ])
+    return text, reply_markup
