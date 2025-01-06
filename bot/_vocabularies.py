@@ -104,9 +104,62 @@ def _vocabulary_list_to_text(values, current_vocabulary, lang):
         text += f'"{vocabulary}"  —  {words_number} words\n'
     return text
 
+
+def _get_inline_vocabulary_list(user, back_button_action):
+    """
+    Creates an inline keyboard with a list of vocabularies for the user, including a back button.
+
+    :param user: The user ID to fetch vocabularies for.
+    :param back_button_action: The callback action for the back button.
+    :return: An InlineKeyboardMarkup object with the vocabulary list and a back button.
+    """
+    vocabularies = _get_vocabulary_list(user)
+
+    buttons = [[
+        InlineKeyboardButton(
+            text='      ↩️      ',
+            callback_data=json.dumps([back_button_action])
+        )
+    ]]
+
+    for vocabulary_id, vocabulary_name in vocabularies.items():
+        buttons.append([
+            InlineKeyboardButton(
+                text=vocabulary_name,
+                callback_data=json.dumps([QUERY_ACTIONS.VOCABULARY_CHOSEN.value, vocabulary_id])
+            )
+        ])
+
+    return InlineKeyboardMarkup(inline_keyboard=buttons)
+
 ####################################################################################################################
 #                                                  BOT ACTIONS
 ####################################################################################################################
+
+
+@route(trigger="callback_query", query_action=QUERY_ACTIONS.CHANGE_VOCABULARY.value, action="edit")
+def change_vocabulary_start(update):
+    user = get_user(update)
+    logger.debug(f"User {user} initiated vocabulary change")
+    parameters = get_user_parameters(update)
+    lang = parameters.language
+    text, _ = construct_vocabulary_page(update)
+    reply_markup = _get_inline_vocabulary_list(user, QUERY_ACTIONS.MENU_VOCABULARIES.value)
+    return text, reply_markup
+
+
+@route(trigger="callback_query", query_action=QUERY_ACTIONS.VOCABULARY_CHOSEN.value, action="edit")
+def vocabulary_chosen(update):
+    user = get_user(update)
+    callback_data = json.loads(update["callback_query"]["data"])
+    vocabulary_id = callback_data[1]
+    parameters = get_user_parameters(update)
+    lang = parameters.language
+    _set_current_vocabulary(user, vocabulary_id)
+    logger.debug(f"User {user} changed vocabulary to #{vocabulary_id}")
+
+    text, reply_markup = construct_vocabulary_page(update)
+    return text, reply_markup
 
 
 @route(trigger="callback_query", query_action=QUERY_ACTIONS.CREATE_VOCABULARY.value, action="send", cancel_button=True)
