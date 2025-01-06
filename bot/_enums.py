@@ -26,7 +26,11 @@ class QUERY_ACTIONS(Enum):
     DELETE_VOCABULARY_CONFIRM = auto()
     DELETE_VOCABULARY_DECLINE = auto()
     CHANGE_LANGUAGE = auto()
+    LANGUAGE_CHOSEN = auto()
     TOGGLE_HIDE_MEANING = auto()
+    CHANGE_TIMEZONE = auto()
+    PICK_TIME = auto()
+    TIME_CHOSEN = auto()
 
 
 class TEMP_KEYS(Enum):
