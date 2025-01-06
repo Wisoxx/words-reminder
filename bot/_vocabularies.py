@@ -158,9 +158,8 @@ def change_vocabulary_finish(update):
     parameters = get_user_parameters(user)
     lang = parameters.language
     _set_current_vocabulary(user, vocabulary_id)
-    logger.debug(f"User {user} changed vocabulary to #{vocabulary_id}")
 
-    return get_route(*return_route)(update)
+    return get_route(*return_route).call(update)
 
 
 @route(trigger="callback_query", query_action=QUERY_ACTIONS.CREATE_VOCABULARY.value, action="send", cancel_button=True)
