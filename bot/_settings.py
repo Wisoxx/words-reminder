@@ -63,7 +63,7 @@ def _toggle_hide_meaning(user):
     WHERE user_id = ?;
     """, (user, )).rowcount > 0
     if status:
-        logger.debug(f"User {user} toggled hide_meaning")
+        logger.info(f"User {user} toggled hide_meaning")
     return status
 
 
