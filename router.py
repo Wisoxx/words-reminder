@@ -6,7 +6,7 @@ logger = setup_logger(__name__)
 
 
 TRIGGERS = ("text", "callback_query", "chat_member")
-ACTIONS = ("send", "edit", "popup", None)
+ACTIONS = ("send", "edit", "edit_markup", "popup", None)
 routes = {}
 
 
