@@ -76,9 +76,9 @@ def settings(update):
             "<><><><><><><><><><><><><><><><><><><>"
         ),
         'b')
-    text = (f"Language: {translate(lang, 'flag')}\n"
-            f"Hide meaning: {'✅' if hide_meaning else '❌'}\n"
-            f"Timezone: {timezone}")
+    text = (f"🌎 Language: {translate(lang, 'flag')}\n"
+            f"👁 Hide meaning: {'✅' if hide_meaning else '❌'}\n"
+            f"🕓 Timezone: {timezone}")
 
     reply_markup = InlineKeyboardMarkup(inline_keyboard=[
         [
