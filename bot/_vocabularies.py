@@ -141,7 +141,7 @@ def _get_inline_vocabulary_list(user, back_button_action):
 def change_vocabulary_start(update):
     user = get_user(update)
     logger.debug(f"User {user} initiated vocabulary change")
-    parameters = get_user_parameters(update)
+    parameters = get_user_parameters(user)
     lang = parameters.language
     text, _ = construct_vocabulary_page(update)
     reply_markup = _get_inline_vocabulary_list(user, QUERY_ACTIONS.MENU_VOCABULARIES.value)
@@ -153,7 +153,7 @@ def vocabulary_chosen(update):
     user = get_user(update)
     callback_data = json.loads(update["callback_query"]["data"])
     vocabulary_id = callback_data[1]
-    parameters = get_user_parameters(update)
+    parameters = get_user_parameters(user)
     lang = parameters.language
     _set_current_vocabulary(user, vocabulary_id)
     logger.debug(f"User {user} changed vocabulary to #{vocabulary_id}")
