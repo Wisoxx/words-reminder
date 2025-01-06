@@ -158,8 +158,7 @@ def vocabulary_chosen(update):
     _set_current_vocabulary(user, vocabulary_id)
     logger.debug(f"User {user} changed vocabulary to #{vocabulary_id}")
 
-    text, reply_markup = construct_vocabulary_page(update)
-    return text, reply_markup
+    return construct_vocabulary_page(update)
 
 
 @route(trigger="callback_query", query_action=QUERY_ACTIONS.CREATE_VOCABULARY.value, action="send", cancel_button=True)
