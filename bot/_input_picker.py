@@ -117,3 +117,10 @@ def pick_time(update):
 
     reply_markup = InlineKeyboardMarkup(inline_keyboard=rows)
     return reply_markup
+
+
+@route(trigger="callback_query", query_action=QUERY_ACTIONS.TIME_CHOSEN.value, action="send")
+def chosen_time(update):
+    callback_data = json.loads(update["callback_query"]["data"])
+    time = callback_data[1]
+    return time, None
