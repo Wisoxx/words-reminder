@@ -57,79 +57,60 @@ def pick_time(update):
     time, include_minutes, return_route, back_button_action = callback_data[1:]
     h = translate(lang, 'short_hours')
     mins = translate(lang, 'short_minutes')
+
+    def build_adjustment_row(label, adjustments, is_hour=True):
+        """
+        Helper to create a row of adjustment buttons for time.
+        :param label: Unit label for the button text (e.g., 'hours' or 'minutes').
+        :param adjustments: List of integers for the time adjustments.
+        :param is_hour: If True, adjusts hours; otherwise, adjusts minutes.
+        :return: A list of InlineKeyboardButton objects.
+        """
+        buttons = []
+        for adjustment in adjustments:
+            offset_args = {"hour_offset": adjustment} if is_hour else {"min_offset": adjustment}
+            adjusted_time = shift_time(time, **offset_args)
+            buttons.append(
+                InlineKeyboardButton(
+                    text=f"  {adjustment:+} {label}  ",
+                    callback_data=json.dumps([
+                        QUERY_ACTIONS.PICK_TIME.value,
+                        adjusted_time,
+                        include_minutes,
+                        return_route,
+                        back_button_action
+                    ])
+                )
+            )
+        return buttons
+
     rows = [
         [
-            InlineKeyboardButton(text=shift_time(time, hour_offset=timezone),
-                                 callback_data=json.dumps([QUERY_ACTIONS.TIME_CHOSEN.value, time,
-                                                           return_route, back_button_action])),
+            InlineKeyboardButton(
+                text=shift_time(time, hour_offset=timezone),
+                callback_data=json.dumps([
+                    QUERY_ACTIONS.TIME_CHOSEN.value,
+                    time,
+                    return_route,
+                    back_button_action
+                ])
+            )
         ],
-        [
-            InlineKeyboardButton(text=f"  -5 {h}  ",
-                                 callback_data=json.dumps([QUERY_ACTIONS.PICK_TIME.value,
-                                                           include_minutes,
-                                                           shift_time(time, -5)])),
-            InlineKeyboardButton(text=f"  -1 {h}  ",
-                                 callback_data=json.dumps([QUERY_ACTIONS.PICK_TIME.value,
-                                                           include_minutes,
-                                                           shift_time(time, -1)])),
-            InlineKeyboardButton(text=f"  +1 {h}  ",
-                                 callback_data=json.dumps([QUERY_ACTIONS.PICK_TIME.value,
-                                                           include_minutes,
-                                                           shift_time(time, 1)])),
-            InlineKeyboardButton(text=f"  +5 {h}  ",
-                                 callback_data=json.dumps([QUERY_ACTIONS.PICK_TIME.value,
-                                                           include_minutes,
-                                                           shift_time(time, 5)])),
-        ],
+        build_adjustment_row(h, [-5, -1, 1, 5]),
     ]
 
     if include_minutes:
-        rows.extend(
-            [
-                [
-                    InlineKeyboardButton(text=f"  -5 {mins}  ",
-                                         callback_data=json.dumps([QUERY_ACTIONS.PICK_TIME.value,
-                                                                   include_minutes,
-                                                                   shift_time(time, 0, -5)])),
-                    InlineKeyboardButton(text=f"  -1 {mins}  ",
-                                         callback_data=json.dumps([QUERY_ACTIONS.PICK_TIME.value,
-                                                                   include_minutes,
-                                                                   shift_time(time, 0, -1)])),
-                    InlineKeyboardButton(text=f"  +1 {mins}  ",
-                                         callback_data=json.dumps([QUERY_ACTIONS.PICK_TIME.value,
-                                                                   include_minutes,
-                                                                   shift_time(time, 0, 1)])),
-                    InlineKeyboardButton(text=f"  +5 {mins}  ",
-                                         callback_data=json.dumps([QUERY_ACTIONS.PICK_TIME.value,
-                                                                   include_minutes,
-                                                                   shift_time(time, 0, 5)])),
-                ],
-                [
-                    InlineKeyboardButton(text=f"  -15 {mins}  ",
-                                         callback_data=json.dumps([QUERY_ACTIONS.PICK_TIME.value,
-                                                                   include_minutes,
-                                                                   shift_time(time, 0, -15)])),
-                    InlineKeyboardButton(text=f"  -10 {mins}  ",
-                                         callback_data=json.dumps([QUERY_ACTIONS.PICK_TIME.value,
-                                                                   include_minutes,
-                                                                   shift_time(time, 0, -10)])),
-                    InlineKeyboardButton(text=f"  +10 {mins}  ",
-                                         callback_data=json.dumps([QUERY_ACTIONS.PICK_TIME.value,
-                                                                   include_minutes,
-                                                                   shift_time(time, 0, 10)])),
-                    InlineKeyboardButton(text=f"  +15 {mins}  ",
-                                         callback_data=json.dumps([QUERY_ACTIONS.PICK_TIME.value,
-                                                                   include_minutes,
-                                                                   shift_time(time, 0, 15)])),
-                ],
-            ]
-        )
-    rows.extend([[
+        rows.extend([
+            build_adjustment_row(mins, [-5, -1, 1, 5], is_hour=False),
+            build_adjustment_row(mins, [-15, -10, 10, 15], is_hour=False),
+        ])
+
+    rows.append([
         InlineKeyboardButton(
             text='      ↩️      ',
             callback_data=json.dumps([back_button_action])
         )
-    ]])
+    ])
 
     reply_markup = InlineKeyboardMarkup(inline_keyboard=rows)
     return reply_markup
