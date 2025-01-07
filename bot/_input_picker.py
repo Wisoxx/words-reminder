@@ -129,3 +129,34 @@ def test1(update):
     callback_data = json.loads(update["callback_query"]["data"])
     time = callback_data[1]
     return time, None
+
+
+def generate_number_keyboard(next_query_action, back_button_action, max_number=15):
+    """
+    Generates an inline keyboard for selecting numbers from 1 to max_number with a back button.
+
+    :param next_query_action: The query action to use in the callback data for number buttons.
+    :param back_button_action: The callback action for the back button.
+    :param max_number: The maximum number to include in the keyboard (default is 15).
+    :return: An InlineKeyboardMarkup object with the number buttons and a back button.
+    """
+    buttons = []
+
+    for i in range(1, max_number + 1, 5):  # Group numbers in rows of 5
+        row = [
+            InlineKeyboardButton(
+                text=str(number),
+                callback_data=json.dumps([next_query_action, number])
+            )
+            for number in range(i, min(i + 5, max_number + 1))
+        ]
+        buttons.append(row)
+
+    buttons.append([
+        InlineKeyboardButton(
+            text='      ↩️      ',
+            callback_data=json.dumps([back_button_action])
+        )
+    ])
+
+    return InlineKeyboardMarkup(inline_keyboard=buttons)

@@ -4,11 +4,11 @@ from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 from ._settings import get_user, get_user_parameters, set_user_state, reset_user_state
 from .temp_manager import *
 from ._enums import TaskStatus, QUERY_ACTIONS, TEMP_KEYS, USER_STATES
-from .utils import html_wrapper, escape_html
+from .utils import html_wrapper, escape_html, suggest_reminder_time, shift_time
 from router import route, get_route
 from translations import translate
-from ._vocabularies import _get_vocabulary_list
-import bot._input_picker
+from ._vocabularies import _get_vocabulary_list, _get_vocabulary_name
+from bot._input_picker import pick_time, generate_number_keyboard
 from logger import setup_logger
 
 logger = setup_logger(__name__)
@@ -89,6 +89,78 @@ def _reminder_list_to_text(reminders: dict) -> str:
 ####################################################################################################################
 #                                                  BOT ACTIONS
 ####################################################################################################################
+
+
+def _add_reminder_menu_text(update, time=None, number_of_words=0):
+    user = get_user(update)
+    parameters = get_user_parameters(user)
+    vocabulary_id = parameters.current_vocabulary_id
+    vocabulary_name = _get_vocabulary_name(vocabulary_id)
+    timezone = parameters.timezone
+    lang = parameters.language
+
+    text = ("Adding a reminder:\n\n"
+            f"Vocabulary name: {vocabulary_name}\n"
+            f"Time: {shift_time(time, timezone)}\n"
+            f"Number of words: {number_of_words}")
+    return text
+
+
+@route(trigger="callback_query", query_action=QUERY_ACTIONS.ADD_REMINDER.value, action="edit")
+def add_reminder_start(update):
+    time = suggest_reminder_time()
+    text = _add_reminder_menu_text(update, time=time)
+
+    update["callback_query"]["data"] = json.dumps([
+                    QUERY_ACTIONS.PICK_TIME.value,
+                    time,
+                    True,
+                    ("callback_query", None, QUERY_ACTIONS.ADD_REMINDER_NUMBER_OF_WORDS.value, None),
+                    QUERY_ACTIONS.MENU_REMINDERS.value
+                ])
+    reply_markup = pick_time(update)
+    return text, reply_markup
+
+
+@route(trigger="callback_query", query_action=QUERY_ACTIONS.ADD_REMINDER_NUMBER_OF_WORDS.value, action="edit")
+def add_reminder_number_of_words(update):
+    user = get_user(update)
+    callback_data = json.loads(update["callback_query"]["data"])
+    time = callback_data[1]
+    set_temp(user, TEMP_KEYS.TIME, time)
+
+    text = _add_reminder_menu_text(update, time=time)
+    reply_markup = generate_number_keyboard(QUERY_ACTIONS.ADD_REMINDER_FINALIZE.value,
+                                            QUERY_ACTIONS.MENU_REMINDERS.value)
+    return text, reply_markup
+
+
+@route(trigger="callback_query", query_action=QUERY_ACTIONS.ADD_REMINDER_FINALIZE.value, action="edit")
+def add_reminder_finalize(update):
+    user = get_user(update)
+    parameters = get_user_parameters(user)
+    vocabulary_id = parameters.current_vocabulary_id
+    vocabulary_name = _get_vocabulary_name(vocabulary_id)
+    callback_data = json.loads(update["callback_query"]["data"])
+    number_of_words = callback_data[1]
+    time = pop_temp(user, TEMP_KEYS.TIME)
+
+    reminder_id = _add_reminder(user, vocabulary_id, time, number_of_words)
+    if reminder_id == 0:
+        text = f'You already have a reminder from "{escape_html(vocabulary_name)}" at {time}'
+    else:
+        text = f'See you at {time} with {number_of_words} words from "{escape_html(vocabulary_name)}" :)'
+
+    reply_markup = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text="      ↩️      ",
+                                     callback_data=json.dumps([QUERY_ACTIONS.MENU_REMINDERS.value])),
+            ]
+        ]
+    )
+
+    return text, reply_markup
 
 
 @route(trigger="callback_query", query_action=QUERY_ACTIONS.MENU_REMINDERS.value, action="edit")
