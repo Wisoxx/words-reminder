@@ -42,6 +42,22 @@ def shift_time(time_str, hour_offset=0, min_offset=0):
     return adjusted_time.strftime('%H:%M')
 
 
+def calculate_timezone_offset(user_time_str: str):
+    """
+    Calculates the user's timezone offset based on the provided current time in HH:MM format.
+
+    :param user_time_str: The time the user claims to have right now, in HH:MM format (24-hour clock).
+    :return: The timezone offset in hours as an integer (e.g., -5, 0, +3).
+    """
+    utc_now = datetime.utcnow()
+    user_time = datetime.strptime(user_time_str, "%H:%M")
+    user_time = user_time.replace(year=utc_now.year, month=utc_now.month, day=utc_now.day)
+    time_difference = user_time - utc_now
+    offset_hours = round(time_difference.total_seconds() / 3600)
+
+    return offset_hours
+
+
 def suggest_reminder_time():
     """
     Suggests a time for a reminder, rounded to the nearest hour.
