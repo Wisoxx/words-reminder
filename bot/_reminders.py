@@ -128,7 +128,7 @@ def add_reminder_number_of_words(update):
     callback_data = json.loads(update["callback_query"]["data"])
     time = callback_data[1]
     logger.info("Time: " + time)
-    set_temp(user, TEMP_KEYS.TIME, time)
+    set_temp(user, TEMP_KEYS.TIME.value, time)
 
     text = _add_reminder_menu_text(update, time=time)
     reply_markup = generate_number_keyboard(QUERY_ACTIONS.ADD_REMINDER_FINALIZE.value,
