@@ -116,12 +116,7 @@ def _get_inline_vocabulary_list(user, back_button_action, return_route):
     """
     vocabularies = _get_vocabulary_list(user)
 
-    buttons = [[
-        InlineKeyboardButton(
-            text='      ↩️      ',
-            callback_data=json.dumps([back_button_action])
-        )
-    ]]
+    buttons = []
 
     for vocabulary_id, vocabulary_name in vocabularies.items():
         buttons.append([
@@ -131,6 +126,15 @@ def _get_inline_vocabulary_list(user, back_button_action, return_route):
                                           back_button_action])
             )
         ])
+
+    buttons.extend([
+        [
+            InlineKeyboardButton(
+                text='      ↩️      ',
+                callback_data=json.dumps([back_button_action])
+            )
+        ]
+    ])
 
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
