@@ -40,6 +40,18 @@ def display_time(time_str, offset=0):
     return adjusted_time.strftime('%H:%M')
 
 
+def suggest_reminder_time():
+    """
+    Suggests a time for a reminder, rounded to the nearest hour.
+    :return: A string representing the suggested time in "HH:00" format.
+    """
+    now = datetime.now()
+    rounded_time = now.replace(minute=0, second=0, microsecond=0)
+    if now.minute >= 30:
+        rounded_time += timedelta(hours=1)
+    return rounded_time.strftime("%H:%M")
+
+
 def pad(pad_str, original_str, pad_left=False):
     """
     Pads a string to a specified length, either on the left or the right.
