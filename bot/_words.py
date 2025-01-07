@@ -27,12 +27,12 @@ def _add_word(user, vocabulary_id, word, meaning=None, timestamp=None):
     return word_id
 
 
-def _delete_word(word_id=None, user=None, vocabulary_id=None, word=None):
+def _delete_word(user, word_id=None, vocabulary_id=None, word=None):
     """
     Deletes a word based on the given conditions. word_id or user and vocabulary_id and word are required.
 
+    :param user: The ID of the user
     :param word_id: Unique identifier of the word (optional)
-    :param user: The ID of the user (required if word_id is not given)
     :param vocabulary_id: The vocabulary the word belongs to (required if word_id is not given)
     :param word: The word to delete (required if word_id is not given)
     :return: bool indicating success
