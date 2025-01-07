@@ -27,11 +27,13 @@ def translate(lang: str, key: str, values: dict = None):
             'flag': '🇺🇦',
             'choose_lang': '🇺🇦 Вибери свою мову',
             'lang_set': 'Налаштування мови оновлено',
+            'choose_category': 'Вибери категорію:',
         },
         'pl': {
             'flag': '🇵🇱',
             'choose_lang': '🇵🇱 Wybierz swój język',
             'lang_set': 'Ustawienia językowe zostały zmienione',
+            'choose_category': 'Wybierz kategorię:',
 
         }
     }
