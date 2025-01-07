@@ -136,4 +136,4 @@ def construct_reminder_page(update):
             ],
         ]
     )
-    return text, reply_markup
+    return heading + text, reply_markup
