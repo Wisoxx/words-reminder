@@ -33,7 +33,7 @@ def pick_time(update):
     reply_markup = InlineKeyboardMarkup(
         inline_keyboard=[
             [
-                InlineKeyboardButton(text=shift_time(time, offset=timezone),
+                InlineKeyboardButton(text=shift_time(time, hour_offset=timezone),
                                      callback_data=json.dumps([QUERY_ACTIONS.TIME_CHOSEN.value, time])),
             ],
             [
