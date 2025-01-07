@@ -25,18 +25,20 @@ def get_hh_mm(offset=0):
     :return: A string representing the adjusted time in HH:MM format.
     """
     now = datetime.now()
-    return shift_time(now.strftime("%H:%M"), offset=offset)
+    return shift_time(now.strftime("%H:%M"), hour_offset=offset)
 
 
-def shift_time(time_str, offset=0):
+def shift_time(time_str, hour_offset=0, min_offset=0):
     """
-    Adjusts a given time in HH:MM format by a specified offset in hours
+    Adjusts a given time in HH:MM format by specified hour and minute offsets.
+
     :param time_str: The input time in "HH:MM" format.
-    :param offset: The number of hours to adjust the time by (can be positive or negative). Default is 0.
-    :return: A string in the format "Adjusted Time: HH:MM (UTC+offset)".
+    :param hour_offset: The number of hours to adjust the time by (can be positive or negative). Default is 0.
+    :param min_offset: The number of minutes to adjust the time by (can be positive or negative). Default is 0.
+    :return: A string in the format "Adjusted Time: HH:MM".
     """
     input_time = datetime.strptime(time_str, "%H:%M")
-    adjusted_time = input_time + timedelta(hours=offset)
+    adjusted_time = input_time + timedelta(hours=hour_offset, minutes=min_offset)
     return adjusted_time.strftime('%H:%M')
 
 
@@ -68,4 +70,3 @@ def pad(pad_str, original_str, pad_left=False):
         return (pad_str + original_str)[-len(pad_str):]
     else:
         return (original_str + pad_str)[:len(pad_str)]
-
