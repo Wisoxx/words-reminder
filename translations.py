@@ -1,3 +1,6 @@
+languages = ("en", "ua", "pl")
+
+
 def translate(lang: str, key: str, values: dict = None):
     translations = {
         'en': {
@@ -33,7 +36,7 @@ def translate(lang: str, key: str, values: dict = None):
         }
     }
     lang = "uk" if lang == "ru" else lang  # change russian to ukrainian
-    lang = lang if lang in ("en", "uk", "pl") else "en"  # default lang is english
+    lang = lang if lang in languages else "en"  # default lang is english
     translation = translations[lang][key]
     if values:
         return translation.format(**values)
