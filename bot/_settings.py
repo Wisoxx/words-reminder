@@ -3,7 +3,7 @@ from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 import json
 from ._enums import TaskStatus, QUERY_ACTIONS, TEMP_KEYS, USER_STATES
 from .temp_manager import set_temp, get_temp, remove_temp, pop_temp
-from .utils import html_wrapper, escape_html
+from .utils import html_wrapper, escape_html, get_hh_mm
 from translations import translate, languages
 from router import route
 from logger import setup_logger
@@ -97,7 +97,7 @@ def settings(update):
         'b')
     text = (f"🌎 Language: {translate(lang, 'flag')}\n"
             f"👁 Hide meaning: {'✅' if hide_meaning else '❌'}\n"
-            f"🕓 Timezone: UTC{timezone}")
+            f"🕓 Timezone: UTC{'+' if timezone >= 0 else ''}{timezone} ({get_hh_mm(timezone)})")
 
     reply_markup = InlineKeyboardMarkup(inline_keyboard=[
         [

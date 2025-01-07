@@ -1,4 +1,5 @@
 import time
+from datetime import datetime, timedelta
 
 
 def html_wrapper(text, wrapper=None):
@@ -15,6 +16,17 @@ def escape_html(text):
 
 def get_timestamp():
     return int(time.time())
+
+
+def get_hh_mm(offset=0):
+    """
+    Returns the current time in HH:MM format (24-hour clock), adjusted by an optional offset in hours.
+    :param offset: The number of hours to adjust the time by (can be positive or negative). Default is 0.
+    :return: A string representing the adjusted time in HH:MM format.
+    """
+    now = datetime.now()
+    adjusted_time = now + timedelta(hours=offset)
+    return adjusted_time.strftime("%H:%M")
 
 
 def pad(pad_str, original_str, pad_left=False):
