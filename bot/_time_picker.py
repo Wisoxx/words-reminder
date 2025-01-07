@@ -37,13 +37,13 @@ def pick_time(update):
                                      callback_data=json.dumps([QUERY_ACTIONS.TIME_CHOSEN.value, time])),
             ],
             [
-                InlineKeyboardButton(text="      -1      ",
-                                     callback_data=json.dumps([QUERY_ACTIONS.PICK_TIME.value, shift_time(time, -1)])),
-                InlineKeyboardButton(text="      -5      ",
+                InlineKeyboardButton(text="      -5 год      ",
                                      callback_data=json.dumps([QUERY_ACTIONS.PICK_TIME.value, shift_time(time, -5)])),
-                InlineKeyboardButton(text="      +1      ",
+                InlineKeyboardButton(text="      -1 год      ",
+                                     callback_data=json.dumps([QUERY_ACTIONS.PICK_TIME.value, shift_time(time, -1)])),
+                InlineKeyboardButton(text="      +1 год      ",
                                      callback_data=json.dumps([QUERY_ACTIONS.PICK_TIME.value, shift_time(time, 1)])),
-                InlineKeyboardButton(text="      +5      ",
+                InlineKeyboardButton(text="      +5 год     ",
                                      callback_data=json.dumps([QUERY_ACTIONS.PICK_TIME.value, shift_time(time, 5)])),
             ],
         ]
