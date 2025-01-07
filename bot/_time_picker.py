@@ -29,7 +29,7 @@ def pick_time(update):
     parameters = get_user_parameters(user)
     timezone = parameters.timezone
     callback_data = json.loads(update["callback_query"]["data"])
-    time = callback_data[1] if len(callback_data["data"]) > 1 else suggest_reminder_time()
+    time = callback_data[1] if len(callback_data) > 1 else suggest_reminder_time()
     reply_markup = InlineKeyboardMarkup(
         inline_keyboard=[
             [
