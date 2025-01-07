@@ -4,7 +4,7 @@ import json
 from ._enums import TaskStatus, QUERY_ACTIONS, TEMP_KEYS, USER_STATES
 from .temp_manager import set_temp, get_temp, remove_temp, pop_temp
 from .utils import html_wrapper, escape_html
-from translations import translate
+from translations import translate, languages
 from router import route
 from logger import setup_logger
 
@@ -67,6 +67,10 @@ def _toggle_hide_meaning(user):
     return status
 
 
+def _set_language(user, language):
+    return db.Users.set({"user_id": user}, {"language": language})
+
+
 ####################################################################################################################
 #                                                     OTHER
 ####################################################################################################################
@@ -93,7 +97,7 @@ def settings(update):
         'b')
     text = (f"🌎 Language: {translate(lang, 'flag')}\n"
             f"👁 Hide meaning: {'✅' if hide_meaning else '❌'}\n"
-            f"🕓 Timezone: {timezone}")
+            f"🕓 Timezone: UTC{timezone}")
 
     reply_markup = InlineKeyboardMarkup(inline_keyboard=[
         [
@@ -117,4 +121,34 @@ def settings(update):
 def toggle_hide_meaning(update):
     user = get_user(update)
     _toggle_hide_meaning(user)
+    return settings(update)
+
+
+@route(trigger="callback_query", query_action=QUERY_ACTIONS.CHANGE_LANGUAGE.value, action="edit")
+def change_language_start(update):
+    user = get_user(update)
+
+    text = "\n".join(translate(lang, "choose_lang") for lang in languages)
+    reply_markup = InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(
+                text=f'      {translate(lang, "flag")}      ',
+                callback_data=json.dumps([QUERY_ACTIONS.LANGUAGE_CHOSEN.value, lang])
+            )
+            for lang in languages
+        ]
+    ])
+    return text, reply_markup
+
+
+@route(trigger="callback_query", query_action=QUERY_ACTIONS.LANGUAGE_CHOSEN.value, action="edit")
+def change_language_finalize(update):
+    user = get_user(update)
+    callback_data = json.loads(update["callback_query"]["data"])
+    lang = callback_data[1]
+
+    if lang not in languages:
+        raise ValueError("Unsupported language")
+
+    _set_language(user, lang)
     return settings(update)
