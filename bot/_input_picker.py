@@ -16,7 +16,12 @@ def test(update):
         inline_keyboard=[
             [
                 InlineKeyboardButton(text="PICK TIME",
-                                     callback_data=json.dumps([QUERY_ACTIONS.PICK_TIME.value, True])),
+                                     callback_data=json.dumps([QUERY_ACTIONS.PICK_TIME.value,
+                                                               suggest_reminder_time(),
+                                                               True,
+                                                               ('callback_query', None,
+                                                                QUERY_ACTIONS.DELETE_REMINDER.value, None),
+                                                               QUERY_ACTIONS.MENU_REMINDERS.value])),
             ],
         ]
     )
@@ -30,7 +35,12 @@ def test2(update):
         inline_keyboard=[
             [
                 InlineKeyboardButton(text="PICK TIME",
-                                     callback_data=json.dumps([QUERY_ACTIONS.PICK_TIME.value, False])),
+                                     callback_data=json.dumps([QUERY_ACTIONS.PICK_TIME.value,
+                                                               suggest_reminder_time(),
+                                                               False,
+                                                               ('callback_query', None,
+                                                                QUERY_ACTIONS.DELETE_REMINDER.value, None),
+                                                               QUERY_ACTIONS.MENU_REMINDERS.value])),
             ],
         ]
     )
@@ -44,14 +54,14 @@ def pick_time(update):
     lang = parameters.language
     timezone = parameters.timezone
     callback_data = json.loads(update["callback_query"]["data"])
-    include_minutes = callback_data[1]
-    time = callback_data[2] if len(callback_data) > 2 else suggest_reminder_time()
+    time, include_minutes, return_route, back_button_action = callback_data[1:]
     h = translate(lang, 'short_hours')
     mins = translate(lang, 'short_minutes')
     rows = [
         [
             InlineKeyboardButton(text=shift_time(time, hour_offset=timezone),
-                                 callback_data=json.dumps([QUERY_ACTIONS.TIME_CHOSEN.value, time])),
+                                 callback_data=json.dumps([QUERY_ACTIONS.TIME_CHOSEN.value, time,
+                                                           return_route, back_button_action])),
         ],
         [
             InlineKeyboardButton(text=f"  -5 {h}  ",
@@ -114,6 +124,12 @@ def pick_time(update):
                 ],
             ]
         )
+    rows.extend([[
+        InlineKeyboardButton(
+            text='      ↩️      ',
+            callback_data=json.dumps([back_button_action])
+        )
+    ]])
 
     reply_markup = InlineKeyboardMarkup(inline_keyboard=rows)
     return reply_markup
@@ -121,6 +137,14 @@ def pick_time(update):
 
 @route(trigger="callback_query", query_action=QUERY_ACTIONS.TIME_CHOSEN.value, action="send")
 def chosen_time(update):
+    callback_data = json.loads(update["callback_query"]["data"])
+    time, return_route, back_button_action = callback_data[1:]
+    update["callback_query"]["data"] = json.dumps([back_button_action, time])
+    return get_route(*return_route).call(update)
+
+
+@route(trigger="callback_query", query_action=QUERY_ACTIONS.DELETE_REMINDER.value, action="send")
+def test1(update):
     callback_data = json.loads(update["callback_query"]["data"])
     time = callback_data[1]
     return time, None
