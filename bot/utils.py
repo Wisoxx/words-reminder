@@ -25,12 +25,12 @@ def get_hh_mm(offset=0):
     :return: A string representing the adjusted time in HH:MM format.
     """
     now = datetime.now()
-    return display_time(now.strftime("%H:%M"), offset=offset)
+    return shift_time(now.strftime("%H:%M"), offset=offset)
 
 
-def display_time(time_str, offset=0):
+def shift_time(time_str, offset=0):
     """
-    Adjusts a given time in HH:MM format by a specified offset in hours and displays the result.
+    Adjusts a given time in HH:MM format by a specified offset in hours
     :param time_str: The input time in "HH:MM" format.
     :param offset: The number of hours to adjust the time by (can be positive or negative). Default is 0.
     :return: A string in the format "Adjusted Time: HH:MM (UTC+offset)".
