@@ -116,7 +116,7 @@ def pick_time(update):
     return reply_markup
 
 
-@route(trigger="callback_query", query_action=QUERY_ACTIONS.TIME_CHOSEN.value, action="send")
+@route(trigger="callback_query", query_action=QUERY_ACTIONS.TIME_CHOSEN.value, action="edit")
 def chosen_time(update):
     callback_data = json.loads(update["callback_query"]["data"])
     time, return_route, back_button_action = callback_data[1:]
