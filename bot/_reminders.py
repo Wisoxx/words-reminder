@@ -126,12 +126,12 @@ def construct_reminder_page(update):
     reply_markup = InlineKeyboardMarkup(
         inline_keyboard=[
             [
-                InlineKeyboardButton("      ━      ", callback_data=json.dumps([QUERY_ACTIONS.DELETE_REMINDER.value])),
-                InlineKeyboardButton("      ✚      ", callback_data=json.dumps([QUERY_ACTIONS.ADD_REMINDER.value]))
+                InlineKeyboardButton(text="      ━      ", callback_data=json.dumps([QUERY_ACTIONS.DELETE_REMINDER.value])),
+                InlineKeyboardButton(text="      ✚      ", callback_data=json.dumps([QUERY_ACTIONS.ADD_REMINDER.value]))
             ],
             [
-                InlineKeyboardButton("      ↩️      ", callback_data=json.dumps([QUERY_ACTIONS.MENU.value])),
-                InlineKeyboardButton("      ℹ️      ",
+                InlineKeyboardButton(text="      ↩️      ", callback_data=json.dumps([QUERY_ACTIONS.MENU.value])),
+                InlineKeyboardButton(text="      ℹ️      ",
                                      callback_data=json.dumps([QUERY_ACTIONS.SHOW_INFO.value, "info_reminders"]))
             ],
         ]
