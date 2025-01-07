@@ -12,7 +12,14 @@ from translations import translate
 @route(trigger="text", command="/test", action="send")
 def test(update):
     text = "Test"
-    reply_markup = pick_time(update)
+    reply_markup = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text="PICK TIME",
+                                     callback_data=json.dumps([QUERY_ACTIONS.PICK_TIME.value])),
+            ],
+        ]
+    )
     return text, reply_markup
 
 
