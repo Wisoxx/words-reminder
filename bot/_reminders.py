@@ -144,7 +144,7 @@ def add_reminder_finalize(update):
     vocabulary_name = _get_vocabulary_name(vocabulary_id)
     callback_data = json.loads(update["callback_query"]["data"])
     number_of_words = callback_data[1]
-    time = pop_temp(user, TEMP_KEYS.TIME)
+    time = pop_temp(user, TEMP_KEYS.TIME.value)
 
     reminder_id = _add_reminder(user, vocabulary_id, time, number_of_words)
     if reminder_id == 0:
