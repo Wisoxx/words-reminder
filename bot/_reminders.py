@@ -8,6 +8,7 @@ from .utils import html_wrapper, escape_html
 from router import route, get_route
 from translations import translate
 from ._vocabularies import _get_vocabulary_list
+import bot._time_picker
 from logger import setup_logger
 
 logger = setup_logger(__name__)
@@ -121,7 +122,7 @@ def construct_reminder_page(update):
             continue
 
     if text == "":
-        text = "\n\nYou don't have any reminders"
+        text = "\n\nYou don't have any\n reminders"
 
     reply_markup = InlineKeyboardMarkup(
         inline_keyboard=[
