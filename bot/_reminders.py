@@ -73,7 +73,7 @@ def _get_reminder_list(user, vocabulary_id):
 ####################################################################################################################
 
 
-def _reminder_list_to_text(reminders: dict) -> str:
+def _reminder_list_to_text(reminders: dict, hour_offset=0) -> str:
     """
     Converts a dictionary of reminders into a formatted text representation.
 
@@ -82,7 +82,8 @@ def _reminder_list_to_text(reminders: dict) -> str:
     """
     text = ""
     for time, words_number in reminders.items():
-        text += f"{time}  —  {words_number} words\n"
+        adjusted_time = shift_time(time, hour_offset=hour_offset)
+        text += f"{adjusted_time}  —  {words_number} words\n"
     return text
 
 
@@ -140,6 +141,7 @@ def add_reminder_number_of_words(update):
 def add_reminder_finalize(update):
     user = get_user(update)
     parameters = get_user_parameters(user)
+    timezone = parameters.timezone
     vocabulary_id = parameters.current_vocabulary_id
     vocabulary_name = _get_vocabulary_name(vocabulary_id)
     callback_data = json.loads(update["callback_query"]["data"])
@@ -150,7 +152,7 @@ def add_reminder_finalize(update):
     if reminder_id == 0:
         text = f'You already have a reminder from "{escape_html(vocabulary_name)}" at {time}'
     else:
-        text = f'See you at {time} with {number_of_words} words from "{escape_html(vocabulary_name)}" :)'
+        text = f'See you at {shift_time(time, timezone)} with {number_of_words} words from "{escape_html(vocabulary_name)}" :)'
 
     reply_markup = InlineKeyboardMarkup(
         inline_keyboard=[
@@ -168,6 +170,7 @@ def add_reminder_finalize(update):
 def construct_reminder_page(update):
     user = get_user(update)
     parameters = get_user_parameters(user)
+    timezone = parameters.timezone
     lang = parameters.language
     vocabularies = _get_vocabulary_list(user)
 
@@ -185,7 +188,7 @@ def construct_reminder_page(update):
         vocabulary_name = vocabularies[vocabulary_id]
 
         if len(reminders) > 0:
-            reminders_text = _reminder_list_to_text(reminders)
+            reminders_text = _reminder_list_to_text(reminders, timezone)
             text += ("\n================\n"
                      f"{html_wrapper(escape_html(vocabulary_name), 'b')}\n"
                      "-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-\n"
