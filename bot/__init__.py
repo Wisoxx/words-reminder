@@ -8,6 +8,7 @@ from ._settings import get_user, get_user_parameters, set_user_state, get_user_s
 import bot._commands
 import bot._words
 import bot._vocabularies
+import bot._reminders
 from router import get_route
 from logger import setup_logger
 
