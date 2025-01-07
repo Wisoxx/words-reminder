@@ -8,7 +8,7 @@ from .utils import html_wrapper, escape_html
 from router import route, get_route
 from translations import translate
 from ._vocabularies import _get_vocabulary_list
-import bot._time_picker
+import bot._input_picker
 from logger import setup_logger
 
 logger = setup_logger(__name__)

@@ -41,6 +41,7 @@ def test2(update):
 def pick_time(update):
     user = get_user(update)
     parameters = get_user_parameters(user)
+    lang = parameters.language
     timezone = parameters.timezone
     callback_data = json.loads(update["callback_query"]["data"])
     include_minutes = callback_data[1]
@@ -51,19 +52,19 @@ def pick_time(update):
                                  callback_data=json.dumps([QUERY_ACTIONS.TIME_CHOSEN.value, time])),
         ],
         [
-            InlineKeyboardButton(text="  -5 год  ",
+            InlineKeyboardButton(text=f"  -5 {translate(lang, 'short_hours')}  ",
                                  callback_data=json.dumps([QUERY_ACTIONS.PICK_TIME.value,
                                                            include_minutes,
                                                            shift_time(time, -5)])),
-            InlineKeyboardButton(text="  -1 год  ",
+            InlineKeyboardButton(text=f"  -1 {translate(lang, 'short_hours')}  ",
                                  callback_data=json.dumps([QUERY_ACTIONS.PICK_TIME.value,
                                                            include_minutes,
                                                            shift_time(time, -1)])),
-            InlineKeyboardButton(text="  +1 год  ",
+            InlineKeyboardButton(text=f"  +1 {translate(lang, 'short_hours')}  ",
                                  callback_data=json.dumps([QUERY_ACTIONS.PICK_TIME.value,
                                                            include_minutes,
                                                            shift_time(time, 1)])),
-            InlineKeyboardButton(text="  +5 год  ",
+            InlineKeyboardButton(text=f"  +5 {translate(lang, 'short_hours')}  ",
                                  callback_data=json.dumps([QUERY_ACTIONS.PICK_TIME.value,
                                                            include_minutes,
                                                            shift_time(time, 5)])),
@@ -74,37 +75,37 @@ def pick_time(update):
         rows.extend(
             [
                 [
-                    InlineKeyboardButton(text="  -5 хв  ",
+                    InlineKeyboardButton(text=f"  -5 {translate(lang, 'short_minutes')}  ",
                                          callback_data=json.dumps([QUERY_ACTIONS.PICK_TIME.value,
                                                                    include_minutes,
                                                                    shift_time(time, 0, -5)])),
-                    InlineKeyboardButton(text="  -1 хв  ",
+                    InlineKeyboardButton(text=f"  -1 {translate(lang, 'short_minutes')}  ",
                                          callback_data=json.dumps([QUERY_ACTIONS.PICK_TIME.value,
                                                                    include_minutes,
                                                                    shift_time(time, 0, -1)])),
-                    InlineKeyboardButton(text="  +1 хв  ",
+                    InlineKeyboardButton(text=f"  +1 {translate(lang, 'short_minutes')}  ",
                                          callback_data=json.dumps([QUERY_ACTIONS.PICK_TIME.value,
                                                                    include_minutes,
                                                                    shift_time(time, 0, 1)])),
-                    InlineKeyboardButton(text="  +5 хв  ",
+                    InlineKeyboardButton(text=f"  +5 {translate(lang, 'short_minutes')}  ",
                                          callback_data=json.dumps([QUERY_ACTIONS.PICK_TIME.value,
                                                                    include_minutes,
                                                                    shift_time(time, 0, 5)])),
                 ],
                 [
-                    InlineKeyboardButton(text="  -15 хв  ",
+                    InlineKeyboardButton(text=f"  -15 {translate(lang, 'short_minutes')}  ",
                                          callback_data=json.dumps([QUERY_ACTIONS.PICK_TIME.value,
                                                                    include_minutes,
                                                                    shift_time(time, 0, -15)])),
-                    InlineKeyboardButton(text="  -10 хв  ",
+                    InlineKeyboardButton(text=f"  -10 {translate(lang, 'short_minutes')}  ",
                                          callback_data=json.dumps([QUERY_ACTIONS.PICK_TIME.value,
                                                                    include_minutes,
                                                                    shift_time(time, 0, -10)])),
-                    InlineKeyboardButton(text="  +10 хв  ",
+                    InlineKeyboardButton(text=f"  +10 {translate(lang, 'short_minutes')}  ",
                                          callback_data=json.dumps([QUERY_ACTIONS.PICK_TIME.value,
                                                                    include_minutes,
                                                                    shift_time(time, 0, 10)])),
-                    InlineKeyboardButton(text="  +15 хв  ",
+                    InlineKeyboardButton(text=f"  +15 {translate(lang, 'short_minutes')}  ",
                                          callback_data=json.dumps([QUERY_ACTIONS.PICK_TIME.value,
                                                                    include_minutes,
                                                                    shift_time(time, 0, 15)])),

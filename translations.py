@@ -22,18 +22,24 @@ def translate(lang: str, key: str, values: dict = None):
             'info_settings': 'info_settings',
             'test': "Hi {name}",
             'error': "Something went wrong",
+            'short_hours': 'h',
+            'short_minutes': 'min',
         },
         'ua': {
             'flag': '🇺🇦',
             'choose_lang': '🇺🇦 Вибери свою мову',
             'lang_set': 'Налаштування мови оновлено',
             'choose_category': 'Вибери категорію:',
+            'short_hours': 'год',
+            'short_minutes': 'хв',
         },
         'pl': {
             'flag': '🇵🇱',
             'choose_lang': '🇵🇱 Wybierz swój język',
             'lang_set': 'Ustawienia językowe zostały zmienione',
             'choose_category': 'Wybierz kategorię:',
+            'short_hours': 'h',
+            'short_minutes': 'min',
 
         }
     }
