@@ -256,15 +256,23 @@ def words_vocabulary_chosen(update):
 
 @route(trigger="callback_query", query_action=QUERY_ACTIONS.CHANGE_WORDS_PAGE.value, action="edit")
 @route(trigger="callback_query", query_action=QUERY_ACTIONS.MENU_WORDS.value, action="edit")
-def construct_word_page(update, vocabulary_id=None, page=0):
+def construct_word_page(update, vocabulary_id=None, page=None):
     user = get_user(update)
     callback_data = json.loads(update["callback_query"]["data"])
     parameters = get_user_parameters(user)
-    if len(callback_data) > 1:
-        vocabulary_id = callback_data[1]
-        page = callback_data[2]
-    else:
-        vocabulary_id = vocabulary_id or parameters.current_vocabulary_id
+
+    if not vocabulary_id and not page:
+        if len(callback_data) == 3:
+            vocabulary_id = callback_data[1]
+            page = callback_data[2]
+        else:
+            vocabulary_id = vocabulary_id or parameters.current_vocabulary_id
+            page = page or 0
+    elif not vocabulary_id:
+        vocabulary_id = parameters.current_vocabulary_id
+    elif not page:
+        page = 0
+
     lang = parameters.language
 
     vocabulary_name = _get_vocabulary_name(vocabulary_id)
