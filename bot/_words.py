@@ -239,13 +239,13 @@ def delete_word_finalize(update):
     return text, reply_markup
 
 
-@route(trigger="callback_query", query_action=QUERY_ACTIONS.WORDS_CHANGE_VOCABULARY.value, action="send")
+@route(trigger="callback_query", query_action=QUERY_ACTIONS.WORDS_CHANGE_VOCABULARY.value, action="edit")
 def words_change_vocabulary(update):
     return change_vocabulary_start(update, next_query_action=QUERY_ACTIONS.WORDS_VOCABULARY_CHOSEN.value,
                                    back_button_action=QUERY_ACTIONS.MENU_WORDS.value)
 
 
-@route(trigger="callback_query", query_action=QUERY_ACTIONS.WORDS_VOCABULARY_CHOSEN.value, action="send")
+@route(trigger="callback_query", query_action=QUERY_ACTIONS.WORDS_VOCABULARY_CHOSEN.value, action="edit")
 def words_vocabulary_chosen(update):
     user = get_user(update)
     callback_data = json.loads(update["callback_query"]["data"])
