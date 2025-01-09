@@ -111,24 +111,17 @@ def _add_reminder_menu_text(update, time=None, number_of_words=0):
 def add_reminder_start(update):
     time = suggest_reminder_time()
     text = _add_reminder_menu_text(update, time=time)
-
-    update["callback_query"]["data"] = json.dumps([
-                    QUERY_ACTIONS.PICK_TIME.value,
-                    time,
-                    True,
-                    ("callback_query", None, QUERY_ACTIONS.ADD_REMINDER_NUMBER_OF_WORDS.value, None),
-                    QUERY_ACTIONS.MENU_REMINDERS.value
-                ])
-    reply_markup = pick_time(update)
+    reply_markup = pick_time(update, time, include_minutes=True,
+                             next_query_action=QUERY_ACTIONS.ADD_REMINDER_TIME_CHOSEN.value,
+                             back_button_action=QUERY_ACTIONS.MENU_REMINDERS.value)
     return text, reply_markup
 
 
-@route(trigger="callback_query", query_action=QUERY_ACTIONS.ADD_REMINDER_NUMBER_OF_WORDS.value, action="edit")
-def add_reminder_number_of_words(update):
+@route(trigger="callback_query", query_action=QUERY_ACTIONS.ADD_REMINDER_TIME_CHOSEN.value, action="edit")
+def add_reminder_time_chosen(update):
     user = get_user(update)
     callback_data = json.loads(update["callback_query"]["data"])
     time = callback_data[1]
-    logger.info("Time: " + time)
     set_temp(user, TEMP_KEYS.TIME.value, time)
 
     text = _add_reminder_menu_text(update, time=time)

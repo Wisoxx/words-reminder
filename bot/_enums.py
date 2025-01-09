@@ -20,6 +20,7 @@ class QUERY_ACTIONS(Enum):
     ADD_WORD = auto()
     DELETE_WORD = auto()
     ADD_REMINDER = auto()
+    ADD_REMINDER_TIME_CHOSEN = auto()
     ADD_REMINDER_NUMBER_OF_WORDS = auto()
     ADD_REMINDER_FINALIZE = auto()
     DELETE_REMINDER = auto()

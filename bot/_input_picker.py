@@ -48,13 +48,16 @@ def test2(update):
 
 
 @route(trigger="callback_query", query_action=QUERY_ACTIONS.PICK_TIME.value, action="edit_markup")
-def pick_time(update):
+def pick_time(update, time=None, include_minutes=None, next_query_action=None, back_button_action=None):
     user = get_user(update)
     parameters = get_user_parameters(user)
     lang = parameters.language
     timezone = parameters.timezone
-    callback_data = json.loads(update["callback_query"]["data"])
-    time, include_minutes, return_route, back_button_action = callback_data[1:]
+
+    if all((not time, not include_minutes, not next_query_action, not back_button_action)):
+        callback_data = json.loads(update["callback_query"]["data"])
+        time, include_minutes, next_query_action, back_button_action = callback_data[1:]
+
     h = translate(lang, 'short_hours')
     mins = translate(lang, 'short_minutes')
 
@@ -77,7 +80,7 @@ def pick_time(update):
                         QUERY_ACTIONS.PICK_TIME.value,
                         adjusted_time,
                         include_minutes,
-                        return_route,
+                        next_query_action,
                         back_button_action
                     ])
                 )
@@ -86,13 +89,11 @@ def pick_time(update):
 
     rows = [
         [
-            InlineKeyboardButton(
+            InlineKeyboardButton(  # Button to confirm chosen time
                 text=shift_time(time, hour_offset=timezone),
                 callback_data=json.dumps([
-                    QUERY_ACTIONS.TIME_CHOSEN.value,
-                    time,
-                    return_route,
-                    back_button_action
+                    next_query_action,
+                    time
                 ])
             )
         ],
