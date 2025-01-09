@@ -149,7 +149,7 @@ def change_vocabulary_start(update, next_query_action=QUERY_ACTIONS.VOCABULARY_C
     parameters = get_user_parameters(user)
     lang = parameters.language
     text, _ = construct_vocabulary_page(update)
-    text += "\n\nSelect vocabulary to work with:"
+    text += "\nSelect vocabulary to work with:"
     reply_markup = _get_inline_vocabulary_list(user, next_query_action, back_button_action)
     return text, reply_markup
 
