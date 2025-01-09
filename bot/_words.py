@@ -1,7 +1,7 @@
 import json
 import database as db
 from ._settings import get_user, get_user_parameters, set_user_state, reset_user_state
-from ._vocabularies import _get_vocabulary_name
+from ._vocabularies import _get_vocabulary_name, change_vocabulary_start, _set_current_vocabulary
 from .utils import html_wrapper, escape_html, get_timestamp, pad
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 from ._enums import TaskStatus, QUERY_ACTIONS, TEMP_KEYS, USER_STATES
@@ -239,6 +239,21 @@ def delete_word_finalize(update):
     return text, reply_markup
 
 
+@route(trigger="callback_query", query_action=QUERY_ACTIONS.WORDS_CHANGE_VOCABULARY.value, action="send")
+def words_change_vocabulary(update):
+    return change_vocabulary_start(update, next_query_action=QUERY_ACTIONS.WORDS_VOCABULARY_CHOSEN.value,
+                                   back_button_action=QUERY_ACTIONS.MENU_WORDS.value)
+
+
+@route(trigger="callback_query", query_action=QUERY_ACTIONS.WORDS_VOCABULARY_CHOSEN.value, action="send")
+def words_vocabulary_chosen(update):
+    user = get_user(update)
+    callback_data = json.loads(update["callback_query"]["data"])
+    vocabulary_id = callback_data[1:]
+    _set_current_vocabulary(user, vocabulary_id)
+    return construct_word_page(update)
+
+
 @route(trigger="callback_query", query_action=QUERY_ACTIONS.CHANGE_WORDS_PAGE.value, action="edit")
 @route(trigger="callback_query", query_action=QUERY_ACTIONS.MENU_WORDS.value, action="edit")
 def construct_word_page(update, vocabulary_id=None, page=0):
@@ -269,9 +284,7 @@ def construct_word_page(update, vocabulary_id=None, page=0):
     menu_buttons = [
         [
             InlineKeyboardButton(text='      📙      ',
-                                 callback_data=json.dumps([QUERY_ACTIONS.CHANGE_VOCABULARY.value,
-                                                           ('callback_query', None, QUERY_ACTIONS.MENU_WORDS.value, None),
-                                                           QUERY_ACTIONS.MENU_WORDS.value])),
+                                 callback_data=json.dumps([QUERY_ACTIONS.WORDS_CHANGE_VOCABULARY.value])),
             InlineKeyboardButton(text='      ━     ', callback_data=json.dumps([QUERY_ACTIONS.DELETE_WORD.value])),
         ],
         [

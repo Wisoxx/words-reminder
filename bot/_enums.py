@@ -19,6 +19,8 @@ class QUERY_ACTIONS(Enum):
     VOCABULARY_CHOSEN = auto()
     ADD_WORD = auto()
     DELETE_WORD = auto()
+    WORDS_CHANGE_VOCABULARY = auto()
+    WORDS_VOCABULARY_CHOSEN = auto()
     ADD_REMINDER = auto()
     ADD_REMINDER_TIME_CHOSEN = auto()
     ADD_REMINDER_NUMBER_OF_WORDS = auto()
