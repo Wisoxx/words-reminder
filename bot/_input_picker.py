@@ -9,44 +9,6 @@ from router import route, get_route
 from translations import translate
 
 
-@route(trigger="text", command="/test", action="send")
-def test(update):
-    text = "Test"
-    reply_markup = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [
-                InlineKeyboardButton(text="PICK TIME",
-                                     callback_data=json.dumps([QUERY_ACTIONS.PICK_TIME.value,
-                                                               suggest_reminder_time(),
-                                                               True,
-                                                               ('callback_query', None,
-                                                                QUERY_ACTIONS.DELETE_REMINDER.value, None),
-                                                               QUERY_ACTIONS.MENU_REMINDERS.value])),
-            ],
-        ]
-    )
-    return text, reply_markup
-
-
-@route(trigger="text", command="/test2", action="send")
-def test2(update):
-    text = "Test"
-    reply_markup = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [
-                InlineKeyboardButton(text="PICK TIME",
-                                     callback_data=json.dumps([QUERY_ACTIONS.PICK_TIME.value,
-                                                               suggest_reminder_time(),
-                                                               False,
-                                                               ('callback_query', None,
-                                                                QUERY_ACTIONS.DELETE_REMINDER.value, None),
-                                                               QUERY_ACTIONS.MENU_REMINDERS.value])),
-            ],
-        ]
-    )
-    return text, reply_markup
-
-
 @route(trigger="callback_query", query_action=QUERY_ACTIONS.PICK_TIME.value, action="edit_markup")
 def pick_time(update, time=None, include_minutes=None, next_query_action=None, back_button_action=None):
     user = get_user(update)
@@ -115,21 +77,6 @@ def pick_time(update, time=None, include_minutes=None, next_query_action=None, b
 
     reply_markup = InlineKeyboardMarkup(inline_keyboard=rows)
     return reply_markup
-
-
-@route(trigger="callback_query", query_action=QUERY_ACTIONS.TIME_CHOSEN.value, action="edit")
-def chosen_time(update):
-    callback_data = json.loads(update["callback_query"]["data"])
-    time, return_route, back_button_action = callback_data[1:]
-    update["callback_query"]["data"] = json.dumps([back_button_action, time])
-    return get_route(*return_route).call(update)
-
-
-@route(trigger="callback_query", query_action=QUERY_ACTIONS.DELETE_REMINDER.value, action="send")
-def test1(update):
-    callback_data = json.loads(update["callback_query"]["data"])
-    time = callback_data[1]
-    return time, None
 
 
 def generate_number_keyboard(next_query_action, back_button_action, max_number=15):
