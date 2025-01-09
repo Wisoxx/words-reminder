@@ -249,7 +249,7 @@ def words_change_vocabulary(update):
 def words_vocabulary_chosen(update):
     user = get_user(update)
     callback_data = json.loads(update["callback_query"]["data"])
-    vocabulary_id = callback_data[1:]
+    vocabulary_id = callback_data[1]
     _set_current_vocabulary(user, vocabulary_id)
     return construct_word_page(update)
 

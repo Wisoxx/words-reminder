@@ -158,7 +158,7 @@ def change_vocabulary_start(update, next_query_action=QUERY_ACTIONS.VOCABULARY_C
 def change_vocabulary_finish(update):
     user = get_user(update)
     callback_data = json.loads(update["callback_query"]["data"])
-    vocabulary_id = callback_data[1:]
+    vocabulary_id = callback_data[1]
     parameters = get_user_parameters(user)
     lang = parameters.language
     _set_current_vocabulary(user, vocabulary_id)
