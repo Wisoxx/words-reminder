@@ -51,7 +51,12 @@ def calculate_timezone_offset(user_time_str: str):
     """
     utc_now = datetime.utcnow()
     user_time = datetime.strptime(user_time_str, "%H:%M")
-    user_time = user_time.replace(year=utc_now.year, month=utc_now.month, day=utc_now.day)
+
+    if user_time.hour < utc_now.hour:
+        user_time = user_time.replace(year=utc_now.year, month=utc_now.month, day=utc_now.day + 1)
+    else:
+        user_time = user_time.replace(year=utc_now.year, month=utc_now.month, day=utc_now.day)
+
     time_difference = user_time - utc_now
     offset_hours = round(time_difference.total_seconds() / 3600)
 
