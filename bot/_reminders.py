@@ -73,7 +73,7 @@ def _adjust_reminders_to_new_timezone(user, old_timezone, new_timezone):
     :param old_timezone: The user's old timezone offset in hours (e.g., +2 for UTC+2).
     :param new_timezone: The user's new timezone offset in hours (e.g., +3 for UTC+3).
     """
-    offset_difference = new_timezone - old_timezone
+    offset_difference = old_timezone - new_timezone
     vocabularies = _get_vocabulary_list(user)
 
     for vocabulary_id in vocabularies:
