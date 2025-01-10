@@ -146,6 +146,7 @@ def change_timezone_finalize(update):
     old_timezone = parameters.timezone
     callback_data = json.loads(update["callback_query"]["data"])
     time = callback_data[1]
+    logger.info(f"User chose time: {time}")
     new_timezone = calculate_timezone_offset(time)
     _set_timezone(user, new_timezone)
     return settings(update)
