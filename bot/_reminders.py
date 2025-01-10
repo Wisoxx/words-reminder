@@ -113,12 +113,13 @@ def _generate_vocabulary_reminders_text(user, vocabulary_id, vocabulary_name, ti
         return ""
 
 
-def _get_inline_reminder_list(user, vocabulary_id, next_query_action, back_button_action):
+def _get_inline_reminder_list(user, vocabulary_id, timezone, next_query_action, back_button_action):
     """
     Creates an inline keyboard with a list of reminders for a given vocabulary, including a back button.
 
     :param user: The user ID to fetch reminders for.
     :param vocabulary_id: The vocabulary ID to fetch reminders for.
+    :param timezone: Timezone offset of user.
     :param next_query_action: The action identifier to execute when the user clicks on a reminder.
     :param back_button_action: The callback action for the back button.
     :return: An InlineKeyboardMarkup object with the reminder list and a back button.
@@ -128,7 +129,7 @@ def _get_inline_reminder_list(user, vocabulary_id, next_query_action, back_butto
     buttons = []
 
     for time, words_number in reminders.items():
-        button_text = f"{time}  —  {words_number} words"
+        button_text = f"{shift_time(time, timezone)}  —  {words_number} words"
         buttons.append([
             InlineKeyboardButton(
                 text=button_text,
@@ -256,7 +257,7 @@ def delete_reminder_vocabulary_chosen(update):
     text = _generate_vocabulary_reminders_text(user, vocabulary_id, vocabulary_name, timezone,
                                                include_no_reminders_text=True)
     text += '\n' + _delete_reminder_menu_text(update, vocabulary_id)
-    reply_markup = _get_inline_reminder_list(user, vocabulary_id,
+    reply_markup = _get_inline_reminder_list(user, vocabulary_id, timezone,
                                              next_query_action=QUERY_ACTIONS.DELETE_REMINDER_FINALIZE.value,
                                              back_button_action=QUERY_ACTIONS.MENU_REMINDERS.value)
     return text, reply_markup
@@ -278,6 +279,7 @@ def delete_reminder_finalize(update):
 
         case _:
             raise ValueError("Unsupported status")
+    return text, reply_markup
 
 
 @route(trigger="callback_query", query_action=QUERY_ACTIONS.MENU_REMINDERS.value, action="edit")
