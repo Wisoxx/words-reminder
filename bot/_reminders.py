@@ -67,7 +67,7 @@ def _get_reminder_list(user, vocabulary_id):
 
 def _adjust_reminders_to_new_timezone(user, old_timezone, new_timezone):
     """
-    Adjusts reminders for a user to a new timezone by updating UTC times in the database.
+    Adjusts reminders for a user to a new timezone by updating UTC times in the database. Local time stays the same.
 
     :param user: The user ID to adjust reminders for.
     :param old_timezone: The user's old timezone offset in hours (e.g., +2 for UTC+2).
