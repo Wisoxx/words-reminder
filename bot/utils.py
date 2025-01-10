@@ -60,6 +60,9 @@ def calculate_timezone_offset(user_time_str: str):
     time_difference = user_time - utc_now
     offset_hours = round(time_difference.total_seconds() / 3600)
 
+    # Keep offset within -12 to +12 range
+    offset_hours = (offset_hours + 12) % 24 - 12
+
     return offset_hours
 
 
