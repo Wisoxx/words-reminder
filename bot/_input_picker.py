@@ -25,7 +25,7 @@ def pick_time(update, time=None, include_minutes=None, next_query_action=None, b
     user = get_user(update)
     parameters = get_user_parameters(user)
     lang = parameters.language
-    timezone = parameters.timezone
+    timezone = parameters.timezone if adjust_to_timezone else 0
 
     if all((not time, not include_minutes, not next_query_action, not back_button_action)):
         callback_data = json.loads(update["callback_query"]["data"])
@@ -41,9 +41,6 @@ def pick_time(update, time=None, include_minutes=None, next_query_action=None, b
         hours, _ = time.split(":")
         _, current_minutes = current_time.split(":")
         time = f"{hours}:{current_minutes}"
-
-    if adjust_to_timezone:
-        time = shift_time(time, hour_offset=timezone)
 
     def build_adjustment_row(label, adjustments, is_hour=True):
         """
