@@ -65,6 +65,35 @@ def _get_reminder_list(user, vocabulary_id):
         return {}
 
 
+def _adjust_reminders_to_new_timezone(user, old_timezone, new_timezone):
+    """
+    Adjusts reminders for a user to a new timezone by updating UTC times in the database.
+
+    :param user: The user ID to adjust reminders for.
+    :param old_timezone: The user's old timezone offset in hours (e.g., +2 for UTC+2).
+    :param new_timezone: The user's new timezone offset in hours (e.g., +3 for UTC+3).
+    """
+    offset_difference = new_timezone - old_timezone
+    vocabularies = _get_vocabulary_list(user)
+
+    for vocabulary_id in vocabularies:
+        reminders = _get_reminder_list(user, vocabulary_id)
+
+        for time, number_of_words in reminders.items():
+            new_time = shift_time(time, hour_offset=offset_difference)
+
+            db.Reminders.set(
+                conditions={
+                    "user_id": user,
+                    "vocabulary_id": vocabulary_id,
+                    "time": time,
+                },
+                new_values={
+                    "time": new_time,
+                }
+            )
+
+
 ####################################################################################################################
 #                                                     OTHER
 ####################################################################################################################

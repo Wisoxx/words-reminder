@@ -5,6 +5,7 @@ from .temp_manager import get_user, get_user_parameters
 from ._enums import QUERY_ACTIONS
 from .utils import html_wrapper, escape_html, get_hh_mm, calculate_timezone_offset
 from ._input_picker import pick_time
+from ._reminders import _adjust_reminders_to_new_timezone
 from translations import translate, languages
 from router import route
 from logger import setup_logger
@@ -149,4 +150,5 @@ def change_timezone_finalize(update):
     logger.info(f"User chose time: {time}")
     new_timezone = calculate_timezone_offset(time)
     _set_timezone(user, new_timezone)
+    _adjust_reminders_to_new_timezone(user, old_timezone, new_timezone)
     return settings(update)
