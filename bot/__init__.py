@@ -9,6 +9,7 @@ import bot._commands
 import bot._words
 import bot._vocabularies
 import bot._reminders
+import bot._settings
 from router import get_route
 from logger import setup_logger
 
