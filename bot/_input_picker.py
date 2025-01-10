@@ -9,7 +9,7 @@ from translations import translate
 
 @route(trigger="callback_query", query_action=QUERY_ACTIONS.PICK_TIME.value, action="edit_markup")
 def pick_time(update, time=None, include_minutes=None, next_query_action=None, back_button_action=None,
-              real_time_mins=False, adjust_to_timezone=False):
+              real_time_mins=False, adjust_to_timezone=True):
     """
     Generates an inline keyboard to pick or adjust a time, with optional real-time update of minutes.
 
