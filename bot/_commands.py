@@ -1,7 +1,7 @@
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 import database as db
 from translations import translate
-from ._settings import get_user, get_user_parameters, reset_user_state
+from . import get_user, get_user_parameters, reset_user_state
 from ._response_format import Response
 import json
 from ._enums import QUERY_ACTIONS

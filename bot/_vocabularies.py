@@ -1,12 +1,9 @@
 import json
-import database as db
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
-from ._settings import get_user, get_user_parameters, set_user_state, reset_user_state
 from .temp_manager import *
 from ._enums import TaskStatus, QUERY_ACTIONS, TEMP_KEYS, USER_STATES
 from .utils import html_wrapper, escape_html
-from router import route, get_route
-from translations import translate
+from router import route
 from logger import setup_logger
 
 logger = setup_logger(__name__)

@@ -1,12 +1,9 @@
 import json
-import database as db
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
-from ._settings import get_user, get_user_parameters, set_user_state, reset_user_state
 from .temp_manager import *
-from ._enums import TaskStatus, QUERY_ACTIONS, TEMP_KEYS, USER_STATES
+from ._enums import TaskStatus, QUERY_ACTIONS, TEMP_KEYS
 from .utils import html_wrapper, escape_html, suggest_reminder_time, shift_time
-from router import route, get_route
-from translations import translate
+from router import route
 from ._vocabularies import _get_vocabulary_list, _get_vocabulary_name, _get_inline_vocabulary_list
 from bot._input_picker import pick_time, generate_number_keyboard
 from logger import setup_logger
