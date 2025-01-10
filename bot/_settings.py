@@ -129,7 +129,7 @@ def change_timezone_start(update):
     user = get_user(update)
     parameters = get_user_parameters(user)
     timezone = parameters.timezone
-    time = get_hh_mm()
+    time = get_hh_mm(timezone)
 
     text = "Match the time below with your current time. Once you do it, press on the time to save your timezone."
     reply_markup = pick_time(update, time, include_minutes=False,
