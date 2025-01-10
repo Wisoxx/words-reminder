@@ -135,7 +135,7 @@ def change_timezone_start(update):
     reply_markup = pick_time(update, time, include_minutes=False,
                              next_query_action=QUERY_ACTIONS.CHANGE_TIMEZONE_FINALIZE.value,
                              back_button_action=QUERY_ACTIONS.MENU_SETTINGS.value,
-                             real_time_mins=True)
+                             real_time_mins=True, adjust_to_timezone=False)
     return text, reply_markup
 
 
