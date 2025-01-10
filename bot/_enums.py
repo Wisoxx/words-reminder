@@ -37,6 +37,7 @@ class QUERY_ACTIONS(Enum):
     LANGUAGE_CHOSEN = auto()
     TOGGLE_HIDE_MEANING = auto()
     CHANGE_TIMEZONE = auto()
+    CHANGE_TIMEZONE_FINALIZE = auto()
     PICK_TIME = auto()
     TIME_CHOSEN = auto()
 
