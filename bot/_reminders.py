@@ -221,7 +221,9 @@ def add_reminder_vocabulary_chosen(update):
     time = suggest_reminder_time()
     reply_markup = pick_time(update, time, include_minutes=True,
                              next_query_action=QUERY_ACTIONS.ADD_REMINDER_TIME_CHOSEN.value,
-                             back_button_action=QUERY_ACTIONS.MENU_REMINDERS.value)
+                             back_button_action=QUERY_ACTIONS.MENU_REMINDERS.value,
+                             real_time_mins=False,
+                             adjust_to_timezone=True)
     return text, reply_markup
 
 
