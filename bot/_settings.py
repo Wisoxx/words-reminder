@@ -1,7 +1,7 @@
 import database as db
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 import json
-from . import get_user, get_user_parameters
+from .temp_manager import get_user, get_user_parameters
 from ._enums import QUERY_ACTIONS
 from .utils import html_wrapper, escape_html, get_hh_mm, calculate_timezone_offset
 from ._input_picker import pick_time

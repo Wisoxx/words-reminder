@@ -2,7 +2,7 @@ import database as db
 from . import TEMP_KEYS
 from ._enums import TaskStatus, QUERY_ACTIONS, TEMP_KEYS, USER_STATES
 from logger import setup_logger
-from ._settings import logger
+
 
 logger = setup_logger(__name__)
 

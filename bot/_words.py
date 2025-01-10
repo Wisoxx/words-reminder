@@ -1,6 +1,6 @@
 import json
 import database as db
-from . import get_user, get_user_parameters, set_user_state, reset_user_state
+from .temp_manager import get_user, get_user_parameters, set_user_state, reset_user_state
 from ._vocabularies import _get_vocabulary_name, change_vocabulary_start, _set_current_vocabulary
 from .utils import html_wrapper, escape_html, get_timestamp, pad
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
