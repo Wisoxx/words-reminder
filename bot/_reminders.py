@@ -152,25 +152,47 @@ def _get_inline_reminder_list(user, vocabulary_id, timezone, next_query_action, 
 ####################################################################################################################
 
 
-def _add_reminder_menu_text(update, vocabulary_id=None, time="--:--", number_of_words=0):
+def _add_reminder_menu_text(update, vocabulary_id=None, time=None, number_of_words=0):
     user = get_user(update)
     parameters = get_user_parameters(user)
     timezone = parameters.timezone
     lang = parameters.language
 
     vocabulary_name = _get_vocabulary_name(vocabulary_id) if vocabulary_id else '—'
+    display_time = shift_time(time, timezone) if time else "--:--"
 
     text = ("Adding a reminder:\n\n"
             f"Vocabulary name: {vocabulary_name}\n"
-            f"Time: {shift_time(time, timezone)}\n"
+            f"Time: {display_time}\n"
             f"Number of words: {number_of_words}")
     return text
 
 
 @route(trigger="callback_query", query_action=QUERY_ACTIONS.ADD_REMINDER.value, action="edit")
 def add_reminder_start(update):
+    user = get_user(update)
+    text, _ = construct_reminder_page(update)
+    text += "\n" + _add_reminder_menu_text(update)
+    reply_markup = _get_inline_vocabulary_list(user,
+                                               next_query_action=QUERY_ACTIONS.ADD_REMINDER_VOCABULARY_CHOSEN.value,
+                                               back_button_action=QUERY_ACTIONS.MENU_REMINDERS.value)
+    return text, reply_markup
+
+
+@route(trigger="callback_query", query_action=QUERY_ACTIONS.ADD_REMINDER_VOCABULARY_CHOSEN.value, action="edit")
+def add_reminder_vocabulary_chosen(update):
+    user = get_user(update)
+    parameters = get_user_parameters(user)
+    timezone = parameters.timezone
+    callback_data = json.loads(update["callback_query"]["data"])
+    vocabulary_id = callback_data[1]
+    vocabulary_name = _get_vocabulary_name(vocabulary_id)
+    set_temp(user, TEMP_KEYS.VOCABULARY.value, vocabulary_id)
+
+    text = _generate_vocabulary_reminders_text(user, vocabulary_id, vocabulary_name, timezone,
+                                               include_no_reminders_text=True)
+    text += '\n' + _add_reminder_menu_text(update, vocabulary_id)
     time = suggest_reminder_time()
-    text = _add_reminder_menu_text(update)
     reply_markup = pick_time(update, time, include_minutes=True,
                              next_query_action=QUERY_ACTIONS.ADD_REMINDER_TIME_CHOSEN.value,
                              back_button_action=QUERY_ACTIONS.MENU_REMINDERS.value)
@@ -184,7 +206,9 @@ def add_reminder_time_chosen(update):
     time = callback_data[1]
     set_temp(user, TEMP_KEYS.TIME.value, time)
 
-    text = _add_reminder_menu_text(update, time=time)
+    vocabulary_id = get_temp(user, TEMP_KEYS.VOCABULARY.value)
+
+    text = _add_reminder_menu_text(update, vocabulary_id, time)
     reply_markup = generate_number_keyboard(QUERY_ACTIONS.ADD_REMINDER_FINALIZE.value,
                                             QUERY_ACTIONS.MENU_REMINDERS.value)
     return text, reply_markup
@@ -195,11 +219,13 @@ def add_reminder_finalize(update):
     user = get_user(update)
     parameters = get_user_parameters(user)
     timezone = parameters.timezone
-    vocabulary_id = parameters.current_vocabulary_id
+
+    time = pop_temp(user, TEMP_KEYS.TIME.value)
+    vocabulary_id = pop_temp(user, TEMP_KEYS.VOCABULARY.value)
     vocabulary_name = _get_vocabulary_name(vocabulary_id)
+
     callback_data = json.loads(update["callback_query"]["data"])
     number_of_words = callback_data[1]
-    time = pop_temp(user, TEMP_KEYS.TIME.value)
 
     reminder_id = _add_reminder(user, vocabulary_id, time, number_of_words)
     if reminder_id == 0:
