@@ -28,7 +28,7 @@ def pick_time(update, time=None, include_minutes=None, next_query_action=None, b
 
     if all((not time, not include_minutes, not next_query_action, not back_button_action)):
         callback_data = json.loads(update["callback_query"]["data"])
-        time, include_minutes, next_query_action, back_button_action, real_time_update = callback_data[1:]
+        time, include_minutes, next_query_action, back_button_action, real_time_mins = callback_data[1:]
 
     h = translate(lang, 'short_hours')
     mins = translate(lang, 'short_minutes')
@@ -62,7 +62,7 @@ def pick_time(update, time=None, include_minutes=None, next_query_action=None, b
                         include_minutes,
                         next_query_action,
                         back_button_action,
-                        real_time_update
+                        real_time_mins
                     ])
                 )
             )
