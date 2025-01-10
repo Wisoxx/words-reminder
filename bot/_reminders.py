@@ -272,7 +272,14 @@ def delete_reminder_finalize(update):
     match _delete_reminder(user, vocabulary_id=vocabulary_id, time=time):
         case TaskStatus.SUCCESS:
             text = f'Successfully deleted reminder at {time} from "{escape_html(vocabulary_name)}"'
-            reply_markup = None
+            reply_markup = InlineKeyboardMarkup(
+                inline_keyboard=[
+                    [
+                        InlineKeyboardButton(text="      ↩️      ",
+                                             callback_data=json.dumps([QUERY_ACTIONS.MENU_REMINDERS.value])),
+                    ]
+                ]
+            )
         case TaskStatus.FAILURE:
             raise FileNotFoundError(
                 f'Failed to delete a reminder at time from vocabulary #{vocabulary_id}')
