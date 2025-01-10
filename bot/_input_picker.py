@@ -9,7 +9,7 @@ from translations import translate
 
 @route(trigger="callback_query", query_action=QUERY_ACTIONS.PICK_TIME.value, action="edit_markup")
 def pick_time(update, time=None, include_minutes=None, next_query_action=None, back_button_action=None,
-              real_time_mins=False):
+              real_time_mins=False, adjust_to_timezone=False):
     """
     Generates an inline keyboard to pick or adjust a time, with optional real-time update of minutes.
 
@@ -19,6 +19,7 @@ def pick_time(update, time=None, include_minutes=None, next_query_action=None, b
     :param next_query_action: The next action to execute upon selecting a time.
     :param back_button_action: The callback action for the back button.
     :param real_time_mins: Whether to update the minutes dynamically in real-time. Conflicts with `include_minutes`
+    :param adjust_to_timezone: Whether to adjust the displayed time to the user's timezone.
     :return: An InlineKeyboardMarkup object with the time adjustment buttons.
     """
     user = get_user(update)
@@ -28,7 +29,7 @@ def pick_time(update, time=None, include_minutes=None, next_query_action=None, b
 
     if all((not time, not include_minutes, not next_query_action, not back_button_action)):
         callback_data = json.loads(update["callback_query"]["data"])
-        time, include_minutes, next_query_action, back_button_action, real_time_mins = callback_data[1:]
+        time, include_minutes, next_query_action, back_button_action, real_time_mins, adjust_to_timezone = callback_data[1:]
 
     h = translate(lang, 'short_hours')
     mins = translate(lang, 'short_minutes')
@@ -40,6 +41,9 @@ def pick_time(update, time=None, include_minutes=None, next_query_action=None, b
         hours, _ = time.split(":")
         _, current_minutes = current_time.split(":")
         time = f"{hours}:{current_minutes}"
+
+    if adjust_to_timezone:
+        time = shift_time(time, hour_offset=timezone)
 
     def build_adjustment_row(label, adjustments, is_hour=True):
         """
@@ -62,7 +66,8 @@ def pick_time(update, time=None, include_minutes=None, next_query_action=None, b
                         include_minutes,
                         next_query_action,
                         back_button_action,
-                        real_time_mins
+                        real_time_mins,
+                        adjust_to_timezone
                     ])
                 )
             )
