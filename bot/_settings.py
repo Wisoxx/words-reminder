@@ -132,9 +132,10 @@ def change_timezone_start(update):
     time = get_hh_mm()
 
     text = "Match the time below with your current time. Once you do it, press on the time to save your timezone."
-    reply_markup = pick_time(update, time, include_minutes=True,
+    reply_markup = pick_time(update, time, include_minutes=False,
                              next_query_action=QUERY_ACTIONS.CHANGE_TIMEZONE_FINALIZE.value,
-                             back_button_action=QUERY_ACTIONS.MENU_SETTINGS.value)
+                             back_button_action=QUERY_ACTIONS.MENU_SETTINGS.value,
+                             real_time_mins=True)
     return text, reply_markup
 
 
