@@ -266,12 +266,14 @@ def delete_reminder_vocabulary_chosen(update):
 @route(trigger="callback_query", query_action=QUERY_ACTIONS.DELETE_REMINDER_FINALIZE.value, action="edit")
 def delete_reminder_finalize(update):
     user = get_user(update)
+    parameters = get_user_parameters(user)
+    timezone = parameters.timezone
     callback_data = json.loads(update["callback_query"]["data"])
     vocabulary_id, time = callback_data[1:]
     vocabulary_name = _get_vocabulary_name(vocabulary_id)
     match _delete_reminder(user, vocabulary_id=vocabulary_id, time=time):
         case TaskStatus.SUCCESS:
-            text = f'Successfully deleted reminder at {time} from "{escape_html(vocabulary_name)}"'
+            text = f'Successfully deleted reminder at {shift_time(time, timezone)} from "{escape_html(vocabulary_name)}"'
             reply_markup = InlineKeyboardMarkup(
                 inline_keyboard=[
                     [
