@@ -71,5 +71,5 @@ def remind_all():
         return jsonify({"status": "success", "message": "Reminders sent successfully!"}), 200
 
     except Exception as e:
-        logger.info(f"Error broadcasting reminders: {e}")
+        logger.critical(f"Error broadcasting reminders: {e}", exc_info=True)
         return jsonify({"status": "error", "message": "Failed to send reminders."}), 500
