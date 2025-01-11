@@ -266,7 +266,7 @@ class Database:
 
         if include_column_names:
             if not rows:
-                return None
+                return []
 
             if not custom_select:
                 Row = namedtuple('Row', cls.columns)
