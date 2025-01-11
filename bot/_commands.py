@@ -1,8 +1,9 @@
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 import database as db
 from translations import translate
+from ._vocabularies import _get_vocabulary_name
 from .temp_manager import get_user, get_user_parameters, reset_user_state
-from ._response_format import Response
+from ._words import _get_old_words, _word_list_to_pages
 import json
 from ._enums import QUERY_ACTIONS
 from router import route
@@ -53,13 +54,21 @@ def menu(update):
         f"⚙️ {translate(lang, 'settings')}"
     )
 
-    return Response(text, keyboard)
+    return text, keyboard
 
 
 @route(trigger="text", command="/recall", action="send")
-def recall(update):
-    user = get_user(update)
-    text = "recall"
+def recall(update=None, user=None, vocabulary_id=None, limit=15):
+    user = user or get_user(update)
+    parameters = get_user_parameters(user)
+    vocabulary_id = vocabulary_id or parameters.current_vocabulary_id
+    vocabulary_name = _get_vocabulary_name
+    lang = parameters.language
+    hide_meaning = parameters.hide_meaning
+
+    words = _get_old_words(user, vocabulary_id, limit)
+    page = _word_list_to_pages(words, hide_meaning)[0]
+    text = f"Here are {limit} oldest words from {vocabulary_name}:\n\n" + page
     reply_markup = None
     return text, reply_markup
 
