@@ -2,6 +2,9 @@ from flask import Flask, request, jsonify
 from bot import Bot, telepot
 import urllib3
 from urllib3.util.retry import Retry
+from bot._commands import recall
+from bot._reminders import _get_reminders_list_at
+from bot.utils import get_hh_mm
 from logger import setup_logger, process_logs
 import os
 from dotenv import load_dotenv
@@ -60,8 +63,11 @@ def view_logs():
 
 @app.route(f'/{SECRET}/remind_all', methods=["POST"])
 def remind_all():
+    logger.debug("Received remind request")
     try:
-        bot.broadcast("Received ping")
+        for _, user, vocabulary_id, _, number_of_words in _get_reminders_list_at(get_hh_mm()):
+            text, reply_markup = recall(user=user, vocabulary_id=vocabulary_id, limit=number_of_words)
+            bot.deliver_message(user, text, reply_markup=reply_markup)
         return jsonify({"status": "success", "message": "Reminders sent successfully!"}), 200
 
     except Exception as e:

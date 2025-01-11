@@ -59,6 +59,7 @@ def menu(update):
 
 @route(trigger="text", command="/recall", action="send")
 def recall(update=None, user=None, vocabulary_id=None, limit=15):
+    logger.info(f"Reminding user {user} {limit} words from vocabulary #{vocabulary_id}")
     user = user or get_user(update)
     parameters = get_user_parameters(user)
     vocabulary_id = vocabulary_id or parameters.current_vocabulary_id
