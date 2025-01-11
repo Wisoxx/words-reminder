@@ -1,10 +1,13 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from bot import Bot, telepot
 import urllib3
 from urllib3.util.retry import Retry
 from logger import setup_logger, process_logs
 import os
 from dotenv import load_dotenv
+
+
+logger = setup_logger(__name__)
 
 
 class LoggingRetry(Retry):  # overriding class to have logs when connection errors occur
@@ -14,7 +17,6 @@ class LoggingRetry(Retry):  # overriding class to have logs when connection erro
 
     def increment(self, *args, **kwargs):
         self.retry_count += 1
-        logger = setup_logger(__name__)
         logger.warning(f"Retrying request {self.retry_count}")
         return super().increment(*args, **kwargs)
 
@@ -58,4 +60,10 @@ def view_logs():
 
 @app.route(f'/{SECRET}/remind_all', methods=["POST"])
 def remind_all():
-    bot.broadcast("Received ping")
+    try:
+        bot.broadcast("Received ping")
+        return jsonify({"status": "success", "message": "Reminders sent successfully!"}), 200
+
+    except Exception as e:
+        logger.info(f"Error broadcasting reminders: {e}")
+        return jsonify({"status": "error", "message": "Failed to send reminders."}), 500
