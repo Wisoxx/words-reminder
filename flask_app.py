@@ -44,7 +44,7 @@ bot.setWebhook(SITE + SECRET, max_connections=1)
 app = Flask(__name__)
 
 
-@app.route('/{}'.format(SECRET), methods=["POST"])
+@app.route(f'/{SECRET}', methods=["POST"])
 def telegram_webhook():
     update = request.get_json()
     bot.handle_update(update)
@@ -54,3 +54,8 @@ def telegram_webhook():
 @app.route(f'/{SECRET}/logs', methods=["GET"])
 def view_logs():
     return process_logs()
+
+
+@app.route(f'/{SECRET}/remind_all', methods=["POST"])
+def remind_all():
+    bot.broadcast("Received ping")
