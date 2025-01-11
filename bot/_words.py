@@ -330,6 +330,8 @@ def construct_word_page(update, vocabulary_id=None, page=None):
     page_buttons = []
     menu_buttons = [
         [
+            InlineKeyboardButton(text='      💭      ',
+                                 callback_data=json.dumps([QUERY_ACTIONS.RECALL.value])),
             InlineKeyboardButton(text='      📙      ',
                                  callback_data=json.dumps([QUERY_ACTIONS.WORDS_CHANGE_VOCABULARY.value])),
             InlineKeyboardButton(text='      ━     ', callback_data=json.dumps([QUERY_ACTIONS.DELETE_WORD.value])),

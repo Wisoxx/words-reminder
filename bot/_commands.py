@@ -57,6 +57,7 @@ def menu(update):
     return text, keyboard
 
 
+@route(trigger="callback_query", query_action=QUERY_ACTIONS.RECALL.value, action="edit")
 @route(trigger="text", command="/recall", action="send")
 def recall(update=None, user=None, vocabulary_id=None, limit=15):
     logger.info(f"Reminding user {user} {limit} words from vocabulary #{vocabulary_id}")
@@ -70,7 +71,16 @@ def recall(update=None, user=None, vocabulary_id=None, limit=15):
     words = _get_old_words(user, vocabulary_id, limit)
     page = _word_list_to_pages(words, hide_meaning)[0]
     text = f"Here are {limit} oldest words from {vocabulary_name}:\n\n" + page
-    reply_markup = None
+    reply_markup = InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(text='      🔄      ', callback_data=json.dumps([QUERY_ACTIONS.RECALL.value])),
+        ],
+        [
+            InlineKeyboardButton(text='      ↩️      ', callback_data=json.dumps([QUERY_ACTIONS.MENU_WORDS.value])),
+            InlineKeyboardButton(text='      ℹ️      ',
+                                 callback_data=json.dumps([QUERY_ACTIONS.SHOW_INFO.value, "info_recall"])),
+        ]
+    ])
     return text, reply_markup
 
 

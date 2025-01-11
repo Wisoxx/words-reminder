@@ -7,8 +7,6 @@ class QUERY_ACTIONS(Enum):
     CHANGE_WORDS_PAGE = auto()
     ADD_SPECIFIC_WORD = auto()
     DELETE_SPECIFIC_WORD = auto()
-    ADD_SPECIFIC_REMINDER = auto()
-    DELETE_SPECIFIC_REMINDER = auto()
     MENU = auto()
     MENU_WORDS = auto()
     MENU_REMINDERS = auto()
@@ -19,6 +17,7 @@ class QUERY_ACTIONS(Enum):
     VOCABULARY_CHOSEN = auto()
     ADD_WORD = auto()
     DELETE_WORD = auto()
+    RECALL = auto()
     WORDS_CHANGE_VOCABULARY = auto()
     WORDS_VOCABULARY_CHOSEN = auto()
     ADD_REMINDER = auto()
@@ -38,8 +37,6 @@ class QUERY_ACTIONS(Enum):
     TOGGLE_HIDE_MEANING = auto()
     CHANGE_TIMEZONE = auto()
     CHANGE_TIMEZONE_FINALIZE = auto()
-    PICK_TIME = auto()
-    TIME_CHOSEN = auto()
 
 
 class TEMP_KEYS(Enum):
