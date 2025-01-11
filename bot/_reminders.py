@@ -94,6 +94,17 @@ def _adjust_reminders_to_new_timezone(user, old_timezone, new_timezone):
             )
 
 
+def _get_reminders_list_at(time: str) -> list[tuple[int, int, int, str, int]]:
+    """
+    Fetches a list of reminders scheduled for the specified time.
+
+    :param time: The time for which to retrieve reminders. It should match the format used in the database.
+    :return: A list of reminders, where each reminder is represented as a named tuple containing column names as keys
+    and their corresponding values.
+    """
+    return db.Reminders.get({"time": time}, force_2d=True, include_column_names=True)
+
+
 ####################################################################################################################
 #                                                     OTHER
 ####################################################################################################################
