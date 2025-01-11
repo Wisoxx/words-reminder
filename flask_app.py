@@ -65,10 +65,14 @@ def view_logs():
 def remind_all():
     logger.debug("Received remind request")
     try:
-        for _, user, vocabulary_id, _, number_of_words in _get_reminders_list_at(get_hh_mm()):
-            text, reply_markup = recall(user=user, vocabulary_id=vocabulary_id, limit=number_of_words)
-            bot.deliver_message(user, text, reply_markup=reply_markup)
-        return jsonify({"status": "success", "message": "Reminders sent successfully!"}), 200
+        reminders = _get_reminders_list_at(get_hh_mm())
+        if len(reminders) > 0:
+            for _, user, vocabulary_id, _, number_of_words in reminders:
+                text, reply_markup = recall(user=user, vocabulary_id=vocabulary_id, limit=number_of_words)
+                bot.deliver_message(user, text, reply_markup=reply_markup)
+            return jsonify({"status": "success", "message": "Reminders sent successfully!"}), 200
+        else:
+            return jsonify({"status": "success", "message": "No reminders found"}), 200
 
     except Exception as e:
         logger.critical(f"Error broadcasting reminders: {e}", exc_info=True)
