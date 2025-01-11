@@ -25,12 +25,12 @@ def pick_time(update, time=None, include_minutes=None, next_query_action=None, b
     user = get_user(update)
     parameters = get_user_parameters(user)
     lang = parameters.language
-    timezone = parameters.timezone if adjust_to_timezone else 0
 
     if all((not time, not include_minutes, not next_query_action, not back_button_action, not real_time_mins,
             not adjust_to_timezone)):
         callback_data = json.loads(update["callback_query"]["data"])
         time, include_minutes, next_query_action, back_button_action, real_time_mins, adjust_to_timezone = callback_data[1:]
+    timezone = parameters.timezone if adjust_to_timezone else 0
 
     h = translate(lang, 'short_hours')
     mins = translate(lang, 'short_minutes')
