@@ -134,7 +134,7 @@ def _get_old_words(user: int, vocabulary_id: int, limit: int) -> list[tuple[str,
 ####################################################################################################################
 
 
-def _word_list_to_pages(values, hide_meaning, max_length, words_limit):
+def _word_list_to_pages(values: list[tuple[str, str]], hide_meaning: bool, max_length: int, words_limit: int) -> list[str]:
     """
     Splits a list of word-definition pairs into pages based on max length and word limits.
 
