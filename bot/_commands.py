@@ -69,7 +69,6 @@ def recall(update=None, user=None, vocabulary_id=None, limit=15):
 
     words = _get_old_words(user, vocabulary_id, limit)
     page = _word_list_to_pages(words, hide_meaning)[0]
-    logger.info(f"page = {page}")
     text = f"Here are {limit} oldest words from {vocabulary_name}:\n\n" + page
     reply_markup = None
     return text, reply_markup
