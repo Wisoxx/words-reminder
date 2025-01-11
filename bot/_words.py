@@ -87,20 +87,15 @@ def _get_user_words(user, vocabulary_id, include_timestamp=False, reverse=False)
                         order_by="word_id", sort_direction=order, force_2d=True)
 
 
-def _get_old_words(user, vocabulary_id, limit):
+def _get_old_words(user: int, vocabulary_id: int, limit: int) -> list[tuple[str, str]]:
     """
     Fetches the oldest words (up to the specified limit) from the specified vocabulary for a given user,
     and updates their timestamp to the current time.
 
     :param user: The ID of the user for whom the words are being retrieved.
-    :type user: int
     :param vocabulary_id: The ID of the vocabulary from which the words will be fetched.
-    :type vocabulary_id: int
     :param limit: The maximum number of oldest words to retrieve.
-    :type limit: int
-
-    :return: A dictionary where the keys are the words and the values are their corresponding meanings.
-    :rtype: dict
+    :return:  A list of tuples where each tuple contains a word and its corresponding meaning.
     """
     current_timestamp = get_timestamp()
 
@@ -117,7 +112,7 @@ def _get_old_words(user, vocabulary_id, limit):
         include_column_names=True
     )
 
-    word_meaning_dict = {word.word: word.meaning for word in words}
+    word_list = [(word.word, word.meaning) for word in words]
 
     for word in words:
         db.Words.set(
@@ -131,7 +126,7 @@ def _get_old_words(user, vocabulary_id, limit):
             }
         )
 
-    return word_meaning_dict
+    return word_list
 
 
 ####################################################################################################################
