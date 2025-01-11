@@ -124,7 +124,7 @@ def _get_old_words(user, vocabulary_id, limit):
             conditions={
                 "user_id": user,
                 "vocabulary_id": vocabulary_id,
-                "word": word
+                "word": word.word
             },
             new_values={
                 "timestamp": current_timestamp
