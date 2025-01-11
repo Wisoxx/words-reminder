@@ -113,7 +113,8 @@ def _get_old_words(user, vocabulary_id, limit):
         order_by="timestamp",
         sort_direction="ASC",
         custom_select="SELECT word, meaning FROM words",
-        force_2d=True
+        force_2d=True,
+        include_column_names=True
     )
 
     word_meaning_dict = {word.word: word.meaning for word in words}
