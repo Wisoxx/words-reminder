@@ -185,33 +185,40 @@ def _word_list_to_pages(values: list[tuple[str, str]], hide_meaning: bool, max_l
 
 
 @route(trigger="text", state=USER_STATES.NO_STATE.value, action="send")
-def add_word(update):
+def add_word(update, vocabulary_id=None, word=None, meaning=None):
     """
     Adds a new word to the current vocabulary
     :param update: update containing user input in form "{word} - {meaning}". If " - " is absent, then the whole text
     is treated as one word
+    :param vocabulary_id: The ID of the vocabulary from which the word will be added.
+    :param word: The word to add.
+    :param meaning: The meaning of the word to add.
     :return: text, reply_markup to be sent to user
     """
     user = get_user(update)
-    text = update["message"]["text"]
-    logger.debug(f"Adding user {user} word '{text}'")
     parameters = get_user_parameters(user)
     lang = parameters.language
-    current_vocabulary_id = parameters.current_vocabulary_id
-    current_vocabulary_name = _get_vocabulary_name(current_vocabulary_id)
 
-    if " - " in text:
-        word, meaning = text.split(" - ", 1)
-    else:
-        word = text
-        meaning = None
+    if all((not vocabulary_id, not word, not meaning)):
+        vocabulary_id = parameters.current_vocabulary_id
+        text = update["message"]["text"]
 
-    word_id = _add_word(user, current_vocabulary_id, word, meaning)
+        if " - " in text:
+            word, meaning = text.split(" - ", 1)
+        else:
+            word = text
+            meaning = None
+
+    vocabulary_name = _get_vocabulary_name(vocabulary_id)
+
+    logger.debug(f"Adding user {user} word='{word}' meaning='{meaning}' to vocabulary #{vocabulary_id}")
+
+    word_id = _add_word(user, vocabulary_id, word, meaning)
     if word_id == 0:
-        text = f'You already have "{escape_html(word)}" in "{escape_html(current_vocabulary_name)}"'
+        text = f'You already have "{escape_html(word)}" in "{escape_html(vocabulary_name)}"'
         reply_markup = None
     else:
-        text = f'Successfully added "{escape_html(word)}" to "{escape_html(current_vocabulary_name)}"'
+        text = f'Successfully added "{escape_html(word)}" to "{escape_html(vocabulary_name)}"'
         reply_markup = InlineKeyboardMarkup(inline_keyboard=[
             [
                 InlineKeyboardButton(text=f'      🗑 {translate(lang, "delete")}      ',
@@ -240,21 +247,26 @@ def delete_word_start(update):
 
 
 @route(trigger="text", state=USER_STATES.DELETE_WORD.value, action="send")
-def delete_word_finalize(update):
+def delete_word_finalize(update, vocabulary_id=None, word=None, meaning=None):
     """
     Deletes text input from current user's vocabulary. Is activated by a text message while a specific user state.
     :param update: update from user whose vocabulary is being deleted
+    :param vocabulary_id: The ID of the vocabulary from which the word will be deleted.
+    :param word: The word to delete.
+    :param meaning: The meaning of the word to delete.
     :return: text, reply_markup to be sent to user
     """
     user = get_user(update)
-    text = update["message"]["text"]
     logger.debug(f"User {user} provided a word for deletion")
     parameters = get_user_parameters(user)
     lang = parameters.language
-    vocabulary_id = parameters.current_vocabulary_id
+
+    if all((not vocabulary_id, not word, not meaning)):
+        vocabulary_id = parameters.current_vocabulary_id
+        word = update["message"]["text"]
+        meaning = _get_word_meaning(user=user, vocabulary_id=vocabulary_id, word=word)
+
     vocabulary_name = _get_vocabulary_name(vocabulary_id)
-    word = text
-    meaning = _get_word_meaning(user=user, vocabulary_id=vocabulary_id, word=word)
 
     match _delete_word(user=user, vocabulary_id=vocabulary_id, word=word):
         case TaskStatus.SUCCESS:
@@ -305,11 +317,9 @@ def words_vocabulary_chosen(update):
     return construct_word_page(update)
 
 
-@route(trigger="callback_query", query_action=QUERY_ACTIONS.ADD_SPECIFIC_WORD.value, action="send")
+@route(trigger="callback_query", query_action=QUERY_ACTIONS.ADD_SPECIFIC_WORD.value, action="edit")
 def add_specific_word(update):
     user = get_user(update)
-    parameters = get_user_parameters(user)
-    lang = parameters.language
     callback_data = json.loads(update["callback_query"]["data"])
     _, vocabulary_id, check_db, *rest = callback_data
 
@@ -319,22 +329,19 @@ def add_specific_word(update):
     else:
         word, meaning = rest
 
-    vocabulary_name = _get_vocabulary_name(vocabulary_id)
+    return add_word(update, vocabulary_id=vocabulary_id, word=word, meaning=meaning)
 
-    word_id = _add_word(user, vocabulary_id, word, meaning)
-    if word_id == 0:
-        text = f'You already have "{escape_html(word)}" in "{escape_html(vocabulary_name)}"'
-        reply_markup = None
-    else:
-        text = f'Successfully added "{escape_html(word)}" to "{escape_html(vocabulary_name)}"'
-        reply_markup = InlineKeyboardMarkup(inline_keyboard=[
-            [
-                InlineKeyboardButton(text=f'      🗑 {translate(lang, "delete")}      ',
-                                     callback_data=json.dumps([QUERY_ACTIONS.DELETE_SPECIFIC_WORD.value, word_id])),
-            ]
-        ])
 
-    return text, reply_markup
+@route(trigger="callback_query", query_action=QUERY_ACTIONS.DELETE_SPECIFIC_WORD.value, action="edit")
+def delete_specific_word(update):
+    user = get_user(update)
+    parameters = get_user_parameters(user)
+    lang = parameters.language
+    callback_data = json.loads(update["callback_query"]["data"])
+    word_id = callback_data[1]
+    word = _get_word_info(word_id)
+
+    return delete_word_finalize(update, word.vocabulary_id, word.word, word.meaning)
 
 
 @route(trigger="callback_query", query_action=QUERY_ACTIONS.CHANGE_WORDS_PAGE.value, action="edit")
