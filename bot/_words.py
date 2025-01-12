@@ -351,7 +351,7 @@ def construct_word_page(update, vocabulary_id=None, page=None):
         pages = _word_list_to_pages(words, hide_meaning)
         if len(pages) != 1:
             button_placeholder = InlineKeyboardButton(text='.', callback_data=json.dumps([None]))
-            if page > 1:
+            if page > 0:
                 button = InlineKeyboardButton(text='      ⏮️      ',
                                               callback_data=json.dumps([
                                                   QUERY_ACTIONS.CHANGE_WORDS_PAGE.value,
@@ -381,7 +381,7 @@ def construct_word_page(update, vocabulary_id=None, page=None):
             else:
                 button = button_placeholder
             page_buttons.append(button)
-            if page < len(pages) - 2:
+            if page < len(pages) - 1:
                 button = InlineKeyboardButton(text='      ⏩      ',
                                               callback_data=json.dumps([
                                                   QUERY_ACTIONS.CHANGE_WORDS_PAGE.value,
