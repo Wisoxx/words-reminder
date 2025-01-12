@@ -373,8 +373,6 @@ def construct_word_page(update, vocabulary_id=None, page=None):
             page = page or 0
     elif not vocabulary_id:
         vocabulary_id = parameters.current_vocabulary_id
-    elif not page:
-        page = 0
 
     lang = parameters.language
 
@@ -407,12 +405,16 @@ def construct_word_page(update, vocabulary_id=None, page=None):
         ]
     ]
 
-    words = _get_user_words(user, vocabulary_id, reverse=True)
+    words = _get_user_words(user, vocabulary_id)
 
     if len(words) == 0:
         text = heading + "*🦗crickets noises🦗*"
     else:
         pages = _word_list_to_pages(words, hide_meaning)
+
+        if not page:
+            page = len(pages) - 1
+
         if len(pages) != 1:
             button_placeholder = InlineKeyboardButton(text='.', callback_data=json.dumps([None]))
             if page > 0:
