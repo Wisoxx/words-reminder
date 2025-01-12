@@ -24,6 +24,7 @@ def _create_vocabulary(user, vocabulary_name):
     # Note: db sets new vocabulary as current
     status, vocabulary_id = db.Vocabularies.add({"vocabulary_name": vocabulary_name, "user_id": user})
     if status:
+        invalidate_cached_parameters(user)
         logger.info(f"User {user} created vocabulary #{vocabulary_id}")
     return vocabulary_id
 
