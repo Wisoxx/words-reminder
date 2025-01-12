@@ -1,6 +1,7 @@
 import json
 import database as db
-from .temp_manager import get_user, get_user_parameters, set_user_state, reset_user_state, set_temp, pop_temp
+from .temp_manager import get_user, get_user_parameters, set_user_state, reset_user_state, set_temp, pop_temp, get_temp, \
+    remove_temp
 from ._vocabularies import _get_vocabulary_name, change_vocabulary_start, _set_current_vocabulary
 from .utils import html_wrapper, escape_html, get_timestamp, pad
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
@@ -327,12 +328,13 @@ def add_specific_word(update):
 
     if check_db:
         msg_id = update["callback_query"]["message"]["message_id"]
-        word_delete_msg_id = pop_temp(user, TEMP_KEYS.WORD_DELETE_MSG_ID.value)
+        word_delete_msg_id = get_temp(user, TEMP_KEYS.WORD_DELETE_MSG_ID.value)
         word_delete_msg_id = int(word_delete_msg_id) if word_delete_msg_id else 0
 
         if msg_id == word_delete_msg_id:
             word = pop_temp(user, TEMP_KEYS.WORD.value)
             meaning = pop_temp(user, TEMP_KEYS.MEANING.value)
+            remove_temp(user, TEMP_KEYS.WORD_DELETE_MSG_ID.value)
         else:  # word has been overwritten
             text = "Information about that word isn't available anymore. You can still add it by hand"
             reply_markup = None
