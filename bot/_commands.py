@@ -60,7 +60,6 @@ def menu(update):
 @route(trigger="callback_query", query_action=QUERY_ACTIONS.RECALL.value, action="edit")
 @route(trigger="text", command="/recall", action="send")
 def recall(update=None, user=None, vocabulary_id=None, limit=15):
-    logger.info(f"Reminding user {user} {limit} words from vocabulary #{vocabulary_id}")
     user = user or get_user(update)
     parameters = get_user_parameters(user)
     vocabulary_id = vocabulary_id or parameters.current_vocabulary_id
@@ -73,6 +72,8 @@ def recall(update=None, user=None, vocabulary_id=None, limit=15):
         callback_data = update.get("callback_query", {}).get("data", "[]")
         callback_data = json.loads(callback_data)
         vocabulary_id, limit = callback_data[1:]
+
+    logger.info(f"Reminding user {user} {limit} words from vocabulary #{vocabulary_id}")
 
     words = _get_old_words(user, vocabulary_id, limit)
     page = _word_list_to_pages(words, hide_meaning)[0]
