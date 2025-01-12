@@ -154,9 +154,13 @@ class Bot:
                         raise ValueError("Action is set to edit, but not triggered by callback query, so no msg_id")
 
                 case "popup":
+                    if callback_query_id:
+                        self.answerCallbackQuery(callback_query_id)
                     raise NotImplemented
 
                 case None:
+                    if callback_query_id:
+                        self.answerCallbackQuery(callback_query_id)
                     function(update)
 
                 case _:
