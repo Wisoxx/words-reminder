@@ -94,7 +94,7 @@ class Bot:
         if ((all((trigger == "text", command == "/start")) or
                 all((trigger == "callback_query", query_action == QUERY_ACTIONS.PICK_TIME.value))) or
                 all((trigger == "callback_query", query_action == QUERY_ACTIONS.CHANGE_TIMEZONE_FINALIZE.value))):
-            return True
+            return "setting up"
 
         user = get_user(update)
         parameters = get_user_parameters(user)
@@ -102,31 +102,31 @@ class Bot:
         lang = parameters.language
         if not lang:
             if all((trigger == "callback_query", query_action == QUERY_ACTIONS.LANGUAGE_CHOSEN.value)):
-                return True
+                return "setting up"
 
             text, reply_markup = change_language_start(update)
             self.deliver_message(user, text, reply_markup=reply_markup)
-            return False
+            return "not completed"
 
         vocabulary_id = parameters.current_vocabulary_id
         if not vocabulary_id:
             if all((trigger == "text", state == USER_STATES.CREATE_VOCABULARY.value)):
-                return True
+                return "setting up"
 
             text, _ = create_vocabulary_start(update)
             self.deliver_message(user, text)
-            return False
+            return "not completed"
 
         timezone_not_set = get_temp(user, TEMP_KEYS.TIMEZONE_NOT_SET.value)
         if timezone_not_set:
             if all((trigger == "callback_query", query_action == QUERY_ACTIONS.CHANGE_TIMEZONE_FINALIZE.value)):
-                return True
+                return "setting up"
 
             text, reply_markup = change_timezone_start(update, back_button_action=None)
             self.deliver_message(user, text, reply_markup=reply_markup)
-            return False
+            return "not completed"
 
-        return True
+        return "completed"
 
     def handle_update(self, update):
         user = None
@@ -163,8 +163,8 @@ class Bot:
             elif "my_chat_member" in update:
                 trigger = "chat_member"
 
-            completed = self.completed_mandatory_setup(update, trigger, state, query_action, command)
-            if not completed:
+            status = self.completed_mandatory_setup(update, trigger, state, query_action, command)
+            if status == "not completed":
                 return
 
             function, action, cancel_button = get_route(trigger, state, query_action, command)
@@ -207,7 +207,7 @@ class Bot:
                 case _:
                     raise ValueError(f"Unknown action {action}")
 
-            if not completed:
+            if status == "setting up":
                 self.completed_mandatory_setup(update, trigger, state, query_action, command)
 
         except Exception as e:
