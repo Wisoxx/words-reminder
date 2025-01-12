@@ -412,7 +412,7 @@ def construct_word_page(update, vocabulary_id=None, page=None):
     else:
         pages = _word_list_to_pages(words, hide_meaning)
 
-        if not page:
+        if page is None:
             page = len(pages) - 1
 
         if len(pages) != 1:
