@@ -2,10 +2,10 @@ from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 import database as db
 from translations import translate
 from ._vocabularies import _get_vocabulary_name
-from .temp_manager import get_user, get_user_parameters, reset_user_state
+from .temp_manager import get_user, get_user_parameters, reset_user_state, set_temp, get_temp
 from ._words import _get_old_words, _word_list_to_pages
 import json
-from ._enums import QUERY_ACTIONS
+from ._enums import QUERY_ACTIONS, TEMP_KEYS
 from router import route
 from logger import setup_logger
 
@@ -23,7 +23,8 @@ def start(update):
         username = ':' + first_name.lower() + ":" + last_name.lower() + ':'
 
     if db.Users.add({"user_id": user, "username": username})[0]:
-        logger.info(f"New user added: {username}")
+        logger.info(f"New user added: {username} - {user}")
+        set_temp(user, TEMP_KEYS.TIMEZONE_NOT_SET.value, 1)
     text = "start"
     reply_markup = None
     return text, reply_markup
@@ -104,6 +105,17 @@ def cancel(update):
     return text, reply_markup
 
 
+@route(trigger="other", action="send")
+def unrecognized_message_handler(update):
+    user = get_user(update)
+    parameters = get_user_parameters(user)
+    lang = parameters.language
+
+    text = "Unrecognized message"
+    reply_markup = None
+    return text, reply_markup
+
+
 @route(trigger="callback_query", query_action=None, action=None)
 def noop_query_handler(update):
     pass
@@ -121,3 +133,16 @@ def handle_chat_member_status(update):
         logger.info(f"All records of {user} have been deleted")
     elif old_status == "kicked" and new_status == "member":
         logger.info(f"User {user} has unblocked the bot")
+
+
+def check_mandatory_setup(user):
+    parameters = get_user_parameters(user)
+    lang = parameters.language
+    if not lang:
+        return "no lang"
+    vocabulary_id = parameters.current_vocabulary_id
+    if not vocabulary_id:
+        return "no vocabulary"
+    timezone_not_set = get_temp(user, TEMP_KEYS.TIMEZONE_NOT_SET.value)
+    if timezone_not_set:
+        return "time zone not set"

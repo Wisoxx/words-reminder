@@ -114,8 +114,7 @@ class Bot:
                     else:
                         state = get_user_state(user)
                 else:
-                    self.deliver_message(user, "From the web: sorry, I didn't understand that kind of message")
-                    return
+                    trigger = "other"
 
             elif "callback_query" in update:
                 trigger = "callback_query"
