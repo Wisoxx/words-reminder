@@ -70,7 +70,9 @@ def recall(update=None, user=None, vocabulary_id=None, limit=15):
     if isinstance(update, dict):
         callback_data = update.get("callback_query", {}).get("data", "[]")
         callback_data = json.loads(callback_data)
-        vocabulary_id, limit = callback_data[1:]
+        # not providing vocabulary_id and limit in callback_data will leave them with default values
+        if len(callback_data) > 1:
+            vocabulary_id, limit = callback_data[1:]
     vocabulary_name = _get_vocabulary_name(vocabulary_id)
 
     logger.info(f"Reminding user {user} {limit} words from vocabulary #{vocabulary_id}")
