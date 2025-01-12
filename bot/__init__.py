@@ -4,12 +4,12 @@ import telepot
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 from translations import translate
 from ._enums import QUERY_ACTIONS, TEMP_KEYS, USER_STATES
-from .temp_manager import get_user, get_user_parameters, get_user_state, set_user_state, reset_user_state
+from .temp_manager import get_user, get_user_parameters, get_user_state, set_user_state, reset_user_state, get_temp
 import bot._commands
 import bot._words
-import bot._vocabularies
 import bot._reminders
-import bot._settings
+from ._vocabularies import create_vocabulary_start
+from ._settings import change_language_start, change_timezone_start
 from router import get_route
 from logger import setup_logger
 
@@ -90,6 +90,31 @@ class Bot:
             self.deliver_message(user, text[lang], reply_markup=reply_markup)
         logger.info(f"Sent to {len(users)} users")
 
+    def completed_mandatory_setup(self, update, trigger, state, query_action, command):
+        user = get_user(update)
+        parameters = get_user_parameters(user)
+
+        lang = parameters.language
+        if not lang and not all((trigger == "callback_query", query_action == QUERY_ACTIONS.LANGUAGE_CHOSEN.value)):
+            text, reply_markup = change_language_start(update)
+            self.deliver_message(user, text, reply_markup=reply_markup)
+            return False
+
+        vocabulary_id = parameters.current_vocabulary_id
+        if not vocabulary_id and not all((trigger == "text", state == USER_STATES.CREATE_VOCABULARY.value)):
+            text, _ = create_vocabulary_start(update)
+            self.deliver_message(user, text)
+            return False
+
+        timezone_not_set = get_temp(user, TEMP_KEYS.TIMEZONE_NOT_SET.value)
+        if timezone_not_set and not all((trigger == "callback_query",
+                                         query_action == QUERY_ACTIONS.CHANGE_TIMEZONE_FINALIZE.value)):
+            text, reply_markup = change_timezone_start(update, back_button_action=None)
+            self.deliver_message(user, text, reply_markup=reply_markup)
+            return False
+
+        return True
+
     def handle_update(self, update):
         user = None
         try:
@@ -124,6 +149,9 @@ class Bot:
 
             elif "my_chat_member" in update:
                 trigger = "chat_member"
+
+            if not self.completed_mandatory_setup(update, trigger, state, query_action, command):
+                return
 
             function, action, cancel_button = get_route(trigger, state, query_action, command)
             match action:

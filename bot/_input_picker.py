@@ -26,8 +26,7 @@ def pick_time(update, time=None, include_minutes=None, next_query_action=None, b
     parameters = get_user_parameters(user)
     lang = parameters.language
 
-    if all((not time, not include_minutes, not next_query_action, not back_button_action, not real_time_mins,
-            not adjust_to_timezone)):
+    if all((not time, not next_query_action, not back_button_action)):
         callback_data = json.loads(update["callback_query"]["data"])
         time, include_minutes, next_query_action, back_button_action, real_time_mins, adjust_to_timezone = callback_data[1:]
     timezone = parameters.timezone if adjust_to_timezone else 0
@@ -90,12 +89,13 @@ def pick_time(update, time=None, include_minutes=None, next_query_action=None, b
             build_adjustment_row(mins, [-15, -10, 10, 15], is_hour=False),
         ])
 
-    rows.append([
-        InlineKeyboardButton(
-            text='      ↩️      ',
-            callback_data=json.dumps([back_button_action])
-        )
-    ])
+    if back_button_action:
+        rows.append([
+            InlineKeyboardButton(
+                text='      ↩️      ',
+                callback_data=json.dumps([back_button_action])
+            )
+        ])
 
     reply_markup = InlineKeyboardMarkup(inline_keyboard=rows)
     return reply_markup

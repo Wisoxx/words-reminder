@@ -1,8 +1,8 @@
 import database as db
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 import json
-from .temp_manager import get_user, get_user_parameters, invalidate_cached_parameters
-from ._enums import QUERY_ACTIONS
+from .temp_manager import get_user, get_user_parameters, invalidate_cached_parameters, remove_temp
+from ._enums import QUERY_ACTIONS, TEMP_KEYS
 from .utils import html_wrapper, escape_html, get_hh_mm, calculate_timezone_offset
 from ._input_picker import pick_time
 from ._reminders import _adjust_reminders_to_new_timezone
@@ -129,7 +129,7 @@ def change_language_finalize(update):
 
 
 @route(trigger="callback_query", query_action=QUERY_ACTIONS.CHANGE_TIMEZONE.value, action="edit")
-def change_timezone_start(update):
+def change_timezone_start(update, back_button_action=QUERY_ACTIONS.MENU_SETTINGS.value):
     user = get_user(update)
     parameters = get_user_parameters(user)
     timezone = parameters.timezone
@@ -138,7 +138,7 @@ def change_timezone_start(update):
     text = "Match the time below with your current time. Once you do it, press on the time to save your timezone."
     reply_markup = pick_time(update, time, include_minutes=False,
                              next_query_action=QUERY_ACTIONS.CHANGE_TIMEZONE_FINALIZE.value,
-                             back_button_action=QUERY_ACTIONS.MENU_SETTINGS.value,
+                             back_button_action=back_button_action,
                              real_time_mins=True,
                              adjust_to_timezone=False)
     return text, reply_markup
@@ -155,4 +155,5 @@ def change_timezone_finalize(update):
     new_timezone = calculate_timezone_offset(time)
     _set_timezone(user, new_timezone)
     _adjust_reminders_to_new_timezone(user, old_timezone, new_timezone)
+    remove_temp(user, TEMP_KEYS.TIMEZONE_NOT_SET.value)
     return settings(update)

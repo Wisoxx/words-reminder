@@ -48,6 +48,7 @@ class TEMP_KEYS(Enum):
     MEANING = auto()
     WORD_DELETE_MSG_ID = auto()
     CANCEL_BUTTON_ID = auto()
+    TIMEZONE_NOT_SET = auto()
 
 
 class USER_STATES(Enum):

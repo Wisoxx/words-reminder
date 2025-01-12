@@ -133,16 +133,3 @@ def handle_chat_member_status(update):
         logger.info(f"All records of {user} have been deleted")
     elif old_status == "kicked" and new_status == "member":
         logger.info(f"User {user} has unblocked the bot")
-
-
-def check_mandatory_setup(user):
-    parameters = get_user_parameters(user)
-    lang = parameters.language
-    if not lang:
-        return "no lang"
-    vocabulary_id = parameters.current_vocabulary_id
-    if not vocabulary_id:
-        return "no vocabulary"
-    timezone_not_set = get_temp(user, TEMP_KEYS.TIMEZONE_NOT_SET.value)
-    if timezone_not_set:
-        return "time zone not set"
