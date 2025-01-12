@@ -63,7 +63,6 @@ def recall(update=None, user=None, vocabulary_id=None, limit=15):
     user = user or get_user(update)
     parameters = get_user_parameters(user)
     vocabulary_id = vocabulary_id or parameters.current_vocabulary_id
-    vocabulary_name = _get_vocabulary_name(vocabulary_id)
     lang = parameters.language
     hide_meaning = parameters.hide_meaning
 
@@ -72,6 +71,7 @@ def recall(update=None, user=None, vocabulary_id=None, limit=15):
         callback_data = update.get("callback_query", {}).get("data", "[]")
         callback_data = json.loads(callback_data)
         vocabulary_id, limit = callback_data[1:]
+    vocabulary_name = _get_vocabulary_name(vocabulary_id)
 
     logger.info(f"Reminding user {user} {limit} words from vocabulary #{vocabulary_id}")
 
