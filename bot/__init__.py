@@ -91,7 +91,7 @@ class Bot:
         logger.info(f"Sent to {len(users)} users")
 
     def completed_mandatory_setup(self, update, trigger, state, query_action, command):
-        if all((trigger == "text" and command == "/start")):
+        if all((trigger == "text", command == "/start")):
             return True
 
         user = get_user(update)
