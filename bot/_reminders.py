@@ -117,10 +117,20 @@ def _reminder_list_to_text(reminders: dict, hour_offset=0) -> str:
     :param reminders: A dictionary where keys are times and values are the number of words.
     :return: A formatted string representing the reminders.
     """
-    text = ""
+    shifted_reminders = []
+
+    # Adjust time and store the original data
     for time, words_number in reminders.items():
         adjusted_time = shift_time(time, hour_offset=hour_offset)
+        shifted_reminders.append((adjusted_time, words_number))
+
+    # Sort by the adjusted time
+    shifted_reminders.sort(key=lambda x: x[0])
+
+    text = ""
+    for adjusted_time, words_number in shifted_reminders:
         text += f"{adjusted_time}  —  {words_number} words\n"
+
     return text
 
 
