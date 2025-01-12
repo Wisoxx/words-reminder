@@ -370,7 +370,6 @@ def construct_word_page(update, vocabulary_id=None, page=None):
             page = callback_data[2]
         else:
             vocabulary_id = vocabulary_id or parameters.current_vocabulary_id
-            page = page or 0
     elif not vocabulary_id:
         vocabulary_id = parameters.current_vocabulary_id
 
