@@ -350,34 +350,47 @@ def construct_word_page(update, vocabulary_id=None, page=None):
     else:
         pages = _word_list_to_pages(words, hide_meaning)
         if len(pages) != 1:
+            button_placeholder = InlineKeyboardButton(text='.', callback_data=json.dumps([None]))
             if page > 1:
-                page_buttons.append(InlineKeyboardButton(text='      ⏮️      ',
-                                                         callback_data=json.dumps([
-                                                             QUERY_ACTIONS.CHANGE_WORDS_PAGE.value,
-                                                             vocabulary_id,
-                                                             0  # destination
-                                                         ])))
+                button = InlineKeyboardButton(text='      ⏮️      ',
+                                              callback_data=json.dumps([
+                                                  QUERY_ACTIONS.CHANGE_WORDS_PAGE.value,
+                                                  vocabulary_id,
+                                                  0  # destination
+                                              ]))
+            else:
+                button = button_placeholder
+            page_buttons.append(button)
             if page > 0:
-                page_buttons.append(InlineKeyboardButton(text='      ◀️️      ',
-                                                         callback_data=json.dumps([
-                                                             QUERY_ACTIONS.CHANGE_WORDS_PAGE.value,
-                                                             vocabulary_id,
-                                                             page - 1  # destination
-                                                         ])))
+                button = InlineKeyboardButton(text='      ◀️️      ',
+                                              callback_data=json.dumps([
+                                                  QUERY_ACTIONS.CHANGE_WORDS_PAGE.value,
+                                                  vocabulary_id,
+                                                  page - 1  # destination
+                                              ]))
+            else:
+                button = button_placeholder
+            page_buttons.append(button)
             if page < len(pages) - 1:
-                page_buttons.append(InlineKeyboardButton(text='      ▶️      ',
-                                                         callback_data=json.dumps([
-                                                             QUERY_ACTIONS.CHANGE_WORDS_PAGE.value,
-                                                             vocabulary_id,
-                                                             page + 1  # destination
-                                                         ])))
+                button = InlineKeyboardButton(text='      ▶️      ',
+                                              callback_data=json.dumps([
+                                                  QUERY_ACTIONS.CHANGE_WORDS_PAGE.value,
+                                                  vocabulary_id,
+                                                  page + 1  # destination
+                                              ]))
+            else:
+                button = button_placeholder
+            page_buttons.append(button)
             if page < len(pages) - 2:
-                page_buttons.append(InlineKeyboardButton(text='      ⏭      ',
-                                                         callback_data=json.dumps([
-                                                             QUERY_ACTIONS.CHANGE_WORDS_PAGE.value,
-                                                             vocabulary_id,
-                                                             len(pages) - 1  # destination
-                                                         ])))
+                button = InlineKeyboardButton(text='      ⏩      ',
+                                              callback_data=json.dumps([
+                                                  QUERY_ACTIONS.CHANGE_WORDS_PAGE.value,
+                                                  vocabulary_id,
+                                                  len(pages) - 1  # destination
+                                              ]))
+            else:
+                button = button_placeholder
+            page_buttons.append(button)
 
         footer = f"\n{pad(' ' * 36, str(page + 1), True)}/{len(pages)}"
         text = heading + pages[page] + footer
