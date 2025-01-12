@@ -13,7 +13,6 @@ from ._settings import change_language_start, change_timezone_start
 from router import get_route
 from logger import setup_logger
 
-
 logger = setup_logger(__name__)
 PARSE_MODE = "HTML"
 
@@ -61,7 +60,8 @@ class Bot:
         else:
             final_reply_markup = {'remove_keyboard': True}
 
-        response = self.sendMessage(user, text, reply_to_message_id=reply_to_msg_id, reply_markup=final_reply_markup, parse_mode=PARSE_MODE)
+        response = self.sendMessage(user, text, reply_to_message_id=reply_to_msg_id, reply_markup=final_reply_markup,
+                                    parse_mode=PARSE_MODE)
 
         logger.debug("Sent message: {}".format(response))
 
@@ -90,43 +90,65 @@ class Bot:
             self.deliver_message(user, text[lang], reply_markup=reply_markup)
         logger.info(f"Sent to {len(users)} users")
 
-    def completed_mandatory_setup(self, update, trigger, state, query_action, command):
-        if ((all((trigger == "text", command == "/start")) or
-                all((trigger == "callback_query", query_action == QUERY_ACTIONS.PICK_TIME.value))) or
-                all((trigger == "callback_query", query_action == QUERY_ACTIONS.CHANGE_TIMEZONE_FINALIZE.value))):
-            return "setting up"
-
-        user = get_user(update)
+    @staticmethod
+    def check_missing_setup(user):
         parameters = get_user_parameters(user)
 
         lang = parameters.language
         if not lang:
-            if all((trigger == "callback_query", query_action == QUERY_ACTIONS.LANGUAGE_CHOSEN.value)):
-                return "setting up"
-
-            text, reply_markup = change_language_start(update)
-            self.deliver_message(user, text, reply_markup=reply_markup)
-            return "not completed"
+            return "lang"
 
         vocabulary_id = parameters.current_vocabulary_id
         if not vocabulary_id:
-            if all((trigger == "text", state == USER_STATES.CREATE_VOCABULARY.value)):
-                return "setting up"
-
-            text, _ = create_vocabulary_start(update)
-            self.deliver_message(user, text)
-            return "not completed"
+            return "vocabulary"
 
         timezone_not_set = get_temp(user, TEMP_KEYS.TIMEZONE_NOT_SET.value)
         if timezone_not_set:
-            if all((trigger == "callback_query", query_action == QUERY_ACTIONS.CHANGE_TIMEZONE_FINALIZE.value)):
-                return "setting up"
+            return "timezone"
 
-            text, reply_markup = change_timezone_start(update, back_button_action=None)
-            self.deliver_message(user, text, reply_markup=reply_markup)
-            return "not completed"
+        return None
 
-        return "completed"
+    @staticmethod
+    def is_allowed_update(missing, trigger, state, query_action, command):
+        if any((
+            missing is None,   # No missing setup
+            trigger == "text" and command == "/start",   # Always allow /start
+            all((  # Allow language selection
+                missing == "lang",
+                trigger == "callback_query",
+                query_action == QUERY_ACTIONS.LANGUAGE_CHOSEN.value
+            )),
+            all((  # Allow vocabulary creation
+                missing == "vocabulary",
+                trigger == "text",
+                state == USER_STATES.CREATE_VOCABULARY.value
+            )),
+            all((   # Allow timezone setup
+                missing == "timezone",
+                trigger == "callback_query",
+                query_action in {QUERY_ACTIONS.PICK_TIME.value, QUERY_ACTIONS.CHANGE_TIMEZONE_FINALIZE.value}
+            )),
+        )):
+            return True
+        return False
+
+    def set_up(self, missing, update):
+        user = get_user(update)
+        match missing:
+            case "lang":
+                text, reply_markup = change_language_start(update)
+                self.deliver_message(user, text, reply_markup=reply_markup)
+
+            case "vocabulary":
+                text, _ = create_vocabulary_start(update)
+                self.deliver_message(user, text)
+
+            case "timezone":
+                text, reply_markup = change_timezone_start(update, back_button_action=None)
+                self.deliver_message(user, text, reply_markup=reply_markup)
+
+            case _:
+                raise ValueError("Unrecognized missing setup stage")
 
     def handle_update(self, update):
         user = None
@@ -163,9 +185,11 @@ class Bot:
             elif "my_chat_member" in update:
                 trigger = "chat_member"
 
-            status = self.completed_mandatory_setup(update, trigger, state, query_action, command)
-            logger.info(f"status = {status}")
-            if status == "not completed":
+            was_missing = self.check_missing_setup(user)
+            allowed = self.is_allowed_update(was_missing, trigger, state, query_action, command)
+
+            if not allowed:
+                self.set_up(was_missing, update)
                 return
 
             function, action, cancel_button = get_route(trigger, state, query_action, command)
@@ -208,8 +232,10 @@ class Bot:
                 case _:
                     raise ValueError(f"Unknown action {action}")
 
-            if status == "setting up":
-                self.completed_mandatory_setup(update, trigger, state, query_action, command)
+            if was_missing:
+                is_missing = self.check_missing_setup(user)
+                if is_missing:
+                    self.set_up(is_missing, update)
 
         except Exception as e:
             logger.critical(f"Couldn't process update: {e}", exc_info=True)
