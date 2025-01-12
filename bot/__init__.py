@@ -95,20 +95,28 @@ class Bot:
         parameters = get_user_parameters(user)
 
         lang = parameters.language
-        if not lang and not all((trigger == "callback_query", query_action == QUERY_ACTIONS.LANGUAGE_CHOSEN.value)):
+        if not lang:
+            if all((trigger == "callback_query", query_action == QUERY_ACTIONS.LANGUAGE_CHOSEN.value)):
+                return True
+
             text, reply_markup = change_language_start(update)
             self.deliver_message(user, text, reply_markup=reply_markup)
             return False
 
         vocabulary_id = parameters.current_vocabulary_id
-        if not vocabulary_id and not all((trigger == "text", state == USER_STATES.CREATE_VOCABULARY.value)):
+        if not vocabulary_id:
+            if all((trigger == "text", state == USER_STATES.CREATE_VOCABULARY.value)):
+                return True
+
             text, _ = create_vocabulary_start(update)
             self.deliver_message(user, text)
             return False
 
         timezone_not_set = get_temp(user, TEMP_KEYS.TIMEZONE_NOT_SET.value)
-        if timezone_not_set and not all((trigger == "callback_query",
-                                         query_action == QUERY_ACTIONS.CHANGE_TIMEZONE_FINALIZE.value)):
+        if timezone_not_set:
+            if all((trigger == "callback_query", query_action == QUERY_ACTIONS.CHANGE_TIMEZONE_FINALIZE.value)):
+                return True
+
             text, reply_markup = change_timezone_start(update, back_button_action=None)
             self.deliver_message(user, text, reply_markup=reply_markup)
             return False
