@@ -5,7 +5,7 @@ from logger import setup_logger
 logger = setup_logger(__name__)
 
 
-TRIGGERS = ("text", "callback_query", "chat_member")
+TRIGGERS = ("text", "callback_query", "chat_member", "other")
 ACTIONS = ("send", "edit", "edit_markup", "popup", None)
 routes = {}
 
