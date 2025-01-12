@@ -7,6 +7,9 @@ from logger import setup_logger
 logger = setup_logger(__name__)
 
 
+user_parameters = {}
+
+
 def set_temp(user, key, value):
     if db.Temp.add({"user_id": user, "key": key, "value": value}):
         logger.debug(f"Temp set for user {user} key={key} value={value}")
@@ -48,7 +51,17 @@ def get_user(update):
 
 
 def get_user_parameters(user):
-    return db.Users.get({"user_id": user}, include_column_names=True)
+    if user in user_parameters:
+        return user_parameters[user]
+
+    parameters = db.Users.get({"user_id": user}, include_column_names=True)
+    user_parameters[user] = parameters
+    return parameters
+
+
+def invalidate_cached_parameters(user):
+    if user in user_parameters:
+        del user_parameters[user]
 
 
 def get_user_state(user):

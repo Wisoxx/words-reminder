@@ -1,7 +1,7 @@
 import database as db
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 import json
-from .temp_manager import get_user, get_user_parameters
+from .temp_manager import get_user, get_user_parameters, invalidate_cached_parameters
 from ._enums import QUERY_ACTIONS
 from .utils import html_wrapper, escape_html, get_hh_mm, calculate_timezone_offset
 from ._input_picker import pick_time
@@ -26,6 +26,7 @@ def _toggle_hide_meaning(user):
     WHERE user_id = ?;
     """, (user, )).rowcount > 0
     if status:
+        invalidate_cached_parameters(user)
         logger.info(f"User {user} toggled hide_meaning")
     return status
 
@@ -33,6 +34,7 @@ def _toggle_hide_meaning(user):
 def _set_language(user, language: str):
     status = db.Users.set({"user_id": user}, {"language": language})
     if status:
+        invalidate_cached_parameters(user)
         logger.info(f"User {user} changed language to {language}")
     return status
 
@@ -40,6 +42,7 @@ def _set_language(user, language: str):
 def _set_timezone(user, timezone: int):
     status = db.Users.set({"user_id": user}, {"timezone": timezone})
     if status:
+        invalidate_cached_parameters(user)
         logger.info(f"User {user} changed timezone to {timezone}")
     return status
 

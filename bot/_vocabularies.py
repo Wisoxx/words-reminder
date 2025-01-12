@@ -14,6 +14,7 @@ logger = setup_logger(__name__)
 ####################################################################################################################
 def _set_current_vocabulary(user, vocabulary_id):
     if db.Users.set({"user_id": user}, {"current_vocabulary_id": vocabulary_id}):
+        invalidate_cached_parameters(user)
         logger.info(f"User {user} changed vocabulary to #{vocabulary_id}")
         return TaskStatus.SUCCESS
     return TaskStatus.FAILURE
@@ -281,6 +282,9 @@ def delete_vocabulary_confirmed(update):
         case TaskStatus.FAILURE:
             raise FileNotFoundError(
                 f'Failed to delete vocabulary #{vocabulary_id} "{escape_html(vocabulary_name)}"')
+
+        case TaskStatus.NO_VOCABULARY:
+            return
 
         case _:
             raise ValueError("Unsupported status")
