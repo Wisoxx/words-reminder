@@ -104,6 +104,11 @@ def cancel(update):
     return text, reply_markup
 
 
+@route(trigger="callback_query", query_action=None, action=None)
+def noop_query_handler(update):
+    pass
+
+
 @route(trigger="chat_member", action=None)
 def handle_chat_member_status(update):
     user = get_user(update)
