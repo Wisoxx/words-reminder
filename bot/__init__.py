@@ -94,7 +94,7 @@ class Bot:
     def check_missing_setup(user):
         parameters = get_user_parameters(user)
         if not parameters:
-            return "lang"
+            return "user"
 
         lang = parameters.language
         if not lang:
@@ -114,6 +114,7 @@ class Bot:
     def is_allowed_update(missing, trigger, state, query_action, command):
         if any((
             missing is None,   # No missing setup
+            missing == "user",  # allow user setup
             trigger == "text" and command == "/start",   # Always allow /start
             all((  # Allow language selection
                 missing == "lang",
@@ -236,7 +237,7 @@ class Bot:
 
             if was_missing:
                 is_missing = self.check_missing_setup(user)
-                if is_missing:
+                if is_missing and query_action != QUERY_ACTIONS.PICK_TIME.value:  # picking time is not finished action
                     self.set_up(is_missing, update)
 
         except Exception as e:
