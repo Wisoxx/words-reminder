@@ -46,6 +46,7 @@ class TEMP_KEYS(Enum):
     TIME = auto()
     WORD = auto()
     MEANING = auto()
+    WORD_DELETE_MSG_ID = auto()
     CANCEL_BUTTON_ID = auto()
 
 

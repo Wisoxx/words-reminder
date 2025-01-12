@@ -277,6 +277,8 @@ def delete_word_finalize(update, vocabulary_id=None, word=None, meaning=None):
             # but we can subtract 2 and add the 2 towards minimum, which gives us len(meaning) or 2
             len_meaning = len(meaning) if meaning is not None else 2
             if len(word) + len_meaning > 49:  # len("[4,100,0,\"\",\"\"]") = 15 and 64 - 15 = 49
+                msg_id = update["callback_query"]["message"]["message_id"]
+                set_temp(user, TEMP_KEYS.WORD_DELETE_MSG_ID.value, msg_id)
                 set_temp(user, TEMP_KEYS.WORD.value, word)
                 set_temp(user, TEMP_KEYS.MEANING.value, meaning)
                 values = [1]  # check_db = True
@@ -324,8 +326,16 @@ def add_specific_word(update):
     _, vocabulary_id, check_db, *rest = callback_data
 
     if check_db:
-        word = pop_temp(user, TEMP_KEYS.WORD.value)
-        meaning = pop_temp(user, TEMP_KEYS.MEANING.value)
+        msg_id = update["callback_query"]["message"]["message_id"]
+        word_delete_msg_id = pop_temp(user, TEMP_KEYS.WORD_DELETE_MSG_ID.value)
+
+        if msg_id == word_delete_msg_id:
+            word = pop_temp(user, TEMP_KEYS.WORD.value)
+            meaning = pop_temp(user, TEMP_KEYS.MEANING.value)
+        else:  # word has been overwritten
+            text = "Information about that word isn't available anymore. You can still add it by hand"
+            reply_markup = None
+            return text, reply_markup
     else:
         word, meaning = rest
 
