@@ -327,7 +327,7 @@ def add_specific_word(update):
 
     if check_db:
         msg_id = update["callback_query"]["message"]["message_id"]
-        word_delete_msg_id = pop_temp(user, TEMP_KEYS.WORD_DELETE_MSG_ID.value)
+        word_delete_msg_id = int(pop_temp(user, TEMP_KEYS.WORD_DELETE_MSG_ID.value))
 
         if msg_id == word_delete_msg_id:
             word = pop_temp(user, TEMP_KEYS.WORD.value)
