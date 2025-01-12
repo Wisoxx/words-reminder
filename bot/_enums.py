@@ -44,8 +44,9 @@ class TEMP_KEYS(Enum):
     STATE = auto()
     VOCABULARY = auto()
     TIME = auto()
+    WORD = auto()
+    MEANING = auto()
     CANCEL_BUTTON_ID = auto()
-    CALL_MENU = auto()
 
 
 class USER_STATES(Enum):

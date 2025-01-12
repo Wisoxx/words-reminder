@@ -1,6 +1,6 @@
 import json
 import database as db
-from .temp_manager import get_user, get_user_parameters, set_user_state, reset_user_state
+from .temp_manager import get_user, get_user_parameters, set_user_state, reset_user_state, set_temp, pop_temp
 from ._vocabularies import _get_vocabulary_name, change_vocabulary_start, _set_current_vocabulary
 from .utils import html_wrapper, escape_html, get_timestamp, pad
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
@@ -259,13 +259,25 @@ def delete_word_finalize(update):
     match _delete_word(user=user, vocabulary_id=vocabulary_id, word=word):
         case TaskStatus.SUCCESS:
             text = f'Successfully deleted "{escape_html(word)}" from "{escape_html(vocabulary_name)}"'
+
+            # callback data is limited to 64 characters
+            # if meaning is str, then it takes 2 symbol ("") + len(meaning), else None converts to null, which is 4,
+            # but we can subtract 2 and add the 2 towards minimum, which gives us len(meaning) or 2
+            len_meaning = len(meaning) if meaning is not None else 2
+            if len(word) + len_meaning > 49:  # len("[4,100,0,\"\",\"\"]") = 15 and 64 - 15 = 49
+                set_temp(user, TEMP_KEYS.WORD.value, word)
+                set_temp(user, TEMP_KEYS.MEANING.value, meaning)
+                values = [1]  # check_db = True
+            else:
+                values = [0, word, meaning]
+
             reply_markup = InlineKeyboardMarkup(inline_keyboard=[
                 [
                     InlineKeyboardButton(text=f'      ↪️ {translate(lang, "add_back")}      ',
                                          callback_data=json.dumps([QUERY_ACTIONS.ADD_SPECIFIC_WORD.value,
                                                                    vocabulary_id,
-                                                                   word,
-                                                                   meaning], ensure_ascii=False)),
+                                                                   *values], ensure_ascii=False,
+                                                                  separators=(",", ":"))),  # removes spaces
                 ]
             ])
         case TaskStatus.FAILURE:
@@ -291,6 +303,38 @@ def words_vocabulary_chosen(update):
     vocabulary_id = callback_data[1]
     _set_current_vocabulary(user, vocabulary_id)
     return construct_word_page(update)
+
+
+@route(trigger="callback_query", query_action=QUERY_ACTIONS.ADD_SPECIFIC_WORD.value, action="send")
+def add_specific_word(update):
+    user = get_user(update)
+    parameters = get_user_parameters(user)
+    lang = parameters.language
+    callback_data = json.loads(update["callback_query"]["data"])
+    _, vocabulary_id, check_db, *rest = callback_data
+
+    if check_db:
+        word = pop_temp(user, TEMP_KEYS.WORD.value)
+        meaning = pop_temp(user, TEMP_KEYS.MEANING.value)
+    else:
+        word, meaning = rest
+
+    vocabulary_name = _get_vocabulary_name(vocabulary_id)
+
+    word_id = _add_word(user, vocabulary_id, word, meaning)
+    if word_id == 0:
+        text = f'You already have "{escape_html(word)}" in "{escape_html(vocabulary_name)}"'
+        reply_markup = None
+    else:
+        text = f'Successfully added "{escape_html(word)}" to "{escape_html(vocabulary_name)}"'
+        reply_markup = InlineKeyboardMarkup(inline_keyboard=[
+            [
+                InlineKeyboardButton(text=f'      🗑 {translate(lang, "delete")}      ',
+                                     callback_data=json.dumps([QUERY_ACTIONS.DELETE_SPECIFIC_WORD.value, word_id])),
+            ]
+        ])
+
+    return text, reply_markup
 
 
 @route(trigger="callback_query", query_action=QUERY_ACTIONS.CHANGE_WORDS_PAGE.value, action="edit")
