@@ -93,6 +93,8 @@ class Bot:
     @staticmethod
     def check_missing_setup(user):
         parameters = get_user_parameters(user)
+        if not parameters:
+            return "lang"
 
         lang = parameters.language
         if not lang:
