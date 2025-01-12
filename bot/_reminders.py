@@ -112,7 +112,8 @@ def _get_reminders_list_at(time: str) -> list[tuple[int, int, int, str, int]]:
 
 def _reminder_list_to_text(reminders: dict, hour_offset=0) -> str:
     """
-    Converts a dictionary of reminders into a formatted text representation.
+    Converts a dictionary of reminders into a formatted text representation,
+    ensuring they are displayed in chronological order after applying a time shift.
 
     :param reminders: A dictionary where keys are times and values are the number of words.
     :return: A formatted string representing the reminders.
