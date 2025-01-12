@@ -163,7 +163,8 @@ class Bot:
             elif "my_chat_member" in update:
                 trigger = "chat_member"
 
-            if not self.completed_mandatory_setup(update, trigger, state, query_action, command):
+            completed = self.completed_mandatory_setup(update, trigger, state, query_action, command)
+            if not completed:
                 return
 
             function, action, cancel_button = get_route(trigger, state, query_action, command)
@@ -205,6 +206,9 @@ class Bot:
 
                 case _:
                     raise ValueError(f"Unknown action {action}")
+
+            if not completed:
+                self.completed_mandatory_setup(update, trigger, state, query_action, command)
 
         except Exception as e:
             logger.critical(f"Couldn't process update: {e}", exc_info=True)
