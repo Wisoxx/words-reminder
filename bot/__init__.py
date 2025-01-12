@@ -164,6 +164,7 @@ class Bot:
                 trigger = "chat_member"
 
             status = self.completed_mandatory_setup(update, trigger, state, query_action, command)
+            logger.info(f"status = {status}")
             if status == "not completed":
                 return
 
