@@ -247,7 +247,8 @@ class Bot:
                 return
 
             function, action, cancel_button = get_route(trigger, state, query_action, command)
-            self.execute_action(user, action, function, update, callback_query_id, msg_id)
+            self.execute_action(user, action, function, update, callback_query_id, msg_id,
+                                add_cancel_button=cancel_button)
 
             if was_missing:
                 is_missing = self.check_missing_setup(user)
