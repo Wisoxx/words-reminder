@@ -188,9 +188,12 @@ class Bot:
                 raise NotImplemented("Popup action is not yet implemented.")
 
             case "multi_action":
-                if not isinstance(result, dict):
-                    raise ValueError(f"multi_action must return a dict, got {type(result).__name__} instead.")
-                self.execute_action(user, **result)
+                if not isinstance(result, list):
+                    raise ValueError(f"multi_action must return a list of dicts, got {type(result).__name__} instead.")
+                for item in result:
+                    if not isinstance(item, dict):
+                        raise ValueError(f"Each multi_action entry must be a dict, got {type(item).__name__}.")
+                    self.execute_action(user, **item)  # Recursively process each action
 
             case None:
                 pass  # function has been executed at the beginning and no additional actions are required
