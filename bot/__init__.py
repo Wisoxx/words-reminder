@@ -125,7 +125,7 @@ class Bot:
         user = get_user(update)
         match missing:
             case "lang":
-                text, reply_markup = change_language_start(update)
+                text, reply_markup = change_language_start(update, return_to_menu=False)
                 self.deliver_message(user, text, reply_markup=reply_markup)
 
             case "vocabulary":
@@ -293,6 +293,9 @@ class Bot:
                     trigger != "chat_member",  # texting a user who blocked bot is pointless
                 )):
                     self.set_up(is_missing, update)
+                elif is_missing is None:  # something was missing and now nothing is
+                    lang = get_user_parameters(user).language
+                    self.deliver_message(user, "You've finished the setup! To get more information type /help")
 
         except Exception as e:
             logger.critical(f"Couldn't process update: {e}", exc_info=True)

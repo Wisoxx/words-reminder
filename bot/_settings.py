@@ -101,13 +101,13 @@ def toggle_hide_meaning(update):
 
 
 @route(trigger="callback_query", query_action=QUERY_ACTIONS.CHANGE_LANGUAGE.value, action="edit")
-def change_language_start(update):
+def change_language_start(update, return_to_menu=True):
     text = "\n".join(translate(lang, "choose_lang") for lang in languages)
     reply_markup = InlineKeyboardMarkup(inline_keyboard=[
         [
             InlineKeyboardButton(
                 text=f'      {translate(lang, "flag")}      ',
-                callback_data=json.dumps([QUERY_ACTIONS.LANGUAGE_CHOSEN.value, lang])
+                callback_data=json.dumps([QUERY_ACTIONS.LANGUAGE_CHOSEN.value, lang, return_to_menu])
             )
             for lang in languages
         ]
@@ -119,13 +119,19 @@ def change_language_start(update):
 def change_language_finalize(update):
     user = get_user(update)
     callback_data = json.loads(update["callback_query"]["data"])
-    lang = callback_data[1]
+    lang, return_to_menu = callback_data[1:]
 
     if lang not in languages:
         raise ValueError("Unsupported language")
 
     _set_language(user, lang)
-    return settings(update)
+
+    if return_to_menu:
+        return settings(update)
+
+    text = "Language preferences have been updated"
+    reply_markup = None
+    return text, reply_markup
 
 
 @route(trigger="callback_query", query_action=QUERY_ACTIONS.CHANGE_TIMEZONE.value, action="edit")
