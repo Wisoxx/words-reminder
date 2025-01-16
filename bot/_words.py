@@ -1,5 +1,7 @@
 import json
 import database as db
+from . import QUERY_ACTIONS, get_user, get_user_parameters
+from ._commands import logger
 from .temp_manager import get_user, get_user_parameters, set_user_state, reset_user_state, set_temp, pop_temp, get_temp, \
     remove_temp
 from ._vocabularies import _get_vocabulary_name, change_vocabulary_start, _set_current_vocabulary
@@ -355,6 +357,43 @@ def delete_specific_word(update):
     word = _get_word_info(word_id)
 
     return delete_word_finalize(update, word.vocabulary_id, word.word, word.meaning)
+
+
+@route(trigger="callback_query", query_action=QUERY_ACTIONS.RECALL.value, action="edit")
+def recall(update=None, user=None, vocabulary_id=None, limit=15):
+    user = user or get_user(update)
+    parameters = get_user_parameters(user)
+    vocabulary_id = vocabulary_id or parameters.current_vocabulary_id
+    lang = parameters.language
+    hide_meaning = parameters.hide_meaning
+
+    # if possible, get vocabulary_id and limit from callback query to refresh with the same values
+    if isinstance(update, dict):
+        callback_data = update.get("callback_query", {}).get("data", "[]")
+        callback_data = json.loads(callback_data)
+        # not providing vocabulary_id and limit in callback_data will leave them with default values
+        if len(callback_data) > 1:
+            vocabulary_id, limit = callback_data[1:]
+    vocabulary_name = _get_vocabulary_name(vocabulary_id)
+
+    logger.info(f"Reminding user {user} {limit} words from vocabulary #{vocabulary_id}")
+
+    words = _get_old_words(user, vocabulary_id, limit)
+    page = _word_list_to_pages(words, hide_meaning)[0]
+    text = f"Here are {limit} oldest words from {vocabulary_name}:\n\n" + page
+    reply_markup = InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(text='      🔄      ', callback_data=json.dumps([QUERY_ACTIONS.RECALL.value,
+                                                                                 vocabulary_id,
+                                                                                 limit])),
+        ],
+        [
+            InlineKeyboardButton(text='      ↩️      ', callback_data=json.dumps([QUERY_ACTIONS.MENU_WORDS.value])),
+            InlineKeyboardButton(text='      ℹ️      ',
+                                 callback_data=json.dumps([QUERY_ACTIONS.SHOW_INFO.value, "info_recall"])),
+        ]
+    ])
+    return text, reply_markup
 
 
 @route(trigger="callback_query", query_action=QUERY_ACTIONS.CHANGE_WORDS_PAGE.value, action="edit")

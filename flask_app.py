@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 from bot import Bot, telepot
 import urllib3
 from urllib3.util.retry import Retry
-from bot._commands import recall
+from bot._words import recall
 from bot._reminders import _get_reminders_list_at
 from bot.utils import get_hh_mm
 from logger import setup_logger, process_logs
