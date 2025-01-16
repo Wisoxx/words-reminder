@@ -116,7 +116,7 @@ class Bot:
                 all((  # Allow timezone setup
                         missing == "timezone",
                         trigger == "callback_query",
-                        query_action in {QUERY_ACTIONS.PICK_TIME.value, QUERY_ACTIONS.CHANGE_TIMEZONE_FINALIZE.value}
+                        query_action in {QUERY_ACTIONS.PICK_TIME.value, QUERY_ACTIONS.SET_UP_TIMEZONE_FINALIZE.value}
                 )),
         )):
             return True

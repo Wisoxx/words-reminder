@@ -169,6 +169,7 @@ def change_timezone_finalize(update):
 def set_up_timezone_finalize(update):
     user = get_user(update)
     parameters = get_user_parameters(user)
+    old_timezone = parameters.timezone
     lang = parameters.language
 
     callback_data = json.loads(update["callback_query"]["data"])
@@ -176,6 +177,7 @@ def set_up_timezone_finalize(update):
     logger.info(f"User {user} set up their local time as: {time}")
     new_timezone = calculate_timezone_offset(time)
     _set_timezone(user, new_timezone)
+    _adjust_reminders_to_new_timezone(user, old_timezone, new_timezone)
     remove_temp(user, TEMP_KEYS.TIMEZONE_NOT_SET.value)
 
     text = f"Timezone set to UTC{new_timezone:+} ({get_hh_mm(new_timezone)})"
