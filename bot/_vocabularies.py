@@ -49,6 +49,7 @@ def _delete_vocabulary(user, vocabulary_id=None, vocabulary_name=None):
     result = db.Vocabularies.delete(conditions)
     if result:
         logger.info(f"User {user} deleted vocabulary #{vocabulary_id}")
+        invalidate_cached_parameters(user)
 
     if result:
         return TaskStatus.SUCCESS
@@ -296,8 +297,10 @@ def delete_vocabulary_confirmed(update):
         text, _ = create_vocabulary_start(update)
         reply_markup = None
         actions.append({"action": "send", "text": text, "reply_markup": reply_markup})
+        set_user_state(user, USER_STATES.CREATE_VOCABULARY.value)
+    else:
+        reset_user_state(user)
 
-    reset_user_state(user)
     return actions
 
 
