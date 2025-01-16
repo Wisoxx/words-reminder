@@ -216,7 +216,8 @@ class Bot:
 
                 popup_text = result if result else text
                 logger.debug(f"Showing popup: {popup_text} to user {user}")
-                self.answerCallbackQuery(callback_query_id, text=popup_text, show_alert=True)
+                response = self.answerCallbackQuery(callback_query_id, text=popup_text, show_alert=True)
+                logger.debug(f"Popup response: {response}")
 
             case "multi_action":
                 if inner:
