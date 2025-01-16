@@ -253,8 +253,8 @@ class Bot:
 
             user = get_user(update)
             self.manage_cancel_buttons(user)
-            callback_query_id = None
 
+            callback_query_id = None
             trigger = None
             command = None
             state = None
@@ -266,7 +266,8 @@ class Bot:
                     trigger = "text"
 
                     if text.startswith("/"):
-                        command = text.split()[0]
+                        command = text.split()[0].lower()
+                        command = command if command in {"/start", "/menu", "/help"} else "default"
                     else:
                         state = get_user_state(user)
                 else:

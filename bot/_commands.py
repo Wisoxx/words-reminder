@@ -71,7 +71,18 @@ def unrecognized_message_handler(update):
     parameters = get_user_parameters(user)
     lang = parameters.language
 
-    text = "Unrecognized message"
+    text = "Sorry, I didn't understand that kind of message. Try something else."
+    reply_markup = None
+    return text, reply_markup
+
+
+@route(trigger="text", command="default", action="send")  # other commands will contain /
+def default_command_handler(update):
+    user = get_user(update)
+    parameters = get_user_parameters(user)
+    lang = parameters.language
+
+    text = "Sorry, I didn't understand that command. Try /help or /menu."
     reply_markup = None
     return text, reply_markup
 
