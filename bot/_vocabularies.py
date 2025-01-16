@@ -36,7 +36,7 @@ def _delete_vocabulary(user, vocabulary_id=None, vocabulary_name=None):
     :param vocabulary_id: Unique identifier of the vocabulary (optional)
     :param user: The ID of the user
     :param vocabulary_name: The name of the vocabulary to delete (required if vocabulary_id is not given)
-    :return: bool indicating success
+    :return: TODO
     """
     # Note: when deleting current vocabulary, db will try to change vocabulary to another one
     if vocabulary_id:
@@ -49,10 +49,6 @@ def _delete_vocabulary(user, vocabulary_id=None, vocabulary_name=None):
     result = db.Vocabularies.delete(conditions)
     if result:
         logger.info(f"User {user} deleted vocabulary #{vocabulary_id}")
-
-    if get_user_parameters(user).current_vocabulary_id is None:
-        logger.info(f"User {user} has no vocabularies")
-        return TaskStatus.NO_VOCABULARY
 
     if result:
         return TaskStatus.SUCCESS
@@ -287,18 +283,20 @@ def delete_vocabulary_confirmed(update):
             raise FileNotFoundError(
                 f'Failed to delete vocabulary #{vocabulary_id} "{escape_html(vocabulary_name)}"')
 
-        case TaskStatus.NO_VOCABULARY:
-            text = f'Oh-oh, that was your last vocabulary! To continue using my services, you should create a new one!'
-            reply_markup = None
-            actions.append({"action": "send", "text": text, "reply_markup": reply_markup})
-
-            text, _ = create_vocabulary_start(update)
-            reply_markup = None
-            actions.append({"action": "send", "text": text, "reply_markup": reply_markup})
-            return
-
         case _:
             raise ValueError("Unsupported status")
+
+    if get_user_parameters(user).current_vocabulary_id is None:
+        logger.info(f"User {user} has no vocabularies")
+
+        text = f'Oh-oh, that was your last vocabulary! To continue using my services, you should create a new one!'
+        reply_markup = None
+        actions.append({"action": "send", "text": text, "reply_markup": reply_markup})
+
+        text, _ = create_vocabulary_start(update)
+        reply_markup = None
+        actions.append({"action": "send", "text": text, "reply_markup": reply_markup})
+
     reset_user_state(user)
     return actions
 
