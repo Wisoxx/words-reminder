@@ -1,7 +1,7 @@
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 import database as db
 from translations import translate
-from .temp_manager import get_user, get_user_parameters, reset_user_state, set_temp
+from .temp_manager import get_user, get_user_parameters, reset_user_state, set_temp, invalidate_cached_parameters
 import json
 from ._enums import QUERY_ACTIONS, TEMP_KEYS
 from router import route
@@ -101,6 +101,7 @@ def handle_chat_member_status(update):
     if old_status == "member" and new_status == "kicked":
         logger.info(f"User {user} has blocked the bot")
         db.Users.delete({"user_id": user})  # all data is linked to user_id and will be deleted too
+        invalidate_cached_parameters(user)
         logger.info(f"All records of {user} have been deleted")
     elif old_status == "kicked" and new_status == "member":
         logger.info(f"User {user} has unblocked the bot")

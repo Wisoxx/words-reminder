@@ -301,7 +301,11 @@ class Bot:
 
             if was_missing:
                 is_missing = self.check_missing_setup(user)
-                if is_missing and query_action != QUERY_ACTIONS.PICK_TIME.value:  # picking time is not finished action
+                if all((
+                    is_missing,
+                    query_action != QUERY_ACTIONS.PICK_TIME.value,  # picking time is not a finished action
+                    trigger != "chat_member",  # texting a user who blocked bot is pointless
+                )):
                     self.set_up(is_missing, update)
 
         except Exception as e:
