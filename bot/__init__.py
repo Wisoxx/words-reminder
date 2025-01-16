@@ -118,6 +118,7 @@ class Bot:
                 missing is None,  # No missing setup
                 missing == "user",  # allow user setup
                 trigger == "text" and command == "/start",  # Always allow /start
+                trigger == "chat_member",
                 all((  # Allow language selection
                         missing == "lang",
                         trigger == "callback_query",
