@@ -135,7 +135,8 @@ def change_language_finalize(update):
 
 
 @route(trigger="callback_query", query_action=QUERY_ACTIONS.CHANGE_TIMEZONE.value, action="edit")
-def change_timezone_start(update, back_button_action=QUERY_ACTIONS.MENU_SETTINGS.value):
+def change_timezone_start(update, next_query_action=QUERY_ACTIONS.CHANGE_TIMEZONE_FINALIZE.value,
+                          back_button_action=QUERY_ACTIONS.MENU_SETTINGS.value):
     user = get_user(update)
     parameters = get_user_parameters(user)
     timezone = parameters.timezone
@@ -143,7 +144,7 @@ def change_timezone_start(update, back_button_action=QUERY_ACTIONS.MENU_SETTINGS
 
     text = "Match the time below with your current time. Once you do it, press on the time to save your timezone."
     reply_markup = pick_time(update, time, include_minutes=False,
-                             next_query_action=QUERY_ACTIONS.CHANGE_TIMEZONE_FINALIZE.value,
+                             next_query_action=next_query_action,
                              back_button_action=back_button_action,
                              real_time_mins=True,
                              adjust_to_timezone=False)
@@ -157,9 +158,26 @@ def change_timezone_finalize(update):
     old_timezone = parameters.timezone
     callback_data = json.loads(update["callback_query"]["data"])
     time = callback_data[1]
-    logger.info(f"User chose time: {time}")
+    logger.info(f"User {user} chose their local time as: {time}")
     new_timezone = calculate_timezone_offset(time)
     _set_timezone(user, new_timezone)
     _adjust_reminders_to_new_timezone(user, old_timezone, new_timezone)
-    remove_temp(user, TEMP_KEYS.TIMEZONE_NOT_SET.value)
     return settings(update)
+
+
+@route(trigger="callback_query", query_action=QUERY_ACTIONS.SET_UP_TIMEZONE_FINALIZE.value, action="edit")
+def set_up_timezone_finalize(update):
+    user = get_user(update)
+    parameters = get_user_parameters(user)
+    lang = parameters.language
+
+    callback_data = json.loads(update["callback_query"]["data"])
+    time = callback_data[1]
+    logger.info(f"User {user} set up their local time as: {time}")
+    new_timezone = calculate_timezone_offset(time)
+    _set_timezone(user, new_timezone)
+    remove_temp(user, TEMP_KEYS.TIMEZONE_NOT_SET.value)
+
+    text = f"Timezone set to UTC{new_timezone:+} ({get_hh_mm(new_timezone)})"
+    reply_markup = None
+    return text, reply_markup

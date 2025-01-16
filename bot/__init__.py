@@ -11,6 +11,7 @@ import bot._words
 import bot._reminders
 from ._vocabularies import create_vocabulary_start
 from ._settings import change_language_start, change_timezone_start
+from ._enums import QUERY_ACTIONS, TEMP_KEYS
 from router import get_route
 from logger import setup_logger
 
@@ -133,7 +134,8 @@ class Bot:
                 self.deliver_message(user, text)
 
             case "timezone":
-                text, reply_markup = change_timezone_start(update, back_button_action=None)
+                text, reply_markup = change_timezone_start(
+                    update, next_query_action=QUERY_ACTIONS.SET_UP_TIMEZONE_FINALIZE.value, back_button_action=None)
                 self.deliver_message(user, text, reply_markup=reply_markup)
 
             case _:
