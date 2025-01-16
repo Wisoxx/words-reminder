@@ -2,7 +2,7 @@ import json
 import database as db
 import telepot
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
-from translations import translate
+from translations import translate, languages
 from ._enums import QUERY_ACTIONS, TEMP_KEYS, USER_STATES
 from .temp_manager import get_user, get_user_parameters, get_user_state, set_user_state, reset_user_state, get_temp
 import bot._commands
@@ -284,14 +284,16 @@ class Bot:
                 trigger = "chat_member"
 
             was_missing = self.check_missing_setup(user)
-            logger.debug(f"User {user} has missing setup: {was_missing}")
+            logger.debug(f"User {user} has missing setup before update: {was_missing}")
             allowed = self.is_allowed_update(was_missing, trigger, state, query_action, command)
             logger.debug("Update allowed" if allowed else "Update not allowed")
 
             if not allowed:
-                lang = get_user_parameters(user).language
-                if lang:
-                    self.deliver_message(user, "Firstly you have to finish the setup!")
+                params = get_user_parameters(user)
+                if len(params) > 0:
+                    lang = params.language
+                    if lang in languages:
+                        self.deliver_message(user, "Firstly you have to finish the setup!")
                 self.set_up(was_missing, update)
                 return
 
@@ -301,8 +303,9 @@ class Bot:
 
             if was_missing:
                 is_missing = self.check_missing_setup(user)
+                logger.debug(f"User {user} has missing setup after update: {is_missing}")
                 if all((
-                    is_missing,
+                    is_missing in {"lang", "vocabulary", "timezone"},
                     query_action != QUERY_ACTIONS.PICK_TIME.value,  # picking time is not a finished action
                     trigger != "chat_member",  # texting a user who blocked bot is pointless
                 )):
@@ -314,8 +317,10 @@ class Bot:
 
             if user:
                 try:
-                    lang = get_user_parameters(user).language
-                    self.deliver_message(user, translate(lang, "error"))
+                    params = get_user_parameters(user)
+                    if len(params) > 0:
+                        lang = params.language
+                        self.deliver_message(user, translate(lang, "error"))
                 except Exception as e_:
                     logger.critical(f"Couldn't notify user {user} about error: {e_}")
                 else:

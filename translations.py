@@ -1,4 +1,4 @@
-languages = ("en", "ua", "pl")
+languages = {"en", "ua", "pl"}
 
 
 def translate(lang: str, key: str, values: dict = None):
