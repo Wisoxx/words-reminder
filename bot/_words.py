@@ -232,7 +232,7 @@ def add_word(update, vocabulary_id=None, word=None, meaning=None):
     return text, reply_markup
 
 
-@route(trigger="callback_query", query_action=QUERY_ACTIONS.DELETE_WORD.value, action="send", cancel_button=True)
+@route(trigger="callback_query", query_action=QUERY_ACTIONS.DELETE_WORD.value, action="multi_action")
 def delete_word_start(update):
     """
     Enables required state to delete word which is next user's text input.
@@ -242,11 +242,19 @@ def delete_word_start(update):
     user = get_user(update)
     logger.debug(f"User {user} initiated word deletion")
     parameters = get_user_parameters(user)
+    vocabulary_id = parameters.current_vocabulary_id
     lang = parameters.language
 
-    text = "Send me the word you want to delete"
-    set_user_state(user, USER_STATES.DELETE_WORD.value)
-    return text, lang
+    actions = []
+
+    if _count_words(vocabulary_id) > 0:
+        text = "Send me the word you want to delete"
+        actions.append({"action": "send", "text": text, "lang": lang, "add_cancel_button": True})
+        set_user_state(user, USER_STATES.DELETE_WORD.value)
+    else:
+        text = "Vocabulary is empty. Nothing to delete."
+        actions.append({"action": "popup", "text": text})
+    return actions
 
 
 @route(trigger="text", state=USER_STATES.DELETE_WORD.value, action="send")
