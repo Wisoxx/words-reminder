@@ -198,6 +198,7 @@ class Bot:
         if callback_query_id and answer_callback_query and action not in {"edit", "edit_markup"}:
             self.answerCallbackQuery(callback_query_id)
 
+        logger.debug(f"Executing action: {action} for user: {user}")
         result = function(update) if function else None
 
         match action:
@@ -231,6 +232,7 @@ class Bot:
                     raise RecursionError("Nested multi_action calls are not allowed")
                 if not isinstance(result, list):
                     raise TypeError(f"multi_action must return a list of dicts, got {type(result).__name__} instead.")
+                logger.info(f"Multiple actions: {result}")
                 for item in result:
                     if not isinstance(item, dict):
                         raise TypeError(f"Each multi_action entry must be a dict, got {type(item).__name__}.")
