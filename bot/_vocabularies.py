@@ -219,7 +219,7 @@ def delete_vocabulary_start(update):
     parameters = get_user_parameters(user)
     lang = parameters.language
 
-    text = "Send me the word you want to delete"
+    text = "What vocabulary do you want to delete?"
     set_user_state(user, USER_STATES.DELETE_VOCABULARY_INPUT.value)
     return text, lang
 
@@ -262,7 +262,7 @@ def delete_vocabulary_input(update):
     return text, reply_markup
 
 
-@route(trigger="callback_query", query_action=QUERY_ACTIONS.DELETE_VOCABULARY_CONFIRM.value, action="edit")
+@route(trigger="callback_query", query_action=QUERY_ACTIONS.DELETE_VOCABULARY_CONFIRM.value, action="multi_action")
 def delete_vocabulary_confirmed(update):
     """
     Deletes text input from current user's vocabulary. Is activated by callback query
@@ -276,21 +276,31 @@ def delete_vocabulary_confirmed(update):
     vocabulary_id = pop_temp(user, TEMP_KEYS.VOCABULARY.value)
     vocabulary_name = _get_vocabulary_name(vocabulary_id)
 
+    actions = []
+
     match _delete_vocabulary(user, vocabulary_id=vocabulary_id):
         case TaskStatus.SUCCESS:
             text = f'Successfully deleted vocabulary "{escape_html(vocabulary_name)}"'
             reply_markup = None
+            actions.append({"action": "edit", "text": text, "reply_markup": reply_markup})
         case TaskStatus.FAILURE:
             raise FileNotFoundError(
                 f'Failed to delete vocabulary #{vocabulary_id} "{escape_html(vocabulary_name)}"')
 
         case TaskStatus.NO_VOCABULARY:
+            text = f'Oh-oh, that was your last vocabulary! To continue using my services, you should create a new one!'
+            reply_markup = None
+            actions.append({"action": "send", "text": text, "reply_markup": reply_markup})
+
+            text, _ = create_vocabulary_start(update)
+            reply_markup = None
+            actions.append({"action": "send", "text": text, "reply_markup": reply_markup})
             return
 
         case _:
             raise ValueError("Unsupported status")
     reset_user_state(user)
-    return text, reply_markup
+    return actions
 
 
 @route(trigger="callback_query", query_action=QUERY_ACTIONS.DELETE_VOCABULARY_DECLINE.value, action="edit")
