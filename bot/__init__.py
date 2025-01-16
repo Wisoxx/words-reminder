@@ -184,7 +184,9 @@ class Bot:
             - Executes the provided function if no specific action is required.
         """
         # not answering callback query leads to long waiting animation, but some actions don't require it
-        if callback_query_id and answer_callback_query and action not in {"edit", "edit_markup", "popup"}:
+        if callback_query_id and answer_callback_query and action not in {"edit", "edit_markup",
+                                                                          "popup",  # answers it later
+                                                                          "multi_action"}:  # inner call will answer
             self.answerCallbackQuery(callback_query_id)
 
         logger.debug(f"Executing action: {action} for user: {user}")
