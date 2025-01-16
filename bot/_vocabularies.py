@@ -85,6 +85,10 @@ def _get_vocabulary_id(user, vocabulary_name):
         return entry.vocabulary_id
     return None
 
+
+def _count_words(vocabulary_id):
+    return db.Words.count_where({"vocabulary_id": vocabulary_id})
+
 ####################################################################################################################
 #                                                     OTHER
 ####################################################################################################################
@@ -358,7 +362,7 @@ def construct_vocabulary_page(update):
 
     values = []
     for vocabulary_id in vocabularies:
-        word_count = db.Words.count_where({"vocabulary_id": vocabulary_id})
+        word_count = _count_words(vocabulary_id)
         vocabulary_name = vocabularies[vocabulary_id]
         values.append((vocabulary_name, word_count))
 
