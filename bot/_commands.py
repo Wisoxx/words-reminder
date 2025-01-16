@@ -51,7 +51,7 @@ def menu(update):
     parameters = get_user_parameters(user)
     lang = parameters.language
 
-    keyboard = InlineKeyboardMarkup(inline_keyboard=[
+    reply_markup = InlineKeyboardMarkup(inline_keyboard=[
         [
             InlineKeyboardButton(text='      📃      ', callback_data=json.dumps([QUERY_ACTIONS.MENU_WORDS.value])),
             InlineKeyboardButton(text='      ⏰      ', callback_data=json.dumps([QUERY_ACTIONS.MENU_REMINDERS.value])),
@@ -68,7 +68,7 @@ def menu(update):
         f"⚙️ {translate(lang, 'settings')}"
     )
 
-    return text, keyboard
+    return text, reply_markup
 
 
 @route(trigger="callback_query", query_action=QUERY_ACTIONS.CANCEL.value, action="send")
@@ -78,6 +78,17 @@ def cancel(update):
     text = "Successfully cancelled"
     reply_markup = None
     return text, reply_markup
+
+
+@route(trigger="callback_query", query_action=QUERY_ACTIONS.SHOW_INFO.value, action="popup")
+def show_info(update):
+    user = get_user(update)
+    parameters = get_user_parameters(user)
+    lang = parameters.language
+
+    callback_data = json.loads(update["callback_query"]["data"])
+    key = callback_data[1]
+    return key
 
 
 @route(trigger="other", action="send")

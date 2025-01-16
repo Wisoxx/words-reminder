@@ -181,7 +181,7 @@ class Bot:
             - Executes the provided function if no specific action is required.
         """
         # not answering callback query leads to long waiting animation, but some actions don't require it
-        if callback_query_id and answer_callback_query and action not in {"edit", "edit_markup"}:
+        if callback_query_id and answer_callback_query and action not in {"edit", "edit_markup", "popup"}:
             self.answerCallbackQuery(callback_query_id)
 
         logger.debug(f"Executing action: {action} for user: {user}")
@@ -211,7 +211,11 @@ class Bot:
                 self.editMessageReplyMarkup((user, msg_id), reply_markup=reply_markup)
 
             case "popup":
-                raise NotImplemented("Popup action is not yet implemented.")
+                if not callback_query_id:
+                    raise ValueError("Missing parameter: callback_query_id for popup action")
+
+                popup_text = result if result else text
+                self.answerCallbackQuery(callback_query_id, text=popup_text, show_alert=True)
 
             case "multi_action":
                 if inner:
