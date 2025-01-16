@@ -196,9 +196,11 @@ class Bot:
             case "send":
                 if add_cancel_button:
                     text, lang = result if result else (text, lang)
+                    logger.debug(f"Sending text: {text} with cancel button in: {lang} to user {user}")
                     self.deliver_message(user, text, add_cancel_button=True, lang=lang)
                 else:
                     text, reply_markup = result if result else (text, reply_markup)
+                    logger.debug(f"Sending text: {text} with markup: {reply_markup} to user {user}")
                     self.deliver_message(user, text, reply_markup=reply_markup)
 
             case "edit":
@@ -206,6 +208,7 @@ class Bot:
                     raise ValueError("Missing parameter: msg_id for editing message")
 
                 text, reply_markup = result if result else (text, reply_markup)
+                logger.debug(f"Editing text: {text} and markup: {reply_markup} to user {user} on msg_id: {msg_id}")
                 self.editMessageText((user, msg_id), text, parse_mode="HTML", reply_markup=reply_markup)
 
             case "edit_markup":
@@ -213,6 +216,7 @@ class Bot:
                     raise ValueError("Missing parameter: msg_id for editing reply markup")
 
                 reply_markup = result if result else reply_markup
+                logger.debug(f"Editing markup: {reply_markup} to user {user} on msg_id: {msg_id}")
                 self.editMessageReplyMarkup((user, msg_id), reply_markup=reply_markup)
 
             case "popup":
@@ -221,8 +225,7 @@ class Bot:
 
                 popup_text = result if result else text
                 logger.debug(f"Showing popup: {popup_text} to user {user}")
-                response = self.answerCallbackQuery(callback_query_id, text=popup_text, show_alert=True)
-                logger.debug(f"Popup response: {response}")
+                self.answerCallbackQuery(callback_query_id, text=popup_text, show_alert=True)
 
             case "multi_action":
                 if inner:
