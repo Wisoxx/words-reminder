@@ -4,7 +4,7 @@ from . import QUERY_ACTIONS, get_user, get_user_parameters
 from ._commands import logger
 from .temp_manager import get_user, get_user_parameters, set_user_state, reset_user_state, set_temp, pop_temp, get_temp, \
     remove_temp
-from ._vocabularies import _get_vocabulary_name, change_vocabulary_start, _set_current_vocabulary
+from ._vocabularies import _get_vocabulary_name, change_vocabulary_start, _set_current_vocabulary, _count_words
 from .utils import html_wrapper, escape_html, get_timestamp, pad
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 from ._enums import TaskStatus, QUERY_ACTIONS, TEMP_KEYS, USER_STATES
@@ -381,18 +381,26 @@ def recall(update=None, user=None, vocabulary_id=None, limit=15):
     words = _get_old_words(user, vocabulary_id, limit)
     page = _word_list_to_pages(words, hide_meaning)[0]
     text = f"Here are {limit} oldest words from {vocabulary_name}:\n\n" + page
-    reply_markup = InlineKeyboardMarkup(inline_keyboard=[
-        [
-            InlineKeyboardButton(text='      🔄      ', callback_data=json.dumps([QUERY_ACTIONS.RECALL.value,
-                                                                                 vocabulary_id,
-                                                                                 limit])),
-        ],
+
+    if _count_words(vocabulary_id) < limit:
+        buttons = []
+    else:
+        buttons = [
+            [
+                InlineKeyboardButton(text='      🔄      ', callback_data=json.dumps([QUERY_ACTIONS.RECALL.value,
+                                                                                     vocabulary_id,
+                                                                                     limit])),
+            ]
+        ]
+
+    buttons.extend([
         [
             InlineKeyboardButton(text='      ↩️      ', callback_data=json.dumps([QUERY_ACTIONS.MENU_WORDS.value])),
             InlineKeyboardButton(text='      ℹ️      ',
                                  callback_data=json.dumps([QUERY_ACTIONS.SHOW_INFO.value, "info_recall"])),
         ]
     ])
+    reply_markup = InlineKeyboardMarkup(inline_keyboard=buttons)
     return text, reply_markup
 
 
