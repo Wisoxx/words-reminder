@@ -50,6 +50,26 @@ def get_user(update):
     return user
 
 
+def check_missing_setup(user):
+    parameters = get_user_parameters(user)
+    if not parameters:
+        return "user"
+
+    lang = parameters.language
+    if not lang:
+        return "lang"
+
+    vocabulary_id = parameters.current_vocabulary_id
+    if not vocabulary_id:
+        return "vocabulary"
+
+    timezone_not_set = get_temp(user, TEMP_KEYS.TIMEZONE_NOT_SET.value)
+    if timezone_not_set:
+        return "timezone"
+
+    return None
+
+
 def get_user_parameters(user):
     if user in user_parameters:
         return user_parameters[user]

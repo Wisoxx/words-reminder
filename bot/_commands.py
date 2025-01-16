@@ -1,7 +1,8 @@
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 import database as db
 from translations import translate
-from .temp_manager import get_user, get_user_parameters, reset_user_state, set_temp, invalidate_cached_parameters
+from .temp_manager import get_user, get_user_parameters, reset_user_state, set_temp, invalidate_cached_parameters, \
+    check_missing_setup
 import json
 from ._enums import QUERY_ACTIONS, TEMP_KEYS
 from router import route
@@ -35,7 +36,7 @@ def start(update):
         logger.info(f"New user added: {username} - {user}")
         set_temp(user, TEMP_KEYS.TIMEZONE_NOT_SET.value, 1)
 
-    if len(get_user_parameters(user)) > 0:
+    if check_missing_setup(user) is None:
         return help_(update)
     text = ""
     reply_markup = None

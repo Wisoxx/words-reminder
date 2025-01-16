@@ -4,7 +4,8 @@ import telepot
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 from translations import translate, languages
 from ._enums import QUERY_ACTIONS, TEMP_KEYS, USER_STATES
-from .temp_manager import get_user, get_user_parameters, get_user_state, set_user_state, reset_user_state, get_temp
+from .temp_manager import get_user, get_user_parameters, get_user_state, set_user_state, reset_user_state, get_temp, \
+    check_missing_setup
 import bot._commands
 import bot._words
 import bot._reminders
@@ -93,26 +94,6 @@ class Bot:
                 continue
             self.deliver_message(user, text[lang], reply_markup=reply_markup)
         logger.info(f"Sent to {len(users)} users")
-
-    @staticmethod
-    def check_missing_setup(user):
-        parameters = get_user_parameters(user)
-        if not parameters:
-            return "user"
-
-        lang = parameters.language
-        if not lang:
-            return "lang"
-
-        vocabulary_id = parameters.current_vocabulary_id
-        if not vocabulary_id:
-            return "vocabulary"
-
-        timezone_not_set = get_temp(user, TEMP_KEYS.TIMEZONE_NOT_SET.value)
-        if timezone_not_set:
-            return "timezone"
-
-        return None
 
     @staticmethod
     def is_allowed_update(missing, trigger, state, query_action, command):
@@ -285,7 +266,7 @@ class Bot:
             elif "my_chat_member" in update:
                 trigger = "chat_member"
 
-            was_missing = self.check_missing_setup(user)
+            was_missing = check_missing_setup(user)
             logger.debug(f"User {user} has missing setup before update: {was_missing}")
             allowed = self.is_allowed_update(was_missing, trigger, state, query_action, command)
             logger.debug("Update allowed" if allowed else "Update not allowed")
@@ -304,7 +285,7 @@ class Bot:
                                 add_cancel_button=cancel_button)
 
             if was_missing:
-                is_missing = self.check_missing_setup(user)
+                is_missing = check_missing_setup(user)
                 logger.debug(f"User {user} has missing setup after update: {is_missing}")
                 if all((
                     is_missing in {"lang", "vocabulary", "timezone"},
