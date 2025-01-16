@@ -113,24 +113,24 @@ class Bot:
     @staticmethod
     def is_allowed_update(missing, trigger, state, query_action, command):
         if any((
-            missing is None,   # No missing setup
-            missing == "user",  # allow user setup
-            trigger == "text" and command == "/start",   # Always allow /start
-            all((  # Allow language selection
-                missing == "lang",
-                trigger == "callback_query",
-                query_action == QUERY_ACTIONS.LANGUAGE_CHOSEN.value
-            )),
-            all((  # Allow vocabulary creation
-                missing == "vocabulary",
-                trigger == "text",
-                state == USER_STATES.CREATE_VOCABULARY.value
-            )),
-            all((   # Allow timezone setup
-                missing == "timezone",
-                trigger == "callback_query",
-                query_action in {QUERY_ACTIONS.PICK_TIME.value, QUERY_ACTIONS.CHANGE_TIMEZONE_FINALIZE.value}
-            )),
+                missing is None,  # No missing setup
+                missing == "user",  # allow user setup
+                trigger == "text" and command == "/start",  # Always allow /start
+                all((  # Allow language selection
+                        missing == "lang",
+                        trigger == "callback_query",
+                        query_action == QUERY_ACTIONS.LANGUAGE_CHOSEN.value
+                )),
+                all((  # Allow vocabulary creation
+                        missing == "vocabulary",
+                        trigger == "text",
+                        state == USER_STATES.CREATE_VOCABULARY.value
+                )),
+                all((  # Allow timezone setup
+                        missing == "timezone",
+                        trigger == "callback_query",
+                        query_action in {QUERY_ACTIONS.PICK_TIME.value, QUERY_ACTIONS.CHANGE_TIMEZONE_FINALIZE.value}
+                )),
         )):
             return True
         return False
@@ -153,6 +153,51 @@ class Bot:
             case _:
                 raise ValueError("Unrecognized missing setup stage")
 
+    def execute_action(self, user, action, function=None, update=None, callback_query_id=None, msg_id=None, text=None,
+                       reply_markup=None, lang=None, add_cancel_button=False, answer_callback_query=True):
+        # not answering callback query leads to long waiting animation, but some actions don't require it
+        if callback_query_id and answer_callback_query and action not in {"edit", "edit_markup"}:
+            self.answerCallbackQuery(callback_query_id)
+
+        result = function(update) if function else None
+
+        match action:
+            case "send":
+                if add_cancel_button:
+                    text, lang = result if result else (text, lang)
+                    self.deliver_message(user, text, add_cancel_button=True, lang=lang)
+                else:
+                    text, reply_markup = result if result else (text, reply_markup)
+                    self.deliver_message(user, text, reply_markup=reply_markup)
+
+            case "edit":
+                if not msg_id:
+                    raise ValueError("Missing parameter: msg_id for editing message")
+
+                text, reply_markup = result if result else (text, reply_markup)
+                self.editMessageText((user, msg_id), text, parse_mode="HTML", reply_markup=reply_markup)
+
+            case "edit_markup":
+                if not msg_id:
+                    raise ValueError("Missing parameter: msg_id for editing reply markup")
+
+                reply_markup = result if result else reply_markup
+                self.editMessageReplyMarkup((user, msg_id), reply_markup=reply_markup)
+
+            case "popup":
+                raise NotImplemented("Popup action is not yet implemented.")
+
+            case "multi_action":
+                if not isinstance(result, dict):
+                    raise ValueError(f"multi_action must return a dict, got {type(result).__name__} instead.")
+                self.execute_action(user, **result)
+
+            case None:
+                pass  # function has been executed at the beginning and no additional actions are required
+
+            case _:
+                raise ValueError(f"Unknown action {action}")
+
     def handle_update(self, update):
         user = None
         try:
@@ -167,6 +212,7 @@ class Bot:
             command = None
             state = None
             query_action = None
+            msg_id = None
             if "message" in update:
                 if "text" in update["message"]:
                     text = update["message"]["text"]
@@ -196,44 +242,7 @@ class Bot:
                 return
 
             function, action, cancel_button = get_route(trigger, state, query_action, command)
-            match action:
-                case "send":
-                    if callback_query_id:
-                        self.answerCallbackQuery(callback_query_id)
-
-                    if cancel_button:
-                        text, lang = function(update)
-                        self.deliver_message(user, text, add_cancel_button=True, lang=lang)
-                    else:
-                        text, reply_markup = function(update)
-                        self.deliver_message(user, text, reply_markup=reply_markup)
-
-                case "edit":  # editing message doesn't require answering callback_query
-                    if trigger == "callback_query":
-                        text, reply_markup = function(update)
-                        self.editMessageText((user, msg_id), text, parse_mode="HTML", reply_markup=reply_markup)
-                    else:
-                        raise ValueError("Action is set to edit, but not triggered by callback query, so no msg_id")
-
-                case "edit_markup":  # editing message reply markup doesn't require answering callback_query
-                    if trigger == "callback_query":
-                        reply_markup = function(update)
-                        self.editMessageReplyMarkup((user, msg_id), reply_markup=reply_markup)
-                    else:
-                        raise ValueError("Action is set to edit, but not triggered by callback query, so no msg_id")
-
-                case "popup":
-                    if callback_query_id:
-                        self.answerCallbackQuery(callback_query_id)
-                    raise NotImplemented
-
-                case None:
-                    if callback_query_id:
-                        self.answerCallbackQuery(callback_query_id)
-                    function(update)
-
-                case _:
-                    raise ValueError(f"Unknown action {action}")
+            self.execute_action(user, action, function, update, callback_query_id, msg_id)
 
             if was_missing:
                 is_missing = self.check_missing_setup(user)
