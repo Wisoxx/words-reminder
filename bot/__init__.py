@@ -215,6 +215,7 @@ class Bot:
                     raise ValueError("Missing parameter: callback_query_id for popup action")
 
                 popup_text = result if result else text
+                logger.debug(f"Showing popup: {popup_text} to user {user}")
                 self.answerCallbackQuery(callback_query_id, text=popup_text, show_alert=True)
 
             case "multi_action":
