@@ -379,10 +379,13 @@ def recall(update=None, user=None, vocabulary_id=None, limit=15):
     logger.info(f"Reminding user {user} {limit} words from vocabulary #{vocabulary_id}")
 
     words = _get_old_words(user, vocabulary_id, limit)
-    page = _word_list_to_pages(words, hide_meaning)[0]
+    if len(words) > 0:
+        page = _word_list_to_pages(words, hide_meaning)[0]
+    else:
+        page = "*🦗crickets noises🦗*"
     text = f"Here are {limit} oldest words from {vocabulary_name}:\n\n" + page
 
-    if _count_words(vocabulary_id) < limit:
+    if _count_words(vocabulary_id) <= limit:
         buttons = []
     else:
         buttons = [
