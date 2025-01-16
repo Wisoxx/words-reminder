@@ -232,7 +232,7 @@ class Bot:
                     raise RecursionError("Nested multi_action calls are not allowed")
                 if not isinstance(result, list):
                     raise TypeError(f"multi_action must return a list of dicts, got {type(result).__name__} instead.")
-                logger.info(f"Multiple actions: {result}")
+                logger.debug(f"Multiple actions: {result}")
                 for item in result:
                     if not isinstance(item, dict):
                         raise TypeError(f"Each multi_action entry must be a dict, got {type(item).__name__}.")
@@ -287,6 +287,9 @@ class Bot:
             logger.debug("Update allowed" if allowed else "Update not allowed")
 
             if not allowed:
+                lang = get_user_parameters(user).language
+                if lang:
+                    self.deliver_message(user, "Firstly you have to finish the setup!")
                 self.set_up(was_missing, update)
                 return
 
