@@ -258,19 +258,23 @@ class Bot:
                     if text.startswith("/"):
                         command = text.split()[0].lower()
                         command = command if command in {"/start", "/menu", "/help"} else "default"
+                        reset_user_state(user)
                     else:
                         state = get_user_state(user)
                 else:
                     trigger = "other"
+                    reset_user_state(user)
 
             elif "callback_query" in update:
                 trigger = "callback_query"
                 query_action = json.loads(update["callback_query"]["data"])[0]
                 msg_id = update["callback_query"]["message"]["message_id"]
                 callback_query_id = update["callback_query"]["id"]
+                reset_user_state(user)
 
             elif "my_chat_member" in update:
                 trigger = "chat_member"
+                reset_user_state(user)
 
             was_missing = check_missing_setup(user)
             logger.debug(f"User {user} has missing setup before update: {was_missing}")
