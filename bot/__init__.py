@@ -280,7 +280,9 @@ class Bot:
                 trigger = "chat_member"
 
             was_missing = self.check_missing_setup(user)
+            logger.debug(f"User {user} has missing setup: {was_missing}")
             allowed = self.is_allowed_update(was_missing, trigger, state, query_action, command)
+            logger.debug("Update allowed" if allowed else "Update not allowed")
 
             if not allowed:
                 self.set_up(was_missing, update)
