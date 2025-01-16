@@ -53,6 +53,8 @@ class Bot:
 
     def deliver_message(self, user, text, add_cancel_button=False, lang="", reply_to_msg_id=None, reply_markup=None):
         """Deliver a message to a user with optional cancel button and reply markup."""
+        if text == "":
+            return
         logger.debug(f"Sending message with parameters: {locals()}")  # Logs all parameters
 
         if reply_markup:

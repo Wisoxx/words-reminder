@@ -11,6 +11,17 @@ from logger import setup_logger
 logger = setup_logger(__name__)
 
 
+@route(trigger="text", command="/help", action="send")
+def help_(update):
+    user = get_user(update)
+    parameters = get_user_parameters(user)
+    lang = parameters.language
+
+    text = "help"
+    reply_markup = None
+    return text, reply_markup
+
+
 @route(trigger="text", command="/start", action="send")
 def start(update):
     user = get_user(update)
@@ -23,7 +34,10 @@ def start(update):
     if db.Users.add({"user_id": user, "username": username})[0]:
         logger.info(f"New user added: {username} - {user}")
         set_temp(user, TEMP_KEYS.TIMEZONE_NOT_SET.value, 1)
-    text = "start"
+
+    if len(get_user_parameters(user)) > 0:
+        return help_(update)
+    text = ""
     reply_markup = None
     return text, reply_markup
 
