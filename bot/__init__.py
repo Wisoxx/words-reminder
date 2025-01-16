@@ -156,7 +156,44 @@ class Bot:
                 raise ValueError("Unrecognized missing setup stage")
 
     def execute_action(self, user, action, function=None, update=None, callback_query_id=None, msg_id=None, text=None,
-                       reply_markup=None, lang=None, add_cancel_button=False, answer_callback_query=True):
+                       reply_markup=None, lang=None, add_cancel_button=False, answer_callback_query=True, inner=False):
+        """
+        Executes an action based on the provided parameters. It handles different types of actions including sending,
+        editing, and managing multiple actions. It also ensures callback queries are answered as necessary and
+        prevents nested recursion in case of multi-action calls.
+
+        Args:
+            user (User): The user who the action is performed for.
+            action (str): The action to be performed. Valid actions include:
+                - "send": Sends a message.
+                - "edit": Edits an existing message.
+                - "edit_markup": Edits the reply markup of an existing message.
+                - "multi_action": Executes multiple actions in sequence.
+                - None: Executes the function passed in as the `function` argument.
+            function (callable, optional): A function that returns the content (text, reply_markup, etc.) to be
+            processed for the action.
+            update (Update, optional): The update object containing information about the user interaction.
+            callback_query_id (str, optional): The callback query ID for answering callback queries.
+            msg_id (int, optional): The message ID of the message to be edited or whose reply markup is to be edited.
+            text (str, optional): The text content to send or use in editing.
+            reply_markup (dict, optional): The reply markup to attach to the message (keyboard, inline buttons).
+            lang (str, optional): The language code to determine the language of the message.
+            add_cancel_button (bool, optional): Whether to add a cancel button to the message.
+            answer_callback_query (bool, optional): Whether to answer the callback query. Defaults to True.
+            inner (bool, optional): Indicates whether the action is part of a nested `multi_action` call. Prevents
+            further recursion.
+
+        Raises:
+            ValueError: If an unsupported action type is provided or if required parameters (e.g., msg_id) are missing.
+            TypeError: If the result of a `multi_action` is not a list of dicts.
+            RecursionError: If nested `multi_action` actions are attempted.
+
+        Processes:
+            - Sends a message if the action is "send" or "multi_action" with a send action.
+            - Edits a message if the action is "edit" or "edit_markup".
+            - Prevents nested `multi_action` calls to avoid deep recursion.
+            - Executes the provided function if no specific action is required.
+        """
         # not answering callback query leads to long waiting animation, but some actions don't require it
         if callback_query_id and answer_callback_query and action not in {"edit", "edit_markup"}:
             self.answerCallbackQuery(callback_query_id)
@@ -190,12 +227,15 @@ class Bot:
                 raise NotImplemented("Popup action is not yet implemented.")
 
             case "multi_action":
+                if inner:
+                    raise RecursionError("Nested multi_action calls are not allowed")
                 if not isinstance(result, list):
-                    raise ValueError(f"multi_action must return a list of dicts, got {type(result).__name__} instead.")
+                    raise TypeError(f"multi_action must return a list of dicts, got {type(result).__name__} instead.")
                 for item in result:
                     if not isinstance(item, dict):
-                        raise ValueError(f"Each multi_action entry must be a dict, got {type(item).__name__}.")
-                    self.execute_action(user, **item)  # Recursively process each action
+                        raise TypeError(f"Each multi_action entry must be a dict, got {type(item).__name__}.")
+                    # Recursively process each action
+                    self.execute_action(user, callback_query_id=callback_query_id, msg_id=msg_id, inner=True, **item)
 
             case None:
                 pass  # function has been executed at the beginning and no additional actions are required
