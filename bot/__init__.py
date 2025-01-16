@@ -1,6 +1,7 @@
 import json
 import database as db
 import telepot
+from time import sleep
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 from translations import translate, languages
 from ._enums import QUERY_ACTIONS, TEMP_KEYS, USER_STATES
@@ -83,6 +84,7 @@ class Bot:
             if user[0] in exceptions:
                 continue
             self.deliver_message(user[0], text, reply_markup=reply_markup)
+            sleep(34)  # Telegram allows 30 messages per second
         logger.info(f"Sent to {len(users)} users")
 
     def broadcast_multilang(self, text: dict, reply_markup=None, exceptions=None):
@@ -94,6 +96,7 @@ class Bot:
             if user[0] in exceptions:
                 continue
             self.deliver_message(user, text[lang], reply_markup=reply_markup)
+            sleep(34)  # Telegram allows 30 messages per second
         logger.info(f"Sent to {len(users)} users")
 
     @staticmethod

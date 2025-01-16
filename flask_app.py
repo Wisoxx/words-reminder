@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from bot import Bot, telepot
 import urllib3
 from urllib3.util.retry import Retry
+from time import sleep
 from bot._words import recall
 from bot._reminders import _get_reminders_list_at
 from bot.utils import get_hh_mm
@@ -70,6 +71,7 @@ def remind_all():
             for _, user, vocabulary_id, _, number_of_words in reminders:
                 text, reply_markup = recall(user=user, vocabulary_id=vocabulary_id, limit=number_of_words)
                 bot.deliver_message(user, text, reply_markup=reply_markup)
+                sleep(34)  # Telegram allows 30 messages per second
             return jsonify({"status": "success", "message": "Reminders sent successfully!"}), 200
         else:
             return jsonify({"status": "success", "message": "No reminders found"}), 200
