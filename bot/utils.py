@@ -68,13 +68,15 @@ def calculate_timezone_offset(user_time_str: str):
 
 def suggest_reminder_time():
     """
-    Suggests a time for a reminder, rounded to the nearest hour.
+    Suggests a time for a reminder, rounded up to the nearest hour.
     :return: A string representing the suggested time in "HH:00" format.
     """
     now = datetime.now()
-    rounded_time = now.replace(minute=0, second=0, microsecond=0)
-    if now.minute >= 30:
-        rounded_time += timedelta(hours=1)
+    if now.minute > 0:
+        rounded_time = now.replace(minute=0, second=0, microsecond=0) + timedelta(hours=1)
+    else:
+        rounded_time = now.replace(minute=0, second=0, microsecond=0)
+
     return rounded_time.strftime("%H:%M")
 
 
