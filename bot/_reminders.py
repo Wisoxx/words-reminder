@@ -4,6 +4,7 @@ from .temp_manager import *
 from ._enums import TaskStatus, QUERY_ACTIONS, TEMP_KEYS
 from .utils import html_wrapper, escape_html, suggest_reminder_time, shift_time
 from router import route
+from translations import translate, conjugate_word
 from ._vocabularies import _get_vocabulary_list, _get_vocabulary_name, _get_inline_vocabulary_list
 from bot._input_picker import pick_time, generate_number_keyboard
 from logger import setup_logger
@@ -110,12 +111,14 @@ def _get_reminders_list_at(time: str) -> list[tuple[int, int, int, str, int]]:
 ####################################################################################################################
 
 
-def _reminder_list_to_text(reminders: dict, hour_offset=0) -> str:
+def _reminder_list_to_text(reminders: dict, lang: str, hour_offset=0) -> str:
     """
     Converts a dictionary of reminders into a formatted text representation,
     ensuring they are displayed in chronological order after applying a time shift.
 
     :param reminders: A dictionary where keys are times and values are the number of words.
+    :param lang: The language code of the user.
+    :param hour_offset: Timezone offset in hours.
     :return: A formatted string representing the reminders.
     """
     shifted_reminders = []
@@ -130,12 +133,12 @@ def _reminder_list_to_text(reminders: dict, hour_offset=0) -> str:
 
     text = ""
     for adjusted_time, words_number in shifted_reminders:
-        text += f"{adjusted_time}  —  {words_number} words\n"
+        text += f"{adjusted_time}  —  {words_number} {conjugate_word(lang, words_number)}\n"
 
     return text
 
 
-def _generate_vocabulary_reminders_text(user, vocabulary_id, vocabulary_name, timezone,
+def _generate_vocabulary_reminders_text(user, vocabulary_id, vocabulary_name, timezone, lang,
                                         include_no_reminders_text=False):
     """
     Generates reminder text for a specific vocabulary.
@@ -144,6 +147,7 @@ def _generate_vocabulary_reminders_text(user, vocabulary_id, vocabulary_name, ti
     :param vocabulary_id: The ID of the vocabulary to generate reminders for.
     :param vocabulary_name: The name of the vocabulary.
     :param timezone: The user's timezone.
+    :param lang: The language code of the user.
     :param include_no_reminders_text: Whether to include text indicating no reminders. Default is False.
     :return: A string containing the formatted reminders text or an empty string if no reminders are found.
     """
@@ -153,21 +157,22 @@ def _generate_vocabulary_reminders_text(user, vocabulary_id, vocabulary_name, ti
                "-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-\n")
 
     if len(reminders) > 0:
-        reminders_text = _reminder_list_to_text(reminders, timezone)
+        reminders_text = _reminder_list_to_text(reminders, lang, timezone)
         return heading + reminders_text
     elif include_no_reminders_text:
-        return heading + "No reminders available.\n"
+        return heading + translate(lang, "no_reminder") + "\n"
     else:
         return ""
 
 
-def _get_inline_reminder_list(user, vocabulary_id, timezone, next_query_action, back_button_action):
+def _get_inline_reminder_list(user, vocabulary_id, timezone, lang, next_query_action, back_button_action):
     """
     Creates an inline keyboard with a list of reminders for a given vocabulary, including a back button.
 
     :param user: The user ID to fetch reminders for.
     :param vocabulary_id: The vocabulary ID to fetch reminders for.
     :param timezone: Timezone offset of user.
+    :param lang: The language code of the user.
     :param next_query_action: The action identifier to execute when the user clicks on a reminder.
     :param back_button_action: The callback action for the back button.
     :return: An InlineKeyboardMarkup object with the reminder list and a back button.
@@ -177,7 +182,7 @@ def _get_inline_reminder_list(user, vocabulary_id, timezone, next_query_action, 
     buttons = []
 
     for time, words_number in reminders.items():
-        button_text = f"{shift_time(time, timezone)}  —  {words_number} words"
+        button_text = f"{shift_time(time, timezone)}  —  {words_number} {conjugate_word(lang, words_number)}"
         buttons.append([
             InlineKeyboardButton(
                 text=button_text,
@@ -209,10 +214,10 @@ def _add_reminder_menu_text(update, vocabulary_id=None, time=None, number_of_wor
     vocabulary_name = _get_vocabulary_name(vocabulary_id) if vocabulary_id else '—'
     display_time = shift_time(time, timezone) if time else "--:--"
 
-    text = ("Adding a reminder:\n\n"
-            f"Vocabulary name: {vocabulary_name}\n"
-            f"Time: {display_time}\n"
-            f"Number of words: {number_of_words}")
+    text = (f"{translate(lang, 'adding_reminder')}:\n\n"
+            f"{translate(lang, 'vocabulary_name')}: {vocabulary_name}\n"
+            f"{translate(lang, 'time')}: {display_time}\n"
+            f"{translate(lang, 'number_of_words')}: {number_of_words}")
     return text
 
 
@@ -231,13 +236,14 @@ def add_reminder_start(update):
 def add_reminder_vocabulary_chosen(update):
     user = get_user(update)
     parameters = get_user_parameters(user)
+    lang = parameters.language
     timezone = parameters.timezone
     callback_data = json.loads(update["callback_query"]["data"])
     vocabulary_id = callback_data[1]
     vocabulary_name = _get_vocabulary_name(vocabulary_id)
     set_temp(user, TEMP_KEYS.VOCABULARY.value, vocabulary_id)
 
-    text = _generate_vocabulary_reminders_text(user, vocabulary_id, vocabulary_name, timezone,
+    text = _generate_vocabulary_reminders_text(user, vocabulary_id, vocabulary_name, timezone, lang,
                                                include_no_reminders_text=True)
     text += '\n' + _add_reminder_menu_text(update, vocabulary_id)
     time = suggest_reminder_time()
@@ -268,6 +274,7 @@ def add_reminder_time_chosen(update):
 def add_reminder_finalize(update):
     user = get_user(update)
     parameters = get_user_parameters(user)
+    lang = parameters.language
     timezone = parameters.timezone
 
     time = pop_temp(user, TEMP_KEYS.TIME.value)
@@ -279,9 +286,12 @@ def add_reminder_finalize(update):
 
     reminder_id = _add_reminder(user, vocabulary_id, time, number_of_words)
     if reminder_id == 0:
-        text = f'You already have a reminder from "{escape_html(vocabulary_name)}" at {time}'
+        text = translate(lang, "reminder_duplicate", {"vocabulary_name": escape_html(vocabulary_name),
+                                                      "time": time})
     else:
-        text = f'See you at {shift_time(time, timezone)} with {number_of_words} words from "{escape_html(vocabulary_name)}" :)'
+        text = translate(lang, "reminder_set", {"time": shift_time(time, timezone),
+                                                "number_of_words": number_of_words,
+                                                "vocabulary_name": escape_html(vocabulary_name)})
 
     reply_markup = InlineKeyboardMarkup(
         inline_keyboard=[
@@ -304,9 +314,9 @@ def _delete_reminder_menu_text(update, vocabulary_id=None, time=None):
     vocabulary_name = _get_vocabulary_name(vocabulary_id) if vocabulary_id else '—'
     display_time = shift_time(time, timezone) if time else "--:--"
 
-    text = ("Deleting a reminder:\n\n"
-            f"Vocabulary name: {vocabulary_name}\n"
-            f"Time: {display_time}\n")
+    text = (f"{translate(lang, 'deleting_reminder')}:\n\n"
+            f"{translate(lang, 'vocabulary_name')}: {vocabulary_name}\n"
+            f"{translate(lang, 'time')}: {display_time}\n")
     return text
 
 
@@ -325,15 +335,16 @@ def delete_reminder_start(update):
 def delete_reminder_vocabulary_chosen(update):
     user = get_user(update)
     parameters = get_user_parameters(user)
+    lang = parameters.language
     timezone = parameters.timezone
     callback_data = json.loads(update["callback_query"]["data"])
     vocabulary_id = callback_data[1]
     vocabulary_name = _get_vocabulary_name(vocabulary_id)
 
-    text = _generate_vocabulary_reminders_text(user, vocabulary_id, vocabulary_name, timezone,
+    text = _generate_vocabulary_reminders_text(user, vocabulary_id, vocabulary_name, timezone, lang,
                                                include_no_reminders_text=True)
     text += '\n' + _delete_reminder_menu_text(update, vocabulary_id)
-    reply_markup = _get_inline_reminder_list(user, vocabulary_id, timezone,
+    reply_markup = _get_inline_reminder_list(user, vocabulary_id, timezone, lang,
                                              next_query_action=QUERY_ACTIONS.DELETE_REMINDER_FINALIZE.value,
                                              back_button_action=QUERY_ACTIONS.MENU_REMINDERS.value)
     return text, reply_markup
@@ -343,13 +354,15 @@ def delete_reminder_vocabulary_chosen(update):
 def delete_reminder_finalize(update):
     user = get_user(update)
     parameters = get_user_parameters(user)
+    lang = parameters.language
     timezone = parameters.timezone
     callback_data = json.loads(update["callback_query"]["data"])
     vocabulary_id, time = callback_data[1:]
     vocabulary_name = _get_vocabulary_name(vocabulary_id)
     match _delete_reminder(user, vocabulary_id=vocabulary_id, time=time):
         case TaskStatus.SUCCESS:
-            text = f'Successfully deleted reminder at {shift_time(time, timezone)} from "{escape_html(vocabulary_name)}"'
+            text = translate(lang, "reminder_deleted", {"time": shift_time(time, timezone),
+                                                        "vocabulary_name": escape_html(vocabulary_name)})
             reply_markup = InlineKeyboardMarkup(
                 inline_keyboard=[
                     [
@@ -378,7 +391,7 @@ def construct_reminder_page(update):
     heading = html_wrapper(
         escape_html(
             "<><><><><><><><>\n" +
-            f"      Reminders \n" +
+            translate(lang, "reminders_heading") + "\n" +
             "<><><><><><><><>"
         ),
         'b')
@@ -386,10 +399,10 @@ def construct_reminder_page(update):
 
     for vocabulary_id in vocabularies:
         vocabulary_name = vocabularies[vocabulary_id]
-        text += _generate_vocabulary_reminders_text(user, vocabulary_id, vocabulary_name, timezone)
+        text += _generate_vocabulary_reminders_text(user, vocabulary_id, vocabulary_name, timezone, lang)
 
     if text == "":
-        text = "\n\nYou don't have any\n reminders"
+        text = "\n\n" + translate(lang, "no_reminders")
 
     reply_markup = InlineKeyboardMarkup(
         inline_keyboard=[

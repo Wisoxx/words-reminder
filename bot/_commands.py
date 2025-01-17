@@ -18,7 +18,7 @@ def help_(update):
     parameters = get_user_parameters(user)
     lang = parameters.language
 
-    text = "help"
+    text = translate(lang, "help")
     reply_markup = None
     return text, reply_markup
 
@@ -75,7 +75,8 @@ def menu(update):
 def cancel(update):
     user = get_user(update)
     reset_user_state(user)
-    text = "Successfully cancelled"
+    lang = get_user_parameters(user).language
+    text = translate(lang, "cancelled")
     reply_markup = None
     return text, reply_markup
 
@@ -88,7 +89,7 @@ def show_info(update):
 
     callback_data = json.loads(update["callback_query"]["data"])
     key = callback_data[1]
-    return key
+    return translate(lang, key)
 
 
 @route(trigger="other", action="send")
@@ -97,7 +98,7 @@ def unrecognized_message_handler(update):
     parameters = get_user_parameters(user)
     lang = parameters.language
 
-    text = "Sorry, I didn't understand that kind of message. Try something else."
+    text = translate(lang, "unrecognized_message")
     reply_markup = None
     return text, reply_markup
 
@@ -108,7 +109,7 @@ def default_command_handler(update):
     parameters = get_user_parameters(user)
     lang = parameters.language
 
-    text = "Sorry, I didn't understand that command. Try /help or /menu."
+    text = translate(lang, "unrecognized_command")
     reply_markup = None
     return text, reply_markup
 

@@ -302,7 +302,7 @@ class Bot:
                 if len(params) > 0:
                     lang = params.language
                     if lang in languages:
-                        self.deliver_message(user, "Firstly you have to finish the setup!")
+                        self.deliver_message(user, translate(lang, "finish_setup"))
                 self.set_up(was_missing, update)
                 return
 
@@ -321,7 +321,7 @@ class Bot:
                     self.set_up(is_missing, update)
                 elif is_missing is None:  # something was missing and now nothing is
                     lang = get_user_parameters(user).language
-                    self.deliver_message(user, "You've finished the setup! To get more information type /help")
+                    self.deliver_message(user, translate(lang, "setup_finished"))
 
         except Exception as e:
             logger.critical(f"Couldn't process update: {e}", exc_info=True)
