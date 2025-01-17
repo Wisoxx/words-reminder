@@ -5,7 +5,7 @@ from urllib3.util.retry import Retry
 from time import sleep
 from bot._words import recall
 from bot._reminders import _get_reminders_list_at
-from bot.utils import get_hh_mm
+from bot.utils import get_hh_mm, shift_time
 from logger import setup_logger, process_logs
 import os
 from dotenv import load_dotenv
@@ -62,17 +62,34 @@ def view_logs():
     return process_logs()
 
 
+last_reminded_at = None
+
+
 @app.route(f'/{SECRET}/remind_all', methods=["POST"])
 def remind_all():
     logger.debug("Received remind request")
     try:
-        reminders = _get_reminders_list_at(get_hh_mm())
-        if len(reminders) > 0:
-            for _, user, vocabulary_id, _, number_of_words in reminders:
-                text, reply_markup = recall(user=user, vocabulary_id=vocabulary_id, limit=number_of_words)
-                bot.deliver_message(user, text, reply_markup=reply_markup)
-                sleep(34)  # Telegram allows 30 messages per second
-            return jsonify({"status": "success", "message": "Reminders sent successfully!"}), 200
+        global last_reminded_at
+        current_time = get_hh_mm()
+        next_execution = shift_time(current_time, min_offset=1)
+        time = shift_time(last_reminded_at, min_offset=1) if last_reminded_at else current_time
+
+        reminders_count = 0
+        while time != next_execution:
+            reminders = _get_reminders_list_at(time)
+            if len(reminders) > 0:
+                for _, user, vocabulary_id, _, number_of_words in reminders:
+                    text, reply_markup = recall(user=user, vocabulary_id=vocabulary_id, limit=number_of_words)
+                    bot.deliver_message(user, text, reply_markup=reply_markup)
+                    reminders_count += 1
+
+                    if reminders_count > 0 and reminders_count % 30 == 0:  # Telegram allows 30 messages per second
+                        sleep(1)
+            time = shift_time(time, min_offset=1)
+
+        last_reminded_at = current_time
+        if reminders_count > 0:
+            return jsonify({"status": "success", "message": f"{reminders_count} reminders sent successfully!"}), 200
         else:
             return jsonify({"status": "success", "message": "No reminders found"}), 200
 
