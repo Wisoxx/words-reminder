@@ -287,7 +287,7 @@ def add_reminder_finalize(update):
     reminder_id = _add_reminder(user, vocabulary_id, time, number_of_words)
     if reminder_id == 0:
         text = translate(lang, "reminder_duplicate", {"vocabulary_name": escape_html(vocabulary_name),
-                                                      "time": time})
+                                                      "time": shift_time(time, timezone)})
     else:
         text = translate(lang, "reminder_set", {"time": shift_time(time, timezone),
                                                 "number_of_words": number_of_words,
