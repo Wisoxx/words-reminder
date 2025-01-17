@@ -31,7 +31,7 @@ def translate(lang: str, key: str, values: dict = None):
             'time': 'Time',
             'number_of_words': 'Number of words',
             'reminder_duplicate': 'You already have a reminder from "{vocabulary_name}" at {time}',
-            'reminder_set': 'See you at {time} with {number_of_words} words from "{vocabulary_name}" :)',
+            'reminder_set': 'See you at {time} with {number_of_words} {conjugated_word} from "{vocabulary_name}" :)',
             'reminder_deleted': 'Successfully deleted reminder at {time} from "{vocabulary_name}"',
             'no_reminders': 'You don\'t have any\n reminders',
 

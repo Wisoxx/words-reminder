@@ -291,6 +291,7 @@ def add_reminder_finalize(update):
     else:
         text = translate(lang, "reminder_set", {"time": shift_time(time, timezone),
                                                 "number_of_words": number_of_words,
+                                                "conjugated_word": conjugate_word(lang, number_of_words),
                                                 "vocabulary_name": escape_html(vocabulary_name)})
 
     reply_markup = InlineKeyboardMarkup(
