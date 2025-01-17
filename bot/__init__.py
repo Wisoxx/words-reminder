@@ -80,11 +80,14 @@ class Bot:
         exceptions = exceptions or []
         logger.info(f"Found {len(exceptions)} exceptions")
         users = db.Users.execute_query("SELECT user_id FROM users;")
+        msg_count = 0
         for user in users:
             if user[0] in exceptions:
                 continue
             self.deliver_message(user[0], text, reply_markup=reply_markup)
-            sleep(34)  # Telegram allows 30 messages per second
+            msg_count += 1
+            if msg_count > 0 and msg_count % 30 == 0:  # Telegram allows 30 messages per second
+                sleep(1)
         logger.info(f"Sent to {len(users)} users")
 
     def broadcast_multilang(self, text: dict, reply_markup=None, exceptions=None):
@@ -92,11 +95,14 @@ class Bot:
         exceptions = exceptions or []
         logger.info(f"Found {len(exceptions)} exceptions")
         users = db.Users.execute_query("SELECT user_id, language FROM users;")
+        msg_count = 0
         for user, lang in users:
             if user[0] in exceptions:
                 continue
             self.deliver_message(user, text[lang], reply_markup=reply_markup)
-            sleep(34)  # Telegram allows 30 messages per second
+            msg_count += 1
+            if msg_count > 0 and msg_count % 30 == 0:  # Telegram allows 30 messages per second
+                sleep(1)
         logger.info(f"Sent to {len(users)} users")
 
     @staticmethod
