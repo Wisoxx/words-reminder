@@ -422,7 +422,7 @@ def recall(update=None, user=None, vocabulary_id=None, limit=15):
     if lang == "en":
         to_be = "is" if limit == 1 else "are"
     else:
-        to_be = ""  # Ukrainian and Polish can omit to be there
+        to_be = ""  # Ukrainian and Polish can omit "to be" there
 
     text += (translate(lang, "oldest_words", {"to_be": to_be,
                                               "word_count": limit,

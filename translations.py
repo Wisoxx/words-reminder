@@ -71,7 +71,8 @@ def translate(lang: str, key: str, values: dict = None):
             'word_info_expired': 'Information about that word isn\'t available anymore. You can still add it by hand',
             'no_words': '*🦗crickets noises🦗*',
             'practice_time': 'It\'s practice time!',
-            'oldest_words': 'Here {to_be} {word_count} {conjugated_oldest} {conjugated_word} from "{vocabulary_name}"',
+            'oldest_words': 'Here {to_be} {word_count} {conjugated_oldest} {conjugated_word} from "{vocabulary_name}" '
+                            'to recall',
             'info_words': 'info_words',
             'info_recall': 'info_recall',
         },
