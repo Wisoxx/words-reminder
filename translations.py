@@ -101,6 +101,7 @@ def translate(lang: str, key: str, values: dict = None):
             'word_not_found': '"{word}" was not found in "{vocabulary_name}"',
             'word_info_expired': 'Information about that word isn\'t available anymore. You can still add it by hand',
             'no_words': '*🦗crickets noises🦗*',
+            'recall_no_words': 'Unfortunately, there aren\'t any words to practise in this vocabulary',
             'practice_time': 'It\'s practice time!',
             'oldest_words': 'Here {to_be} {word_count} {conjugated_oldest} {conjugated_word} from "{vocabulary_name}" '
                             'to recall',
@@ -120,7 +121,8 @@ def translate(lang: str, key: str, values: dict = None):
                           'ℹ️ to open this informational center',
             'info_recall': 'Here you can see up to 15 words that haven\'t been interacted with for the longest time\n\n'
                            'To get another set of words press:\n'
-                           '🔄 to refresh\n\n'
+                           '🔄 to refresh\n'
+                           'Note: your vocabulary has to have at least 15 words to be able to refresh\n\n'
                            'Additionally press:\n'
                            '↩️ to go back to the word menu\n'
                            'ℹ️ to open this informational center',

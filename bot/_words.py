@@ -419,18 +419,21 @@ def recall(update=None, user=None, vocabulary_id=None, limit=15):
         ]
     ])
 
-    text = translate(lang, "practice_time") + ' ' if not update else ""
-    if lang == "en":
-        to_be = "is" if limit == 1 else "are"
-    else:
-        to_be = ""  # Ukrainian and Polish can omit "to be" there
+    text = translate(lang, "practice_time") + ' ' if not update else ""  # update isn't None when called from menu
+    if len(words) > 0:
+        if lang == "en":
+            to_be = "is" if limit == 1 else "are"
+        else:
+            to_be = ""  # Ukrainian and Polish can omit "to be" there
 
-    text += (translate(lang, "oldest_words", {"to_be": to_be,
-                                              "word_count": limit,
-                                              "conjugated_oldest": conjugate_oldest(lang, limit),
-                                              "conjugated_word": conjugate_word(lang, limit),
-                                              "vocabulary_name": escape_html(vocabulary_name)})
-             + ":\n\n" + page)
+        text += (translate(lang, "oldest_words", {"to_be": to_be,
+                                                  "word_count": limit,
+                                                  "conjugated_oldest": conjugate_oldest(lang, limit),
+                                                  "conjugated_word": conjugate_word(lang, limit),
+                                                  "vocabulary_name": escape_html(vocabulary_name)})
+                 + ":\n\n" + page)
+    else:
+        text += translate(lang, "recall_no_words")
 
     reply_markup = InlineKeyboardMarkup(inline_keyboard=buttons)
     return text, reply_markup
