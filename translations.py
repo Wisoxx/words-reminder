@@ -15,8 +15,16 @@ def translate(lang: str, key: str, values: dict = None):
             'short_hours': 'h',
             'short_minutes': 'min',
             'finish_setup': 'Firstly you have to finish the setup!',
-            'setup_finished': 'You\'ve finished the setup! To get more information type /help. To access menu type /menu',
-            'help': 'help',
+            'setup_finished': 'You\'ve finished the setup! To get more information type /help. To access menu type '
+                              '/menu. If you are having troubles navigating a menu, press ℹ️ at the bottom of each menu'
+                              ' to get a quick tour',
+            'help': 'I\'m Word Recall, your personal word keeper! Send me the words you want to learn. You can '
+                    'optionally include meaning too! You just have to send it in the from "word - meaning". Without '
+                    'the " - " the whole text will be treated as one word. You can save words to different vocabularies'
+                    ' (however many you create!). To each vocabulary you can assign any number of reminders at any '
+                    'given minute and then I will remind you at the selected time.\n\n'
+                    'Type /menu to open menu. If you are having troubles navigating a menu, press ℹ️ at the bottom of'
+                    ' each menu to get a quick tour.',
             'unrecognized_message': 'Sorry, I didn\'t understand that kind of message. Try something else',
             'unrecognized_command': 'Sorry, I didn\'t understand that command. Try /help or /menu',
             # Reminders
@@ -31,7 +39,15 @@ def translate(lang: str, key: str, values: dict = None):
             'reminder_set': 'See you at {time} with {number_of_words} {conjugated_word} from "{vocabulary_name}" :)',
             'reminder_deleted': 'Successfully deleted reminder at {time} from "{vocabulary_name}"',
             'no_reminders': 'You don\'t have any\n reminders',
-            'info_reminders': 'info_reminders',
+            'info_reminders': 'Here you can view reminders associated with all of your vocabularies. They are grouped '
+                              'by vocabularies and sorted by time. Next to each one you will see how many words they '
+                              'will show if your vocabulary is long enough\n\n'
+                              'To make some changes press:\n'
+                              '━  to delete a reminder\n'
+                              '✚  to set a reminder\n\n'
+                              'Additionally press:\n'
+                              '↩️ to go back to the main menu\n'
+                              'ℹ️ to open this informational center',
             # Settings
             'settings': 'Settings',
             'settings_heading': '                              Settings',
@@ -43,7 +59,14 @@ def translate(lang: str, key: str, values: dict = None):
             'setup_timezone': 'Match the time below with your current time. Once you do it, press on the time to save '
                               'your timezone',
             'timezone_set': 'Timezone set to UTC{timezone:+} ({time})',
-            'info_settings': 'info_settings',
+            'info_settings': 'Here you can view your current settings\n\n'
+                             'To make some changes press:\n'
+                             '🌎 to change interface language\n'
+                             '👁 to toggle hiding word meanings when showing word list or reminding old words\n'
+                             '🕓 to change your timezone. It affects when you will get reminders\n\n'
+                             'Additionally press:\n'
+                             '↩️ to go back to the main menu\n'
+                             'ℹ️ to open this informational center',
             # Vocabularies
             'vocabularies': 'Vocabularies',
             'vocabularies_heading': '                              Vocabularies',
@@ -59,7 +82,15 @@ def translate(lang: str, key: str, values: dict = None):
             'no_vocabularies': 'Oh-oh, that was your last vocabulary! To continue using my services, you should create'
                                ' a new one!',
             'vocabulary_deletion_cancelled': 'Successfully cancelled vocabulary deletion',
-            'info_vocabularies': 'info_vocabularies',
+            'info_vocabularies': 'Here you can view all your vocabularies and their word count. Your current vocabulary'
+                                 ' is underlined\n\n'
+                                 'To make some changes press:\n'
+                                 '━  to delete a vocabulary\n'
+                                 '📙 to change current vocabulary\n'
+                                 '✚  to create another vocabulary\n\n'
+                                 'Additionally press:\n'
+                                 '↩️ to go back to the main menu\n'
+                                 'ℹ️ to open this informational center',
             # Words
             'words': 'Words',
             'word_duplicate': 'You already have "{word}" in "{vocabulary_name}"',
@@ -84,10 +115,15 @@ def translate(lang: str, key: str, values: dict = None):
                           'Additionally press:\n'
                           '💭 to see up to 15 words that haven\'t been interacted with for the longest time\n'
                           '📙 to change current vocabulary\n'
-                          '━ to delete a word\n'
+                          '━  to delete a word\n'
                           '↩️ to go back to the main menu\n'
                           'ℹ️ to open this informational center',
-            'info_recall': 'info_recall',
+            'info_recall': 'Here you can see up to 15 words that haven\'t been interacted with for the longest time\n\n'
+                           'To get another set of words press:\n'
+                           '🔄 to refresh\n\n'
+                           'Additionally press:\n'
+                           '↩️ to go back to the word menu\n'
+                           'ℹ️ to open this informational center',
         },
         'ua': {
             'flag': '🇺🇦',
