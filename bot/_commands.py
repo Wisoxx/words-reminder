@@ -88,7 +88,7 @@ def show_info(update):
     lang = parameters.language
 
     callback_data = json.loads(update["callback_query"]["data"])
-    key, back_button_action = callback_data[1]
+    key, back_button_action = callback_data[1:]
     text = translate(lang, key)
     reply_markup = InlineKeyboardMarkup(inline_keyboard=[
         [
