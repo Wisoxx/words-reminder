@@ -161,7 +161,8 @@ def translate(lang: str, key: str, values: dict = None):
             'time': 'Час',
             'number_of_words': 'Кількість слів',
             'reminder_duplicate': 'У тебе вже є нагадування для "{vocabulary_name}" о {time}',
-            'reminder_set': 'Побачимося о {time} з {number_of_words} {conjugated_word} із "{vocabulary_name}" :)',
+            'reminder_set': 'Побачимося о {time}! Я нагадаю тобі про {number_of_words} {conjugated_word} із '
+                            '"{vocabulary_name}" :)',
             'reminder_deleted': 'Нагадування о {time} із "{vocabulary_name}" успішно видалено',
             'no_reminders': 'У тебе немає\n нагадувань',
             'info_reminders': 'Тут ти можеш переглянути нагадування, пов’язані з усіма твоїми словниками. Вони '
@@ -182,7 +183,7 @@ def translate(lang: str, key: str, values: dict = None):
             'timezone': 'Часовий пояс',
             'choose_lang': '🇺🇦 Виберіть свою мову',
             'lang_set': 'Налаштування мови оновлено',
-            'setup_timezone': 'Допасуй час нижче з твоїм поточним часом. Після цього натисни на час, щоб зберегти '
+            'setup_timezone': 'Зрівняй час нижче з твоїм поточним часом. Після цього натисни на час, щоб зберегти '
                               'тівй часовий пояс',
             'timezone_set': 'Часовий пояс встановлено на UTC{timezone:+} ({time})',
             'info_settings': 'Тут ти можеш переглянути свої поточні налаштування\n\n'
@@ -214,7 +215,7 @@ def translate(lang: str, key: str, values: dict = None):
                                  'Щоб внести зміни, натисніть:\n'
                                  '━   щоб видалити словник\n'
                                  '📙 щоб вибрати інший поточний словник\n'
-                                 '✚   щоб створення ще один словник\n\n'
+                                 '✚   щоб створеити ще один словник\n\n'
                                  'Додатково натисни:\n'
                                  '↩️ щоб повернутися в головне меню\n'
                                  'ℹ️ щоб відкрити цей інформаційний центр',
@@ -288,7 +289,8 @@ def translate(lang: str, key: str, values: dict = None):
             'time': 'Czas',
             'number_of_words': 'Liczba słów',
             'reminder_duplicate': 'Masz już przypomnienie dla "{vocabulary_name}" o {time}',
-            'reminder_set': 'Do zobaczenia o {time} z {number_of_words} {conjugated_word} z "{vocabulary_name}" :)',
+            'reminder_set': 'Do zobaczenia o {time}! Przypomnę ci o {number_of_words} {conjugated_word} z '
+                            '"{vocabulary_name}" :)',
             'reminder_deleted': 'Pomyślnie usunięto przypomnienie o {time} z "{vocabulary_name}"',
             'no_reminders': 'Nie masz żadnych przypomnień',
             'info_reminders': 'Tutaj możesz przeglądać przypomnienia powiązane ze wszystkimi Twoimi słownikami. Są one '
