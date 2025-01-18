@@ -161,7 +161,7 @@ def translate(lang: str, key: str, values: dict = None):
             'time': 'Час',
             'number_of_words': 'Кількість слів',
             'reminder_duplicate': 'У тебе вже є нагадування для "{vocabulary_name}" о {time}',
-            'reminder_set': 'Побачимося о {time}! Я нагадаю тобі про {number_of_words} {conjugated_word} із '
+            'reminder_set': 'Побачимося о {time}! Я нагадаю тобі {number_of_words} {conjugated_word} із '
                             '"{vocabulary_name}" :)',
             'reminder_deleted': 'Нагадування о {time} із "{vocabulary_name}" успішно видалено',
             'no_reminders': 'У тебе немає\n нагадувань',
@@ -289,7 +289,7 @@ def translate(lang: str, key: str, values: dict = None):
             'time': 'Czas',
             'number_of_words': 'Liczba słów',
             'reminder_duplicate': 'Masz już przypomnienie dla "{vocabulary_name}" o {time}',
-            'reminder_set': 'Do zobaczenia o {time}! Przypomnę ci o {number_of_words} {conjugated_word} z '
+            'reminder_set': 'Do zobaczenia o {time}! Przypomnę ci {number_of_words} {conjugated_word} z '
                             '"{vocabulary_name}" :)',
             'reminder_deleted': 'Pomyślnie usunięto przypomnienie o {time} z "{vocabulary_name}"',
             'no_reminders': 'Nie masz żadnych przypomnień',
