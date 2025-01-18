@@ -64,7 +64,7 @@ def menu(update):
         f"{translate(lang, 'choose_category')}\n"
         f"📃 {translate(lang, 'words')}\n"
         f"⏰ {translate(lang, 'reminders')}\n"
-        f"📙 {translate(lang, 'vocabulary')}\n"
+        f"📙 {translate(lang, 'vocabularies')}\n"
         f"⚙️ {translate(lang, 'settings')}"
     )
 

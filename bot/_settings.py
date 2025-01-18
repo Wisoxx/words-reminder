@@ -67,13 +67,13 @@ def settings(update):
     heading = html_wrapper(
         escape_html(
             "<><><><><><><><><><><><><><><><><><><>\n" +
-            f"{' ' * 30}Settings\n" +
+            f"{translate(lang, 'settings_heading')}\n" +
             "<><><><><><><><><><><><><><><><><><><>"
         ),
         'b')
-    text = (f"🌎 Language: {translate(lang, 'flag')}\n"
-            f"👁 Hide meaning: {'✅' if hide_meaning else '❌'}\n"
-            f"🕓 Timezone: UTC{'+' if timezone >= 0 else ''}{timezone} ({get_hh_mm(timezone)})")
+    text = (f"🌎 {translate(lang, 'language')}: {translate(lang, 'flag')}\n"
+            f"👁 {translate(lang, 'hide_meaning')}: {'✅' if hide_meaning else '❌'}\n"
+            f"🕓 {translate(lang, 'timezone')}: UTC{'+' if timezone >= 0 else ''}{timezone} ({get_hh_mm(timezone)})")
 
     reply_markup = InlineKeyboardMarkup(inline_keyboard=[
         [
@@ -129,7 +129,7 @@ def change_language_finalize(update):
     if return_to_menu:
         return settings(update)
 
-    text = "Language preferences have been updated"
+    text = translate(lang, "lang_set")
     reply_markup = None
     return text, reply_markup
 
@@ -139,10 +139,11 @@ def change_timezone_start(update, next_query_action=QUERY_ACTIONS.CHANGE_TIMEZON
                           back_button_action=QUERY_ACTIONS.MENU_SETTINGS.value):
     user = get_user(update)
     parameters = get_user_parameters(user)
+    lang = parameters.language
     timezone = parameters.timezone
     time = get_hh_mm(timezone)
 
-    text = "Match the time below with your current time. Once you do it, press on the time to save your timezone."
+    text = translate(lang, "setup_timezone")
     reply_markup = pick_time(update, time, include_minutes=False,
                              next_query_action=next_query_action,
                              back_button_action=back_button_action,
@@ -180,6 +181,6 @@ def set_up_timezone_finalize(update):
     _adjust_reminders_to_new_timezone(user, old_timezone, new_timezone)
     remove_temp(user, TEMP_KEYS.TIMEZONE_NOT_SET.value)
 
-    text = f"Timezone set to UTC{new_timezone:+} ({get_hh_mm(new_timezone)})"
+    text = translate(lang, "timezone_set", {"timezone": new_timezone, "time": get_hh_mm(new_timezone)})
     reply_markup = None
     return text, reply_markup

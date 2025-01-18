@@ -3,6 +3,7 @@ from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 from .temp_manager import *
 from ._enums import TaskStatus, QUERY_ACTIONS, TEMP_KEYS, USER_STATES
 from .utils import html_wrapper, escape_html
+from translations import translate, conjugate_word
 from router import route
 from logger import setup_logger
 
@@ -101,7 +102,7 @@ def _vocabulary_list_to_text(values, current_vocabulary, lang):
 
         if vocabulary == current_vocabulary:
             vocabulary = html_wrapper(vocabulary, "u")  # Underline the current vocabulary
-        text += f'"{vocabulary}"  —  {words_number} words\n'
+        text += f'"{vocabulary}"  —  {words_number} {conjugate_word(lang, words_number)}\n'
     return text
 
 
@@ -149,7 +150,7 @@ def change_vocabulary_start(update, next_query_action=QUERY_ACTIONS.VOCABULARY_C
     parameters = get_user_parameters(user)
     lang = parameters.language
     text, _ = construct_vocabulary_page(update)
-    text += "\nSelect vocabulary to work with:"
+    text += "\n" + translate(lang, 'change_vocabulary') + ":"
     reply_markup = _get_inline_vocabulary_list(user, next_query_action, back_button_action)
     return text, reply_markup
 
@@ -159,8 +160,6 @@ def change_vocabulary_finish(update):
     user = get_user(update)
     callback_data = json.loads(update["callback_query"]["data"])
     vocabulary_id = callback_data[1]
-    parameters = get_user_parameters(user)
-    lang = parameters.language
     _set_current_vocabulary(user, vocabulary_id)
     return construct_vocabulary_page(update)
 
@@ -177,7 +176,7 @@ def create_vocabulary_start(update):
     parameters = get_user_parameters(user)
     lang = parameters.language
 
-    text = "How do you want to name your vocabulary?"
+    text = translate(lang, "name_vocabulary")
     set_user_state(user, USER_STATES.CREATE_VOCABULARY.value)
     return text, lang
 
@@ -198,12 +197,13 @@ def create_vocabulary_finalize(update):
 
     vocabulary_id = _create_vocabulary(user, vocabulary_name)
     if vocabulary_id == 0:
-        text = f'You already have vocabulary named "{escape_html(vocabulary_name)}". Try something else'
-        reply_markup = None
+        key = "vocabulary_duplicate"
     else:
-        text = f'Successfully create vocabulary "{escape_html(vocabulary_name)}"'
-        reply_markup = None
+        key = "vocabulary_created"
         reset_user_state(user)
+
+    text = translate(lang, key, {"vocabulary_name": escape_html(vocabulary_name)})
+    reply_markup = None
 
     return text, reply_markup
 
@@ -220,7 +220,7 @@ def delete_vocabulary_start(update):
     parameters = get_user_parameters(user)
     lang = parameters.language
 
-    text = "What vocabulary do you want to delete?"
+    text = translate(lang, "select_vocabulary_to_delete")
     set_user_state(user, USER_STATES.DELETE_VOCABULARY_INPUT.value)
     return text, lang
 
@@ -243,8 +243,7 @@ def delete_vocabulary_input(update):
     if vocabulary_id:
         set_temp(user, TEMP_KEYS.VOCABULARY.value, vocabulary_id)
 
-        text = (f"Are you sure you want to permanently delete \"{vocabulary_name}\" and everything associated with"
-                f" it including words and reminders?")
+        text = translate(lang, "confirm_vocabulary_deletion", {"vocabulary_name": escape_html(vocabulary_name)})
         reply_markup = InlineKeyboardMarkup(inline_keyboard=[
             [
                 InlineKeyboardButton(text=f'      ✅      ',
@@ -257,7 +256,7 @@ def delete_vocabulary_input(update):
         ])
         set_user_state(user, USER_STATES.DELETE_VOCABULARY_CONFIRMATION.value)
     else:
-        text = f'You don\'t have a vocabulary named "{escape_html(vocabulary_name)}"'
+        text = translate(lang, 'vocabulary_not_found', {"vocabulary_name": escape_html(vocabulary_name)})
         reply_markup = None
         reset_user_state(user)
     return text, reply_markup
@@ -281,12 +280,12 @@ def delete_vocabulary_confirmed(update):
 
     match _delete_vocabulary(user, vocabulary_id=vocabulary_id):
         case TaskStatus.SUCCESS:
-            text = f'Successfully deleted vocabulary "{escape_html(vocabulary_name)}"'
+            text = translate(lang, "vocabulary_deleted", {"vocabulary_name": escape_html(vocabulary_name)})
             reply_markup = None
             actions.append({"action": "edit", "text": text, "reply_markup": reply_markup})
         case TaskStatus.FAILURE:
             raise FileNotFoundError(
-                f'Failed to delete vocabulary #{vocabulary_id} "{escape_html(vocabulary_name)}"')
+                f'Failed to delete vocabulary #{vocabulary_id} "{vocabulary_name}"')
 
         case _:
             raise ValueError("Unsupported status")
@@ -294,7 +293,7 @@ def delete_vocabulary_confirmed(update):
     if get_user_parameters(user).current_vocabulary_id is None:
         logger.info(f"User {user} has no vocabularies")
 
-        text = f'Oh-oh, that was your last vocabulary! To continue using my services, you should create a new one!'
+        text = translate(lang, "no_vocabularies")
         reply_markup = None
         actions.append({"action": "send", "text": text, "reply_markup": reply_markup})
 
@@ -319,7 +318,7 @@ def delete_vocabulary_declined(update):
     logger.debug(f"User {user} cancelled vocabulary deletion")
     parameters = get_user_parameters(user)
     lang = parameters.language
-    text = "Successfully cancelled vocabulary deletion"
+    text = translate(lang, "vocabulary_deletion_cancelled")
     reply_markup = None
     remove_temp(user, TEMP_KEYS.VOCABULARY.value)
     reset_user_state(user)
@@ -354,7 +353,7 @@ def construct_vocabulary_page(update):
     heading = html_wrapper(
         escape_html(
             "<><><><><><><><><><><><><><><><><><><>\n" +
-            f"{' ' * 30}Vocabularies\n" +
+            translate(lang, "vocabularies_heading") + "\n" +
             "<><><><><><><><><><><><><><><><><><><>"
         ),
         'b')
@@ -367,7 +366,7 @@ def construct_vocabulary_page(update):
         values.append((vocabulary_name, word_count))
 
     if not values:
-        text += "You have no vocabularies."
+        raise RuntimeError("No vocabularies found, so update shouldn't have been processed")
     else:
         text += _vocabulary_list_to_text(values, current_vocabulary_name, lang)
 

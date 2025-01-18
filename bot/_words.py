@@ -8,7 +8,7 @@ from ._vocabularies import _get_vocabulary_name, change_vocabulary_start, _set_c
 from .utils import html_wrapper, escape_html, get_timestamp, pad
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 from ._enums import TaskStatus, QUERY_ACTIONS, TEMP_KEYS, USER_STATES
-from translations import translate
+from translations import translate, conjugate_word, conjugate_oldest
 from router import route
 from logger import setup_logger
 
@@ -218,10 +218,12 @@ def add_word(update, vocabulary_id=None, word=None, meaning=None):
 
     word_id = _add_word(user, vocabulary_id, word, meaning)
     if word_id == 0:
-        text = f'You already have "{escape_html(word)}" in "{escape_html(vocabulary_name)}"'
+        text = translate(lang, "word_duplicate", {"word": escape_html(word),
+                                                  "vocabulary_name": escape_html(vocabulary_name)})
         reply_markup = None
     else:
-        text = f'Successfully added "{escape_html(word)}" to "{escape_html(vocabulary_name)}"'
+        text = translate(lang, "word_added", {"word": escape_html(word),
+                                              "vocabulary_name": escape_html(vocabulary_name)})
         reply_markup = InlineKeyboardMarkup(inline_keyboard=[
             [
                 InlineKeyboardButton(text=f'      🗑 {translate(lang, "delete")}      ',
@@ -248,11 +250,11 @@ def delete_word_start(update):
     actions = []
 
     if _count_words(vocabulary_id) > 0:
-        text = "Send me the word you want to delete"
+        text = translate(lang, "choose_word_to_delete")
         actions.append({"action": "send", "text": text, "lang": lang, "add_cancel_button": True})
         set_user_state(user, USER_STATES.DELETE_WORD.value)
     else:
-        text = "Vocabulary is empty. Nothing to delete."
+        text = translate(lang, "no_words_to_delete")
         actions.append({"action": "popup", "text": text})
     return actions
 
@@ -281,7 +283,8 @@ def delete_word_finalize(update, vocabulary_id=None, word=None, meaning=None):
 
     match _delete_word(user=user, vocabulary_id=vocabulary_id, word=word):
         case TaskStatus.SUCCESS:
-            text = f'Successfully deleted "{escape_html(word)}" from "{escape_html(vocabulary_name)}"'
+            text = translate(lang, "word_deleted", {"word": escape_html(word),
+                                                    "vocabulary_name": escape_html(vocabulary_name)})
 
             # callback data is limited to 64 characters
             # if meaning is str, then it takes 2 symbol ("") + len(meaning), else None converts to null, which is 4,
@@ -306,7 +309,8 @@ def delete_word_finalize(update, vocabulary_id=None, word=None, meaning=None):
                 ]
             ])
         case TaskStatus.FAILURE:
-            text = f'"{escape_html(word)}" was not found in "{escape_html(vocabulary_name)}"'
+            text = translate(lang, "word_not_found", {"word": escape_html(word),
+                                                      "vocabulary_name": escape_html(vocabulary_name)})
             reply_markup = None
 
         case _:
@@ -333,6 +337,7 @@ def words_vocabulary_chosen(update):
 @route(trigger="callback_query", query_action=QUERY_ACTIONS.ADD_SPECIFIC_WORD.value, action="edit")
 def add_specific_word(update):
     user = get_user(update)
+    lang = get_user_parameters(user).language
     callback_data = json.loads(update["callback_query"]["data"])
     _, vocabulary_id, check_db, *rest = callback_data
 
@@ -346,7 +351,7 @@ def add_specific_word(update):
             meaning = pop_temp(user, TEMP_KEYS.MEANING.value)
             remove_temp(user, TEMP_KEYS.WORD_DELETE_MSG_ID.value)
         else:  # word has been overwritten
-            text = "Information about that word isn't available anymore. You can still add it by hand"
+            text = translate(lang, "word_info_expired")
             reply_markup = None
             return text, reply_markup
     else:
@@ -390,8 +395,19 @@ def recall(update=None, user=None, vocabulary_id=None, limit=15):
     if len(words) > 0:
         page = _word_list_to_pages(words, hide_meaning)[0]
     else:
-        page = "*🦗crickets noises🦗*"
-    text = f"Here are {limit} oldest words from {vocabulary_name}:\n\n" + page
+        page = translate(lang, "no_words")
+
+    text = translate(lang, "practice_time") + ' ' if not update else ""
+    if lang == "en":
+        to_be = "is" if limit == 1 else "are"
+    else:
+        to_be = ""  # Ukrainian and Polish can omit to be there
+    text += (translate(lang, "oldest_words", {"to_be": to_be,
+                                              "word_count": limit,
+                                              "conjugated_oldest": conjugate_oldest(lang, limit),
+                                              "conjugated_word": conjugate_word(lang, limit),
+                                              "vocabulary_name": escape_html(vocabulary_name)})
+             + ":\n\n" + page)
 
     if _count_words(vocabulary_id) <= limit:
         buttons = []
@@ -465,7 +481,7 @@ def construct_word_page(update, vocabulary_id=None, page=None):
     words = _get_user_words(user, vocabulary_id)
 
     if len(words) == 0:
-        text = heading + "*🦗crickets noises🦗*"
+        text = heading + translate(lang, "no_words")
     else:
         pages = _word_list_to_pages(words, hide_meaning)
 
