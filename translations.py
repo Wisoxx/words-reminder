@@ -74,7 +74,7 @@ def translate(lang: str, key: str, values: dict = None):
             'name_vocabulary': 'How do you want to name your new vocabulary?',
             'vocabulary_duplicate': 'You already have vocabulary named "{vocabulary_name}". Try something else',
             'vocabulary_created': 'Successfully create vocabulary "{vocabulary_name}"',
-            'select_vocabulary_to_delete': 'What vocabulary do you want to delete?',
+            'select_vocabulary_to_delete': 'Send what vocabulary you want to delete?',
             'confirm_vocabulary_deletion': 'Are you sure you want to permanently delete "{vocabulary_name}" and '
                                            'everything associated with it including words and reminders?',
             'vocabulary_not_found': 'You don\'t have a vocabulary named "{vocabulary_name}"',
@@ -128,20 +128,256 @@ def translate(lang: str, key: str, values: dict = None):
                            'ℹ️ to open this informational center',
         },
         'ua': {
+            # Misc
             'flag': '🇺🇦',
-            'choose_lang': '🇺🇦 Вибери свою мову',
-            'lang_set': 'Налаштування мови оновлено',
             'choose_category': 'Вибери категорію:',
+            'cancel': 'Скасувати',
+            'cancelled': 'Успішно скасовано',
+            'add_back': 'Повернути',
+            'delete': 'Видалити',
+            'error': 'Щось пішло не так',
             'short_hours': 'год',
             'short_minutes': 'хв',
+            'finish_setup': 'Спочатку потрібно завершити налаштування!',
+            'setup_finished': 'Ви завершили налаштування! Щоб отримати більше інформації, введіть /help. Для доступу до'
+                              ' меню введіть /menu. Якщо у вас виникли труднощі з навігацією меню, натисніть ℹ️ внизу '
+                              'кожного меню, щоб отримати короткий огляд',
+            'help': 'Я Word Recall, твій особистий зберігач слів! Надішли мені слова, які ти хочеш вивчити. Ти можеш'
+                    ' додати значення, надіславши його у форматі "слово - значення". Без " - " увесь текст буде '
+                    'розглядатися як одне слово. Ти можеш зберігати слова у різні словники (скільки завгодно створиш!)'
+                    '. До кожного словника можна додати будь-яку кількість нагадувань на вибраний час, і я нагадаю тобі'
+                    ' у встановлений час.\n\n'
+                    'Введіть /menu, щоб відкрити меню. Якщо у вас виникли труднощі з навігацією меню, натисніть ℹ️ '
+                    'внизу кожного меню, щоб отримати короткий огляд.',
+            'unrecognized_message': 'Вибач, я не зрозумів це повідомлення. Спробуй щось інше',
+            'unrecognized_command': 'Вибач, я не зрозумів цю команду. Спробуй /help або /menu',
+
+            # Reminders
+            'reminders': 'Нагадування',
+            'reminders_heading': '      Нагадування',
+            'adding_reminder': 'Додавання нагадування',
+            'deleting_reminder': 'Видалення нагадування',
+            'vocabulary_name': 'Назва словника',
+            'time': 'Час',
+            'number_of_words': 'Кількість слів',
+            'reminder_duplicate': 'У тебе вже є нагадування для "{vocabulary_name}" о {time}',
+            'reminder_set': 'Побачимося о {time} з {number_of_words} {conjugated_word} із "{vocabulary_name}" :)',
+            'reminder_deleted': 'Нагадування о {time} із "{vocabulary_name}" успішно видалено',
+            'no_reminders': 'У тебе немає\n нагадувань',
+            'info_reminders': 'Тут ти можеш переглянути нагадування, пов’язані з усіма твоїми словниками. Вони '
+                              'згруповані за словниками та відсортовані за часом. Поруч з кожним з них ти побачиш, '
+                              'скільки слів вони показуватимуть, якщо твій словник буде мати достатньо слів\n\n'
+                              'Щоб внести зміни, натисніть:\n'
+                              '━ щоб видалити нагадування\n'
+                              '✚ щоб встановити нагадування\n\n'
+                              'Додатково натисни:\n'
+                              '↩️ щоб повернутися в головне меню\n'
+                              'ℹ️ щоб відкрити цей інформаційний центр',
+
+            # Settings
+            'settings': 'Налаштування',
+            'settings_heading': '                              Налаштування',
+            'language': 'Мова',
+            'hide_meaning': 'Приховувати значення',
+            'timezone': 'Часовий пояс',
+            'choose_lang': '🇺🇦 Виберіть свою мову',
+            'lang_set': 'Налаштування мови оновлено',
+            'setup_timezone': 'Допасуй час нижче з твоїм поточним часом. Після цього натисни на час, щоб зберегти '
+                              'тівй часовий пояс',
+            'timezone_set': 'Часовий пояс встановлено на UTC{timezone:+} ({time})',
+            'info_settings': 'Тут ти можеш переглянути свої поточні налаштування\n\n'
+                             'Щоб внести зміни, натисни:\n'
+                             '🌎 для зміни мови інтерфейсу\n'
+                             '👁 для перемикання приховування значень слів\n'
+                             '🕓 для зміни часового поясу\n\n'
+                             'Додатково натисни:\n'
+                             '↩️ щоб повернутися в головне меню\n'
+                             'ℹ️ щоб відкрити цей інформаційний центр',
+
+            # Vocabularies
+            'vocabularies': 'Словники',
+            'vocabularies_heading': '                              Словники',
+            'change_vocabulary': 'Вибери словник, з яким хочеш працювати',
+            'name_vocabulary': 'Як ти хочеш назвати свій новий словник?',
+            'vocabulary_duplicate': 'У тебе вже є словник із назвою "{vocabulary_name}". Спробуй щось інше',
+            'vocabulary_created': 'Успішно створено словник "{vocabulary_name}"',
+            'select_vocabulary_to_delete': 'Напиши який словник ти хочеш видалити',
+            'confirm_vocabulary_deletion': 'Ти впевнений, що хочеш назавжди видалити "{vocabulary_name}" і все, що з '
+                                           'ним пов’язано, включаючи слова та нагадування?',
+            'vocabulary_not_found': 'У тебе немає словника з назвою "{vocabulary_name}"',
+            'vocabulary_deleted': 'Успішно видалено словник "{vocabulary_name}"',
+            'no_vocabularies': 'Ой-ой, це був тівй останній словник! Щоб продовжити користуватися моїми послугами, тобі'
+                               ' потрібно створити новий!',
+            'vocabulary_deletion_cancelled': 'Успішно скасовано видалення словника',
+            'info_vocabularies': 'Тут ти можеш переглянути всі свої словники та кількість слів у них. Твій поточний '
+                                 'словник підкреслений\n\n'
+                                 'Щоб внести зміни, натисніть:\n'
+                                 '━   щоб видалити словник\n'
+                                 '📙 щоб вибрати інший поточний словник\n'
+                                 '✚   щоб створення ще один словник\n\n'
+                                 'Додатково натисни:\n'
+                                 '↩️ щоб повернутися в головне меню\n'
+                                 'ℹ️ щоб відкрити цей інформаційний центр',
+
+            # Words
+            'words': 'Слова',
+            'word_duplicate': 'У тебе вже є "{word}" у "{vocabulary_name}"',
+            'word_added': 'Успішно додано "{word}" у "{vocabulary_name}"',
+            'choose_word_to_delete': 'Надішли слово, яке ти хочеш видалити',
+            'word_deleted': 'Успішно видалено "{word}" із "{vocabulary_name}"',
+            'no_words_to_delete': 'Словник порожній. Немає чого видаляти',
+            'word_not_found': '"{word}" не знайдено у "{vocabulary_name}"',
+            'word_info_expired': 'Інформація про це слово більше недоступна. Ти все ще можеш додати його вручну',
+            'no_words': '*🦗 звуки цвіркунів🦗*',
+            'recall_no_words': 'На жаль, у цьому словнику немає слів для практики',
+            'practice_time': 'Час для практики!',
+            'oldest_words': 'Ось {to_be} {word_count} {conjugated_oldest} {conjugated_word} із "{vocabulary_name}" '
+                            'для повторення',
+            'info_words': 'Тут ти можеш переглянути слова, додані до твого поточного словника\n\n'
+                          'Щоб переміщатися по словнику, натиси:\n'
+                          '⏮️ щоб перейти на першу сторінку\n'
+                          '◀️️ щоб перейти на попередню сторінку\n'
+                          '▶️ щоб перейти на наступну сторінку\n'
+                          '⏩ щоб перейти на останню сторінку\n'
+                          'Примітка: деякі з них можуть бути недоступні (наприклад, неможливо перейти до останньої '
+                          'сторінки, якщо ти вже там)\n\n'
+                          'Додатково натисни:\n'
+                          '💭 щоб переглянути до 15 слів, з якими ти не взаємодіяв найдовше\n'
+                          '📙 щоб змінити поточний словник\n'
+                          '━   щоб видалити слово\n'
+                          '↩️ щоб повернутися в головне меню\n'
+                          'ℹ️ щоб відкрити цей інформаційний центр',
+            'info_recall': 'Тут ти можеш переглянути до 15 слів, з якими ти не взаємодіяв найдовше\n\n'
+                           'Щоб отримати інший набір слів, натисни:\n'
+                           '🔄 для оновлення\n'
+                           'Примітка: ваш словник має містити щонайменше 15 слів, щоб можна було оновити\n\n'
+                           'Додатково натисни:\n'
+                           '↩️ щоб повернутися до меню слів\n'
+                           'ℹ️ щоб відкрити цей інформаційний центр',
         },
         'pl': {
+            # Misc
             'flag': '🇵🇱',
-            'choose_lang': '🇵🇱 Wybierz swój język',
-            'lang_set': 'Ustawienia językowe zostały zmienione',
             'choose_category': 'Wybierz kategorię:',
+            'cancel': 'Anuluj',
+            'cancelled': 'Pomyślnie anulowano',
+            'add_back': 'Przywróć',
+            'delete': 'Usuń',
+            'error': "Coś poszło nie tak",
             'short_hours': 'h',
             'short_minutes': 'min',
+            'finish_setup': 'Najpierw musisz zakończyć konfigurację!',
+            'setup_finished': 'Zakończyłeś konfigurację! Aby uzyskać więcej informacji, wpisz /help. Aby uzyskać dostęp'
+                              ' do menu, wpisz /menu. Jeśli masz trudności z nawigacją w menu, naciśnij ℹ️ na dole '
+                              'każdego menu, aby uzyskać szybki przegląd',
+            'help': 'Jestem Word Recall, twoim osobistym pomocnikiem w nauce słów! Wyślij mi słowa, których chcesz się '
+                    'nauczyć. Możesz opcjonalnie dodać znaczenie, wysyłając je w formacie "słowo - znaczenie". Bez '
+                    '" - " cały tekst zostanie potraktowany jako jedno słowo. Możesz zapisywać słowa w różnych '
+                    'słownikach (tworząc dowolną ich liczbę!). Do każdego słownika możesz przypisać dowolną liczbę '
+                    'przypomnień w dowolnym czasie, a ja przypomnę ci w wybranym czasie\n\n'
+                    'Wpisz /menu, aby otworzyć menu. Jeśli masz trudności z nawigacją w menu, naciśnij ℹ️ na dole '
+                    'każdego menu, aby uzyskać szybki przegląd',
+            'unrecognized_message': 'Przepraszam, nie rozumiem tej wiadomości. Spróbuj czegoś innego',
+            'unrecognized_command': 'Przepraszam, nie rozumiem tej komendy. Spróbuj /help lub /menu',
+            # Reminders
+            'reminders': 'Przypomnienia',
+            'reminders_heading': '    Przypomnienia',
+            'adding_reminder': 'Dodawanie przypomnienia',
+            'deleting_reminder': 'Usuwanie przypomnienia',
+            'vocabulary_name': 'Nazwa słownika',
+            'time': 'Czas',
+            'number_of_words': 'Liczba słów',
+            'reminder_duplicate': 'Masz już przypomnienie dla "{vocabulary_name}" o {time}',
+            'reminder_set': 'Do zobaczenia o {time} z {number_of_words} {conjugated_word} z "{vocabulary_name}" :)',
+            'reminder_deleted': 'Pomyślnie usunięto przypomnienie o {time} z "{vocabulary_name}"',
+            'no_reminders': 'Nie masz żadnych przypomnień',
+            'info_reminders': 'Tutaj możesz przeglądać przypomnienia powiązane ze wszystkimi Twoimi słownikami. Są one '
+                              'pogrupowane według słowników i posortowane według czasu. Obok każdego zobaczysz, ile '
+                              'słów pokażą, jeśli Twój słownik będzie wystarczająco długi\n\n'
+                              'Aby wprowadzić zmiany, naciśnij:\n'
+                              '━  aby usunąć przypomnienie\n'
+                              '✚  aby ustawić przypomnienie\n\n'
+                              'Dodatkowo naciśnij:\n'
+                              '↩️ aby wrócić do menu głównego\n'
+                              'ℹ️ aby otworzyć to centrum informacyjne',
+            # Settings
+            'settings': 'Ustawienia',
+            'settings_heading': '                            Ustawienia',
+            'language': 'Język',
+            'hide_meaning': 'Ukryj znaczenia',
+            'timezone': 'Strefa czasowa',
+            'choose_lang': '🇵🇱 Wybierz swój język',
+            'lang_set': 'Preferencje językowe zostały zaktualizowane',
+            'setup_timezone': 'Dopasuj czas poniżej do swojego aktualnego czasu. Po tym naciśnij czas, aby zapisać '
+                              'swoją strefę czasową',
+            'timezone_set': 'Strefa czasowa ustawiona na UTC{timezone:+} ({time})',
+            'info_settings': 'Tutaj możesz przeglądać swoje aktualne ustawienia\n\n'
+                             'Aby wprowadzić zmiany, naciśnij:\n'
+                             '🌎 aby zmienić język interfejsu\n'
+                             '👁 aby przełączyć ukrywanie znaczeń słów\n'
+                             '🕓 aby zmienić swoją strefę czasową\n\n'
+                             'Dodatkowo naciśnij:\n'
+                             '↩️ aby wrócić do menu głównego\n'
+                             'ℹ️ aby otworzyć to centrum informacyjne',
+            # Vocabularies
+            'vocabularies': 'Słowniki',
+            'vocabularies_heading': '                                Słowniki',
+            'change_vocabulary': 'Wybierz który słownik ustawić jako bieżący',
+            'name_vocabulary': 'Jak chcesz nazwać swój nowy słownik?',
+            'vocabulary_duplicate': 'Masz już słownik o nazwie "{vocabulary_name}". Spróbuj czegoś innego',
+            'vocabulary_created': 'Pomyślnie utworzono słownik "{vocabulary_name}"',
+            'select_vocabulary_to_delete': 'Napisz który słownik chcesz usunąć',
+            'confirm_vocabulary_deletion': 'Czy na pewno chcesz trwale usunąć "{vocabulary_name}" i wszystko z nim '
+                                           'związane, w tym słowa i przypomnienia?',
+            'vocabulary_not_found': 'Nie masz słownika o nazwie "{vocabulary_name}"',
+            'vocabulary_deleted': 'Pomyślnie usunięto słownik "{vocabulary_name}"',
+            'no_vocabularies': 'Ups, to był Twój ostatni słownik! Aby dalej korzystać z moich usług, musisz utworzyć '
+                               'nowy!',
+            'vocabulary_deletion_cancelled': 'Pomyślnie anulowano usunięcie słownika',
+            'info_vocabularies': 'Tutaj możesz przeglądać wszystkie swoje słowniki i ich liczbę słów. Twój aktualny '
+                                 'słownik jest podkreślony\n\n'
+                                 'Aby wprowadzić zmiany, naciśnij:\n'
+                                 '━  aby usunąć słownik\n'
+                                 '📙 aby zmienić bieżący słownik\n'
+                                 '✚  aby utworzyć nowy słownik\n\n'
+                                 'Dodatkowo naciśnij:\n'
+                                 '↩️ aby wrócić do menu głównego\n'
+                                 'ℹ️ aby otworzyć to centrum informacyjne',
+            # Words
+            'words': 'Słowa',
+            'word_duplicate': 'Masz już "{word}" w "{vocabulary_name}"',
+            'word_added': 'Pomyślnie dodano "{word}" do "{vocabulary_name}"',
+            'choose_word_to_delete': 'Wyślij mi słowo, które chcesz usunąć',
+            'word_deleted': 'Pomyślnie usunięto "{word}" z "{vocabulary_name}"',
+            'no_words_to_delete': 'Słownik jest pusty. Nie ma nic do usunięcia',
+            'word_not_found': '"{word}" nie znaleziono w "{vocabulary_name}"',
+            'word_info_expired': 'Informacje o tym słowie nie są już dostępne. Możesz go nadal dodać ręcznie',
+            'no_words': '*🦗dźwięki świerszczy🦗*',
+            'recall_no_words': 'Niestety, w tym słowniku nie ma słów do ćwiczenia',
+            'practice_time': 'Czas na ćwiczenia!',
+            'oldest_words': 'Oto {to_be} {word_count} {conjugated_oldest} {conjugated_word} z "{vocabulary_name}" do '
+                            'przypomnienia',
+            'info_words': 'Tutaj możesz przeglądać słowa dodane do swojego aktualnego słownika\n\n'
+                          'Aby poruszać się po swoim słowniku, naciśnij:\n'
+                          '⏮️ aby przejść do pierwszej strony\n'
+                          '◀️️ aby przejść do poprzedniej strony\n'
+                          '▶️ aby przejść do następnej strony\n'
+                          '⏩ aby przejść do ostatniej strony\n'
+                          'Uwaga: niektóre z nich mogą być niedostępne (np. nie można przejść do ostatniej strony, '
+                          'jeśli już tam jesteś)\n\n'
+                          'Dodatkowo naciśnij:\n'
+                          '💭 aby zobaczyć do 15 słów, które nie były używane najdłużej\n'
+                          '📙 aby zmienić aktualny słownik\n'
+                          '━  aby usunąć słowo\n'
+                          '↩️ aby wrócić do menu głównego\n'
+                          'ℹ️ aby otworzyć to centrum informacyjne',
+            'info_recall': 'Tutaj możesz zobaczyć do 15 słów, które nie były używane najdłużej\n\n'
+                           'Aby uzyskać kolejny zestaw słów, naciśnij:\n'
+                           '🔄 aby odświeżyć\n'
+                           'Uwaga: Twój słownik musi zawierać co najmniej 15 słów, żeby można było odświeżyć\n\n'
+                           'Dodatkowo naciśnij:\n'
+                           '↩️ aby wrócić do menu słów\n'
+                           'ℹ️ aby otworzyć to centrum informacyjne',
 
         }
     }
