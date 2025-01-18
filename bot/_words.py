@@ -414,7 +414,8 @@ def recall(update=None, user=None, vocabulary_id=None, limit=15):
         [
             InlineKeyboardButton(text='      ↩️      ', callback_data=json.dumps([QUERY_ACTIONS.MENU_WORDS.value])),
             InlineKeyboardButton(text='      ℹ️      ',
-                                 callback_data=json.dumps([QUERY_ACTIONS.SHOW_INFO.value, "info_recall"])),
+                                 callback_data=json.dumps([QUERY_ACTIONS.SHOW_INFO.value, "info_recall",
+                                                           QUERY_ACTIONS.RECALL.value])),
         ]
     ])
 
@@ -478,7 +479,8 @@ def construct_word_page(update, vocabulary_id=None, page=None):
         [
             InlineKeyboardButton(text='      ↩️      ', callback_data=json.dumps([QUERY_ACTIONS.MENU.value])),
             InlineKeyboardButton(text='      ℹ️      ',
-                                 callback_data=json.dumps([QUERY_ACTIONS.SHOW_INFO.value, "info_words"])),
+                                 callback_data=json.dumps([QUERY_ACTIONS.SHOW_INFO.value, "info_words",
+                                                           QUERY_ACTIONS.MENU_WORDS.value])),
         ]
     ]
 

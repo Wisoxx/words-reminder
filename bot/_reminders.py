@@ -415,7 +415,8 @@ def construct_reminder_page(update):
             [
                 InlineKeyboardButton(text="      ↩️      ", callback_data=json.dumps([QUERY_ACTIONS.MENU.value])),
                 InlineKeyboardButton(text="      ℹ️      ",
-                                     callback_data=json.dumps([QUERY_ACTIONS.SHOW_INFO.value, "info_reminders"]))
+                                     callback_data=json.dumps([QUERY_ACTIONS.SHOW_INFO.value, "info_reminders",
+                                                               QUERY_ACTIONS.MENU_REMINDERS.value]))
             ],
         ]
     )

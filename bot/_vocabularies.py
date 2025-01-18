@@ -346,7 +346,8 @@ def construct_vocabulary_page(update):
         [
             InlineKeyboardButton(text='      ↩️      ', callback_data=json.dumps([QUERY_ACTIONS.MENU.value])),
             InlineKeyboardButton(text='      ℹ️      ',
-                                 callback_data=json.dumps([QUERY_ACTIONS.SHOW_INFO.value, "info_vocabularies"])),
+                                 callback_data=json.dumps([QUERY_ACTIONS.SHOW_INFO.value, "info_vocabularies",
+                                                           QUERY_ACTIONS.MENU_VOCABULARIES.value])),
         ]
     ])
 

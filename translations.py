@@ -73,7 +73,20 @@ def translate(lang: str, key: str, values: dict = None):
             'practice_time': 'It\'s practice time!',
             'oldest_words': 'Here {to_be} {word_count} {conjugated_oldest} {conjugated_word} from "{vocabulary_name}" '
                             'to recall',
-            'info_words': 'info_words',
+            'info_words': 'Here you can view words added to your current vocabulary\n\n'
+                          'To move through your vocabulary press:\n'
+                          '⏮️ to go to the first page\n'
+                          '◀️️ to go to the previous page\n'
+                          '▶️ to go to the next page\n'
+                          '⏩ to go to the last page\n'
+                          'Note: some of them may not be available (e.g. can\'t go to the last page when you\'re '
+                          'already there)\n\n'
+                          'Additionally press:\n'
+                          '💭 to see up to 15 words that haven\'t been interacted with for the longest time\n'
+                          '📙 to change current vocabulary\n'
+                          '━ to delete a word\n'
+                          '↩️ to go back to the main menu\n'
+                          'ℹ️ to open this informational center',
             'info_recall': 'info_recall',
         },
         'ua': {

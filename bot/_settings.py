@@ -87,7 +87,8 @@ def settings(update):
         [
             InlineKeyboardButton(text='      ↩️      ', callback_data=json.dumps([QUERY_ACTIONS.MENU.value])),
             InlineKeyboardButton(text='      ℹ️      ',
-                                 callback_data=json.dumps([QUERY_ACTIONS.SHOW_INFO.value, "info_settings"])),
+                                 callback_data=json.dumps([QUERY_ACTIONS.SHOW_INFO.value, "info_settings",
+                                                           QUERY_ACTIONS.MENU_SETTINGS.value])),
         ]
     ])
     return heading + '\n' + text, reply_markup

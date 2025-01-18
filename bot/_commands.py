@@ -81,15 +81,21 @@ def cancel(update):
     return text, reply_markup
 
 
-@route(trigger="callback_query", query_action=QUERY_ACTIONS.SHOW_INFO.value, action="popup")
+@route(trigger="callback_query", query_action=QUERY_ACTIONS.SHOW_INFO.value, action="edit")
 def show_info(update):
     user = get_user(update)
     parameters = get_user_parameters(user)
     lang = parameters.language
 
     callback_data = json.loads(update["callback_query"]["data"])
-    key = callback_data[1]
-    return translate(lang, key)
+    key, back_button_action = callback_data[1]
+    text = translate(lang, key)
+    reply_markup = InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(text='      ↩️      ', callback_data=json.dumps([back_button_action])),
+        ]
+    ])
+    return text, reply_markup
 
 
 @route(trigger="other", action="send")
