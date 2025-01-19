@@ -47,7 +47,7 @@ def process_logs():
     }
 
     try:
-        with open(log_file_path, 'r') as log_file:
+        with open(log_file_path, 'r', encoding='utf-8', errors='replace') as log_file:
             log_content = log_file.readlines()  # Read the log file line by line
 
         colored_logs = []
