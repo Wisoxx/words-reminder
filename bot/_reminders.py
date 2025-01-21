@@ -160,7 +160,7 @@ def _generate_vocabulary_reminders_text(user, vocabulary_id, vocabulary_name, ti
         reminders_text = _reminder_list_to_text(reminders, lang, timezone)
         return heading + reminders_text
     elif include_no_reminders_text:
-        return heading + translate(lang, "no_reminder") + "\n"
+        return heading + translate(lang, "no_reminders") + "\n"
     else:
         return ""
 
