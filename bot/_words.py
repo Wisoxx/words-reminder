@@ -291,7 +291,9 @@ def delete_word_finalize(update, vocabulary_id=None, word=None, meaning=None):
             # but we can subtract 2 and add the 2 towards minimum, which gives us len(meaning) or 2
             len_meaning = len(meaning) if meaning is not None else 2
             if len(word) + len_meaning > 49:  # len("[4,100,0,\"\",\"\"]") = 15 and 64 - 15 = 49
-                msg_id = update["callback_query"]["message"]["message_id"]
+                # the function is only called by functions triggered by text or callback queries
+                msg_id = update.get("callback_query", {}).get("message", {}).get("message_id", None)
+                msg_id = msg_id or update.get("message", {}).get("message_id", None)
                 set_temp(user, TEMP_KEYS.WORD_DELETE_MSG_ID.value, msg_id)
                 set_temp(user, TEMP_KEYS.WORD.value, word)
                 set_temp(user, TEMP_KEYS.MEANING.value, meaning)
