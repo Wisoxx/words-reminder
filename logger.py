@@ -3,30 +3,32 @@ from logging.handlers import RotatingFileHandler
 import os
 
 
+LOG_PATH = os.path.join(os.path.expanduser("~"), 'mysite', 'logs')
+os.makedirs(LOG_PATH, exist_ok=True)
+
+LOG_FILE = os.path.join(LOG_PATH, 'app.log')
+
+
 def setup_logger(name):
-    log_path = os.path.join(os.path.expanduser("~"), 'mysite', 'logs')
-    os.makedirs(log_path, exist_ok=True)
+    logger = logging.getLogger("main_logger")  # Use a single global name
+    if logger.hasHandlers():
+        return logger  # Prevent duplicate handlers
 
-    logger = logging.getLogger(name)
+    file_handler = RotatingFileHandler(LOG_FILE, maxBytes=10_000_000, backupCount=3, encoding='utf-8')
+    formatter = logging.Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]',
+                                  datefmt='%Y-%m-%d %H:%M:%S')
+    file_handler.setFormatter(formatter)
+    file_handler.setLevel(logging.DEBUG)
 
-    if not logger.hasHandlers():
-        file_handler = RotatingFileHandler(os.path.join(log_path, 'app.log'), maxBytes=10000000, backupCount=3,
-                                           encoding='utf-8')
-        formatter = logging.Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]',
-                                      datefmt='%Y-%m-%d %H:%M:%S')
-        file_handler.setFormatter(formatter)
-        file_handler.setLevel(logging.INFO)
+    console_handler = logging.StreamHandler()
+    console_formatter = logging.Formatter('%(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]')
+    console_handler.setFormatter(console_formatter)
+    console_handler.setLevel(logging.DEBUG)
 
-        console_handler = logging.StreamHandler()
-        console_formatter = logging.Formatter('%(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]')
-        console_handler.setFormatter(console_formatter)
-        console_handler.setLevel(logging.DEBUG)
-
-        logger.setLevel(logging.DEBUG)  # lowest level to allow separate levels for files and console
-        logger.addHandler(file_handler)
-        logger.addHandler(console_handler)
-
-        logger.propagate = False
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(file_handler)
+    logger.addHandler(console_handler)
+    logger.propagate = False
 
     return logger
 
