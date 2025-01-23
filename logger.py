@@ -10,11 +10,12 @@ def setup_logger(name):
     logger = logging.getLogger(name)
 
     if not logger.hasHandlers():
-        file_handler = RotatingFileHandler(os.path.join(log_path, 'app.log'), maxBytes=10000000, backupCount=3)
+        file_handler = RotatingFileHandler(os.path.join(log_path, 'app.log'), maxBytes=10000000, backupCount=3,
+                                           encoding='utf-8')
         formatter = logging.Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]',
                                       datefmt='%Y-%m-%d %H:%M:%S')
         file_handler.setFormatter(formatter)
-        file_handler.setLevel(logging.DEBUG)
+        file_handler.setLevel(logging.INFO)
 
         console_handler = logging.StreamHandler()
         console_formatter = logging.Formatter('%(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]')
