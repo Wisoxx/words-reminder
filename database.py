@@ -335,7 +335,7 @@ class Users(Database):
     language TEXT,
     timezone INTEGER DEFAULT 0,
     current_vocabulary_id INTEGER,
-    hide_meaning BOOLEAN NOT NULL DEFAULT 1,
+    hide_meaning INTEGER NOT NULL DEFAULT 1,
     FOREIGN KEY (current_vocabulary_id) REFERENCES vocabularies(vocabulary_id)
     );
     '''

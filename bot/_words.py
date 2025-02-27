@@ -12,7 +12,9 @@ from translations import translate, conjugate_word, conjugate_oldest
 from router import route
 from logger import setup_logger
 
+
 logger = setup_logger(__name__)
+
 
 MAX_MESSAGE_LENGTH = 4096
 WORDS_PER_PAGE = 15
@@ -289,8 +291,9 @@ def delete_word_finalize(update, vocabulary_id=None, word=None, meaning=None):
             # callback data is limited to 64 characters
             # if meaning is str, then it takes 2 symbol ("") + len(meaning), else None converts to null, which is 4,
             # but we can subtract 2 and add the 2 towards minimum, which gives us len(meaning) or 2
-            len_meaning = len(meaning) if meaning is not None else 2
-            if len(word) + len_meaning > 49:  # len("[4,100,0,\"\",\"\"]") = 15 and 64 - 15 = 49
+            len_word = len(json.dumps(word, ensure_ascii=False))  # json.dumps may increase str length
+            len_meaning = len(json.dumps(meaning, ensure_ascii=False)) if meaning is not None else 2
+            if len_word + len_meaning > 49:  # len("[4,100,0,\"\",\"\"]") = 15 and 64 - 15 = 49
                 # the function is only called by functions triggered by text or callback queries
                 msg_id = update.get("callback_query", {}).get("message", {}).get("message_id", None)
                 msg_id = msg_id or update.get("message", {}).get("message_id", None)
