@@ -14,7 +14,7 @@ from ._vocabularies import create_vocabulary_start
 from ._settings import change_language_start, change_timezone_start
 from ._enums import QUERY_ACTIONS, TEMP_KEYS
 from router import get_route
-from logger import setup_logger, thread_local, show_debug
+from logger import setup_logger, thread_local, set_show_debug
 
 logger = setup_logger(__name__)
 PARSE_MODE = "HTML"
@@ -326,8 +326,7 @@ class Bot:
                     self.deliver_message(user, translate(lang, "setup_finished"))
 
         except Exception as e:
-            global show_debug
-            show_debug = True  # Enable debug log output temporarily
+            set_show_debug(True)
 
             # Flush debug logs for this update
             if hasattr(thread_local, "debug_log_stack"):
@@ -337,7 +336,7 @@ class Bot:
                 del thread_local.debug_log_stack  # Clear the stack
 
             logger.critical(f"Couldn't process update: {e}", exc_info=True)
-            show_debug = False
+            set_show_debug(False)
 
             if user:
                 try:

@@ -15,6 +15,10 @@ thread_local = threading.local()
 show_debug = False  # controls debug showing in logs
 
 
+def set_show_debug(value: bool):
+    show_debug = value
+
+
 class DebugLogFilter(logging.Filter):
     """Custom filter to store DEBUG logs per Telegram update in thread-local storage."""
     def filter(self, record):
