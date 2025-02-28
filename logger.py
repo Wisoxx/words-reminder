@@ -32,7 +32,6 @@ class DebugLogFilter(logging.Filter):
             if not hasattr(thread_local, "debug_log_stack"):
                 thread_local.debug_log_stack = []
             log_entry = f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} {record.levelname}: {record.getMessage()} [in {record.pathname}:{record.lineno}]"
-            print(f"Adding to debug log stack: {log_entry}")  # Debug print to see the added entries
             thread_local.debug_log_stack.append(log_entry)  # Store formatted log
             return False  # Prevent DEBUG log from being processed normally
         return True  # Allow all other log levels

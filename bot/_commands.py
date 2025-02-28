@@ -12,11 +12,6 @@ from logger import setup_logger
 logger = setup_logger(__name__)
 
 
-@route(trigger="text", command="/error", action=None)
-def cause_error(update):
-    a = 1/0
-
-
 @route(trigger="text", command="/help", action="send")
 def help_(update):
     user = get_user(update)
