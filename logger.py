@@ -16,6 +16,7 @@ show_debug = False  # controls debug showing in logs
 
 
 def set_show_debug(value: bool):
+    global show_debug
     show_debug = value
 
 
