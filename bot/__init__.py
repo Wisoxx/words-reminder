@@ -14,7 +14,7 @@ from ._vocabularies import create_vocabulary_start
 from ._settings import change_language_start, change_timezone_start
 from ._enums import QUERY_ACTIONS, TEMP_KEYS
 from router import get_route
-from logger import setup_logger
+from logger import setup_logger, thread_local, show_debug
 
 logger = setup_logger(__name__)
 PARSE_MODE = "HTML"
@@ -254,6 +254,8 @@ class Bot:
     def handle_update(self, update):
         user = None
         try:
+            thread_local.debug_log_stack = []  # reset log stack to have logs only from the current update
+
             # pretty print logs
             logger.debug('Received update: {}'.format(json.dumps(update, indent=4, ensure_ascii=False)))
 
@@ -324,8 +326,18 @@ class Bot:
                     self.deliver_message(user, translate(lang, "setup_finished"))
 
         except Exception as e:
+            global show_debug
+            show_debug = True  # Enable debug log output temporarily
+
+            # Flush debug logs for this update
+            if hasattr(thread_local, "debug_log_stack"):
+                logger.debug("Debug log stack before crash:")
+                while thread_local.debug_log_stack:
+                    logger.debug(thread_local.debug_log_stack.pop(0))  # Log and remove each debug entry
+                del thread_local.debug_log_stack  # Clear the stack
+
             logger.critical(f"Couldn't process update: {e}", exc_info=True)
-            logger.critical(f"Update that caused error: {json.dumps(update, indent=4, ensure_ascii=False)}")
+            show_debug = False
 
             if user:
                 try:
