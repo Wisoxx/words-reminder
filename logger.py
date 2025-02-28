@@ -2,7 +2,6 @@ import logging
 from logging.handlers import RotatingFileHandler
 import os
 import threading
-from datetime import datetime
 
 
 LOG_PATH = os.path.join(os.path.expanduser("~"), 'mysite', 'logs')
@@ -31,7 +30,7 @@ class DebugLogFilter(logging.Filter):
             # Otherwise, store them in thread-local storage
             if not hasattr(thread_local, "debug_log_stack"):
                 thread_local.debug_log_stack = []
-            log_entry = f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} {record.levelname}: {record.getMessage()} [in {record.pathname}:{record.lineno}]"
+            log_entry = f"{record.getMessage()} [in {record.pathname}:{record.lineno}]"
             thread_local.debug_log_stack.append(log_entry)  # Store formatted log
             return False  # Prevent DEBUG log from being processed normally
         return True  # Allow all other log levels
